@@ -1,0 +1,3 @@
+{{range $rule := .Netfilter.ForwardRules}}
+    {{template "rule_match.tmpl" .Match}} {{ if $rule.Counter }} counter {{ end }} {{ if ne $rule.Comment "" }} comment "{{ $rule.Comment }}"  {{ end }}
+{{end}}

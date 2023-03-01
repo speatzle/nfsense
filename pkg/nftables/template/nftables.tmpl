@@ -1,0 +1,48 @@
+#!/usr/sbin/nft -f
+
+flush ruleset
+
+# Address object ipsets
+{{template "addresses.tmpl" .}}
+
+# nfsense nftables inet (ipv4 + ipv6) table
+table inet nfsense_inet {
+
+    # Inbound Rules
+    chain inbound {
+        type filter hook input priority 0; policy drop;
+
+        # Allow traffic from established and related packets, drop invalid
+        ct state vmap { established : accept, related : accept, invalid : drop }
+
+        # allow loopback traffic, anything else jump to chain for further evaluation
+        iifname vmap { lo : accept, $DEV_WORLD : jump inbound_world, $DEV_PRIVATE : jump inbound_private }
+
+        {{template "inbound_rules.tmpl" .}}
+    }
+
+    # Forward Rules
+    chain forward {
+        type filter hook forward priority 0; policy drop;
+
+        # Allow traffic from established and related packets, drop invalid
+        ct state vmap { established : accept, related : accept, invalid : drop }
+
+        {{template "forward_rules.tmpl" .}}
+    }
+
+    # Destination NAT Rules
+    chain prerouting {
+        type nat hook prerouting priority -100; policy accept;
+
+        {{template "destination_nat_rules.tmpl" .}}
+    }
+
+    # Source NAT Rules
+    chain postrouting {
+        type nat hook postrouting priority 100; policy accept;
+
+        {{template "source_nat_rules.tmpl" .}}
+    }
+}
+

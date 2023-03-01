@@ -1,0 +1,4 @@
+config.json
+nftables.conf
+go.work
+bin/*

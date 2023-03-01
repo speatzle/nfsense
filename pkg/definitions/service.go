@@ -17,21 +17,21 @@ type Service struct {
 }
 
 func (s Service) GetSPort() string {
-	if *s.SPortStart == 0 {
+	if s.SPortStart == nil || *s.SPortStart == 0 {
 		return ""
-	} else if *s.SPortEnd == 0 {
-		return fmt.Sprintf("sport %d", *s.SPortStart)
+	} else if s.SPortEnd == nil || *s.SPortEnd == 0 {
+		return fmt.Sprintf("%d", *s.SPortStart)
 	}
-	return fmt.Sprintf("sport %d - %d", *s.SPortStart, *s.SPortEnd)
+	return fmt.Sprintf("%d - %d", *s.SPortStart, *s.SPortEnd)
 }
 
 func (s Service) GetDPort() string {
-	if *s.DPortStart == 0 {
+	if s.DPortStart == nil || *s.DPortStart == 0 {
 		return ""
-	} else if *s.DPortEnd == 0 {
-		return fmt.Sprintf("dport %d", *s.DPortStart)
+	} else if s.DPortEnd == nil || *s.DPortEnd == 0 {
+		return fmt.Sprintf("%d", *s.DPortStart)
 	}
-	return fmt.Sprintf("dport %d - %d", *s.DPortStart, *s.DPortEnd)
+	return fmt.Sprintf("%d - %d", *s.DPortStart, *s.DPortEnd)
 }
 
 type ServiceType int

@@ -7,12 +7,12 @@ import (
 	"github.con/speatzle/nfsense/pkg/util"
 )
 
-func GenerateMatcher(services *map[string]definitions.Service, addresses *map[string]definitions.Address, match definitions.Match) (string, error) {
+func GenerateMatcher(services map[string]definitions.Service, addresses map[string]definitions.Address, match definitions.Match) (string, error) {
 	return GenerateServiceMatcher(services, match), nil
 }
 
-func GenerateServiceMatcher(allServices *map[string]definitions.Service, match definitions.Match) string {
-	serviceList := util.ResolveBaseServices(*allServices, match.Services)
+func GenerateServiceMatcher(allServices map[string]definitions.Service, match definitions.Match) string {
+	serviceList := util.ResolveBaseServices(allServices, match.Services)
 
 	tcpSPorts := []string{}
 	tcpDPorts := []string{}
@@ -23,17 +23,17 @@ func GenerateServiceMatcher(allServices *map[string]definitions.Service, match d
 	for _, service := range serviceList {
 		switch service.Type {
 		case definitions.TCP:
-			if service.GetSPort() != "0" {
+			if service.GetSPort() != "" {
 				tcpSPorts = append(tcpSPorts, service.GetSPort())
 			}
-			if service.GetDPort() != "0" {
+			if service.GetDPort() != "" {
 				tcpDPorts = append(tcpDPorts, service.GetDPort())
 			}
 		case definitions.UDP:
-			if service.GetSPort() != "0" {
+			if service.GetSPort() != "" {
 				udpSPorts = append(udpSPorts, service.GetSPort())
 			}
-			if service.GetDPort() != "0" {
+			if service.GetDPort() != "" {
 				udpDPorts = append(udpDPorts, service.GetDPort())
 			}
 		case definitions.ICMP:

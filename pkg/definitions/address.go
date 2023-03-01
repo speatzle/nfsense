@@ -21,7 +21,7 @@ const (
 	Host AddressType = iota
 	Range
 	Network
-	Group
+	AddressGroup
 )
 
 func (t AddressType) String() string {
@@ -33,7 +33,7 @@ func (t *AddressType) FromString(input string) AddressType {
 		"host":    Host,
 		"range":   Range,
 		"network": Network,
-		"group":   Group,
+		"group":   AddressGroup,
 	}[input]
 }
 

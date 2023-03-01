@@ -17,7 +17,6 @@ table inet nfsense_inet {
 
         # allow loopback traffic
         iifname lo accept
-
         {{template "inbound_rules.tmpl" .}}
     }
 
@@ -27,21 +26,18 @@ table inet nfsense_inet {
 
         # Allow traffic from established and related packets, drop invalid
         ct state vmap { established : accept, related : accept, invalid : drop }
-
         {{template "forward_rules.tmpl" .}}
     }
 
     # Destination NAT Rules
     chain prerouting {
         type nat hook prerouting priority -100; policy accept;
-
         {{template "destination_nat_rules.tmpl" .}}
     }
 
     # Source NAT Rules
     chain postrouting {
         type nat hook postrouting priority 100; policy accept;
-
         {{template "source_nat_rules.tmpl" .}}
     }
 }

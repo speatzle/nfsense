@@ -15,8 +15,8 @@ table inet nfsense_inet {
         # Allow traffic from established and related packets, drop invalid
         ct state vmap { established : accept, related : accept, invalid : drop }
 
-        # allow loopback traffic, anything else jump to chain for further evaluation
-        iifname vmap { lo : accept, $DEV_WORLD : jump inbound_world, $DEV_PRIVATE : jump inbound_private }
+        # allow loopback traffic
+        iifname lo accept
 
         {{template "inbound_rules.tmpl" .}}
     }

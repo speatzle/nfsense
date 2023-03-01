@@ -1,2 +1,2 @@
 {{ range $rule := .Netfilter.SourceNATRules }}
-        {{ matcher .Services .Addresses $rule.Match }}{{ if $rule.Counter }} counter{{ end }}{{ if ne $rule.Comment "" }} comment "{{ $rule.Comment }}"{{ end }}{{ end }}
+        {{ matcher $.Services $.Addresses $rule.Match }}{{ if $rule.Counter }} counter{{ end }}{{ if ne $rule.Comment "" }} comment "{{ $rule.Comment }}"{{ end }}{{ end }}

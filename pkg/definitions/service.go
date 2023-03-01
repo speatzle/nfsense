@@ -1,6 +1,9 @@
 package definitions
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 type Service struct {
 	Type       ServiceType `json:"type"`
@@ -10,6 +13,25 @@ type Service struct {
 	DPortStart *uint32     `json:"dport_start,omitempty"`
 	DPortEnd   *uint32     `json:"dport_end,omitempty"`
 	ICMPCode   *uint32     `json:"icmp_code,omitempty"`
+	Children   *[]string   `json:"children,omitempty"`
+}
+
+func (s Service) GetSPort() string {
+	if *s.SPortStart == 0 {
+		return ""
+	} else if *s.SPortEnd == 0 {
+		return fmt.Sprintf("sport %d", *s.SPortStart)
+	}
+	return fmt.Sprintf("sport %d - %d", *s.SPortStart, *s.SPortEnd)
+}
+
+func (s Service) GetDPort() string {
+	if *s.DPortStart == 0 {
+		return ""
+	} else if *s.DPortEnd == 0 {
+		return fmt.Sprintf("dport %d", *s.DPortStart)
+	}
+	return fmt.Sprintf("dport %d - %d", *s.DPortStart, *s.DPortEnd)
 }
 
 type ServiceType int

@@ -39,20 +39,20 @@ type ServiceType int
 const (
 	TCP ServiceType = iota
 	UDP
-	TCPUDP
 	ICMP
+	ServiceGroup
 )
 
 func (t ServiceType) String() string {
-	return [...]string{"tcp", "udp", "tcpudp", "icmp"}[t]
+	return [...]string{"tcp", "udp", "icmp", "group"}[t]
 }
 
 func (t *ServiceType) FromString(input string) ServiceType {
 	return map[string]ServiceType{
-		"tcp":    TCP,
-		"udp":    UDP,
-		"tcpudp": TCPUDP,
-		"icmp":   ICMP,
+		"tcp":   TCP,
+		"udp":   UDP,
+		"icmp":  ICMP,
+		"group": ServiceGroup,
 	}[input]
 }
 

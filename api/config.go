@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.con/speatzle/nfsense/pkg/definitions"
+	"nfsense.net/nfsense/pkg/definitions"
 )
 
 func LoadConfiguration(file string) (*definitions.Config, error) {

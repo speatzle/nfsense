@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.con/speatzle/nfsense/pkg/nftables"
 	"golang.org/x/exp/slog"
+	"nfsense.net/nfsense/pkg/nftables"
 )
 
 func main() {

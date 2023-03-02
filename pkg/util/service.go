@@ -1,6 +1,6 @@
 package util
 
-import "github.con/speatzle/nfsense/pkg/definitions"
+import "nfsense.net/nfsense/pkg/definitions"
 
 // ResolveBaseServices Resolves all groups to their base Services
 func ResolveBaseServices(allServices map[string]definitions.Service, serviceNames []string) []definitions.Service {

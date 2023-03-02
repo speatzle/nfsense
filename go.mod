@@ -1,4 +1,4 @@
-module github.con/speatzle/nfsense
+module nfsense.net/nfsense
 
 go 1.19
 

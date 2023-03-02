@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.con/speatzle/nfsense/pkg/definitions"
+	"nfsense.net/nfsense/pkg/definitions"
 )
 
 func GenerateNfTablesFile(conf definitions.Config) (string, error) {

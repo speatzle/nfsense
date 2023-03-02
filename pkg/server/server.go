@@ -12,9 +12,20 @@ import (
 )
 
 var server http.Server
+var mux = http.NewServeMux()
 
 func StartWebserver(conf *definitions.Config) {
 	server.Addr = ":8080"
+	server.Handler = mux
+
+	// Routing
+	mux.HandleFunc("/login", HandleLogin)
+	mux.HandleFunc("/logout", HandleLogout)
+	mux.HandleFunc("/session", HandleSession)
+	mux.HandleFunc("/api", HandleAPI)
+	mux.HandleFunc("/ws", HandleWebsocketConnection)
+	mux.HandleFunc("/", HandleWebinterface)
+
 	go func() {
 		if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 			slog.Error("Webserver error", err)

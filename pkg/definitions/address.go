@@ -2,6 +2,7 @@ package definitions
 
 import (
 	"encoding/json"
+	"net"
 	"net/netip"
 
 	"go4.org/netipx"
@@ -12,6 +13,7 @@ type Address struct {
 	Comment  string          `json:"comment,omitempty"`
 	Host     *netip.Addr     `json:"host,omitempty"`
 	Range    *netipx.IPRange `json:"range,omitempty"`
+	Network  *net.IPNet      `json:"network,omitempty"`
 	Children *[]string       `json:"children,omitempty"`
 }
 

@@ -63,3 +63,48 @@ func GenerateServiceMatcher(allServices map[string]definitions.Service, match de
 
 	return res
 }
+
+func GenerateAddressMatcher(allAddresses map[string]definitions.Address, match definitions.Match) string {
+	sourceAddressList := util.ResolveBaseAddresses(allAddresses, match.SourceAddresses)
+	destinationAddressList := util.ResolveBaseAddresses(allAddresses, match.DestinationAddresses)
+
+	sourceAddresses := []string{}
+	destinationAddresses := []string{}
+
+	for _, address := range sourceAddressList {
+		switch address.Type {
+		case definitions.Host:
+			sourceAddresses = append(sourceAddresses, address.Host.String())
+		case definitions.Range:
+			sourceAddresses = append(sourceAddresses, address.Range.String())
+		case definitions.Network:
+			sourceAddresses = append(sourceAddresses, address.Network.String())
+		default:
+			panic("invalid address type")
+		}
+	}
+
+	for _, address := range destinationAddressList {
+		switch address.Type {
+		case definitions.Host:
+			destinationAddresses = append(destinationAddresses, address.Host.String())
+		case definitions.Range:
+			destinationAddresses = append(destinationAddresses, address.Range.String())
+		case definitions.Network:
+			destinationAddresses = append(destinationAddresses, address.Network.String())
+		default:
+			panic("invalid address type")
+		}
+	}
+
+	res := ""
+
+	if len(sourceAddresses) != 0 {
+		res += "ip saddr " + util.ConvertSliceToSetString(sourceAddresses) + " "
+	}
+	if len(destinationAddresses) != 0 {
+		res += "ip daddr " + util.ConvertSliceToSetString(destinationAddresses) + " "
+	}
+
+	return res
+}

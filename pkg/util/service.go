@@ -10,7 +10,7 @@ func ResolveBaseServices(allServices map[string]definitions.Service, serviceName
 		service := allServices[serviceName]
 
 		if service.Type == definitions.ServiceGroup {
-			baseServices = append(baseServices, resolveChildren(allServices, service)...)
+			baseServices = append(baseServices, resolveServiceChildren(allServices, service)...)
 		} else {
 			baseServices = append(baseServices, service)
 		}
@@ -20,36 +20,16 @@ func ResolveBaseServices(allServices map[string]definitions.Service, serviceName
 	return baseServices
 }
 
-func resolveChildren(allServices map[string]definitions.Service, s definitions.Service) []definitions.Service {
+func resolveServiceChildren(allServices map[string]definitions.Service, s definitions.Service) []definitions.Service {
 	serviceList := []definitions.Service{}
 	for _, serviceName := range *s.Children {
 		service := allServices[serviceName]
 
 		if service.Type == definitions.ServiceGroup {
-			serviceList = append(serviceList, resolveChildren(allServices, service)...)
+			serviceList = append(serviceList, resolveServiceChildren(allServices, service)...)
 		} else {
 			serviceList = append(serviceList, service)
 		}
 	}
 	return serviceList
-}
-
-func ConvertSliceToSetString(slice []string) string {
-	if len(slice) == 0 {
-		return ""
-	} else if len(slice) == 1 {
-		return slice[0]
-	}
-
-	res := "{ "
-
-	for i := range slice {
-		res += " " + slice[i]
-		if i < len(slice)-1 {
-			res += ","
-		}
-	}
-
-	res += " }"
-	return res
 }

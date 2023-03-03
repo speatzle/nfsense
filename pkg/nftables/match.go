@@ -8,7 +8,7 @@ import (
 )
 
 func GenerateMatcher(services map[string]definitions.Service, addresses map[string]definitions.Address, match definitions.Match) (string, error) {
-	return GenerateServiceMatcher(services, match), nil
+	return GenerateAddressMatcher(addresses, match) + " " + GenerateServiceMatcher(services, match), nil
 }
 
 func GenerateServiceMatcher(allServices map[string]definitions.Service, match definitions.Match) string {

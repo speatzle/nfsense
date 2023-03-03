@@ -21,7 +21,7 @@ func main() {
 	conf, err := LoadConfiguration("config.json")
 	if err != nil {
 		slog.Error("Loading Config", err)
-		return
+		os.Exit(1)
 	}
 
 	slog.Info("Config Loaded", "config", conf)
@@ -31,7 +31,7 @@ func main() {
 		err := apply(conf)
 		if err != nil {
 			slog.Error("Applying Config", err)
-			return
+			os.Exit(1)
 		}
 		slog.Info("Config Applied, Exiting...")
 		return

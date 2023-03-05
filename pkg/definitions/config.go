@@ -2,7 +2,7 @@ package definitions
 
 type Config struct {
 	ConfigVersion uint64             `json:"config_version"`
-	Netfilter     Netfilter          `json:"netfilter"`
+	Firewall      Firewall           `json:"firewall"`
 	Addresses     map[string]Address `json:"addresses"`
 	Services      map[string]Service `json:"services"`
 }

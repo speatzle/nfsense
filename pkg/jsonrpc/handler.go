@@ -40,6 +40,10 @@ func (h *Handler) HandleRequest(ctx context.Context, r io.Reader, w io.Writer) e
 		return respondError(w, "", ErrParse, fmt.Errorf("Parsing Request: %w", err))
 	}
 
+	if req.Jsonrpc != "2.0" {
+		return respondError(w, "", ErrMethodNotFound, fmt.Errorf("Unsupported Jsonrpc version %v", req.Jsonrpc))
+	}
+
 	method, ok := h.methods[req.Method]
 	if !ok {
 		return respondError(w, "", ErrMethodNotFound, fmt.Errorf("Unknown Method %v", req.Method))

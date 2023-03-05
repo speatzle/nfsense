@@ -7,6 +7,9 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"runtime/debug"
+
+	"golang.org/x/exp/slog"
 )
 
 type Handler struct {
@@ -23,6 +26,11 @@ func NewHandler(maxRequestSize int64) Handler {
 }
 
 func (h *Handler) HandleRequest(ctx context.Context, r io.Reader, w io.Writer) error {
+	defer func() {
+		if r := recover(); r != nil {
+			slog.Error("Recovered Panic Handling JSONRPC Request", fmt.Errorf("%v", r), "stack", debug.Stack())
+		}
+	}()
 	var req request
 	bufferedRequest := new(bytes.Buffer)
 	reqSize, err := bufferedRequest.ReadFrom(io.LimitReader(r, h.maxRequestSize+1))
@@ -63,12 +71,19 @@ func (h *Handler) HandleRequest(ctx context.Context, r io.Reader, w io.Writer) e
 	params[0] = method.subSystem
 	params[1] = reflect.ValueOf(ctx)
 	params[2] = reflect.ValueOf(paramPointer).Elem()
+
+	defer func() {
+		if r := recover(); r != nil {
+			slog.Error("Recovered Panic Executing API Method", fmt.Errorf("%v", r), "method", req.Method, "id", req.ID, "stack", debug.Stack())
+		}
+	}()
 	res := method.handlerFunc.Call(params)
 	result := res[0].Interface()
 
 	if !res[1].IsNil() {
 		reqerr := res[1].Interface().(error)
-		return respondError(w, req.ID, 0, reqerr)
+		slog.Error("API Method", reqerr, "method", req.Method, "id", req.ID)
+		respondError(w, req.ID, ErrInternalError, reqerr)
 	}
 
 	respondResult(w, req.ID, result)

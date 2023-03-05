@@ -23,7 +23,6 @@ func HandleAPI(w http.ResponseWriter, r *http.Request) {
 
 	err := apiHandler.HandleRequest(ctx, r.Body, w)
 	if err != nil {
-		w.WriteHeader(500)
 		slog.Error("Handling HTTP API Request", err)
 	}
 }

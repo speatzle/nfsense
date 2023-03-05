@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"golang.org/x/exp/slog"
+	"nfsense.net/nfsense/pkg/jsonrpc"
 	"nfsense.net/nfsense/pkg/server"
 )
 
@@ -37,8 +38,12 @@ func main() {
 		return
 	}
 
+	slog.Info("Setup API...")
+	apiHandler := jsonrpc.NewHandler(100 << 20)
+	RegisterAPIMethods(apiHandler, conf)
+
 	slog.Info("Starting Webserver...")
-	server.StartWebserver(conf)
+	server.StartWebserver(conf, apiHandler)
 
 	slog.Info("Ready")
 

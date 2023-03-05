@@ -18,8 +18,8 @@ type Handler struct {
 	maxRequestSize int64
 }
 
-func NewHandler(maxRequestSize int64) Handler {
-	return Handler{
+func NewHandler(maxRequestSize int64) *Handler {
+	return &Handler{
 		methods:        map[string]method{},
 		maxRequestSize: maxRequestSize,
 	}

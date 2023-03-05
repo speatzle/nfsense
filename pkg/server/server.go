@@ -9,14 +9,17 @@ import (
 	"golang.org/x/exp/slog"
 
 	"nfsense.net/nfsense/pkg/definitions"
+	"nfsense.net/nfsense/pkg/jsonrpc"
 )
 
 var server http.Server
 var mux = http.NewServeMux()
+var apiHandler *jsonrpc.Handler
 
-func StartWebserver(conf *definitions.Config) {
+func StartWebserver(conf *definitions.Config, _apiHandler *jsonrpc.Handler) {
 	server.Addr = ":8080"
 	server.Handler = mux
+	apiHandler = _apiHandler
 
 	// Routing
 	mux.HandleFunc("/login", HandleLogin)

@@ -13,7 +13,13 @@ import (
 )
 
 func HandleWebsocketAPI(w http.ResponseWriter, r *http.Request) {
-	ctx, cancel := context.WithCancel(r.Context())
+	_, s := GetSession(r)
+	if s == nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	ctx, cancel := context.WithCancel(context.WithValue(r.Context(), SessionKey, s))
 	defer cancel()
 	c, err := websocket.Accept(w, r, nil)
 	if err != nil {

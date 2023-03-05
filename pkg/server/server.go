@@ -15,6 +15,7 @@ import (
 var server http.Server
 var mux = http.NewServeMux()
 var apiHandler *jsonrpc.Handler
+var stopCleanup chan struct{}
 
 func StartWebserver(conf *definitions.Config, _apiHandler *jsonrpc.Handler) {
 	server.Addr = ":8080"
@@ -29,6 +30,10 @@ func StartWebserver(conf *definitions.Config, _apiHandler *jsonrpc.Handler) {
 	mux.HandleFunc("/ws/api", HandleWebsocketAPI)
 	mux.HandleFunc("/", HandleWebinterface)
 
+	stopCleanup = make(chan struct{})
+
+	go CleanupSessions(stopCleanup)
+
 	go func() {
 		if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 			slog.Error("Webserver error", err)
@@ -38,6 +43,7 @@ func StartWebserver(conf *definitions.Config, _apiHandler *jsonrpc.Handler) {
 }
 
 func ShutdownWebserver(ctx context.Context) error {
+	stopCleanup <- struct{}{}
 	err := server.Shutdown(ctx)
 	if err != nil {
 		return fmt.Errorf("Shutting down: %w", err)

@@ -11,6 +11,11 @@ import (
 )
 
 func HandleAPI(w http.ResponseWriter, r *http.Request) {
+	_, s := GetSession(r)
+	if s == nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 	defer func() {
 		if r := recover(); r != nil {
 			slog.Error("Recovered Panic Handling HTTP API Request", fmt.Errorf("%v", r), "stack", debug.Stack())
@@ -18,7 +23,7 @@ func HandleAPI(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}()
-	ctx, cancel := context.WithTimeout(r.Context(), time.Second*10)
+	ctx, cancel := context.WithTimeout(context.WithValue(r.Context(), SessionKey, s), time.Second*10)
 	defer cancel()
 
 	err := apiHandler.HandleRequest(ctx, r.Body, w)

@@ -23,7 +23,7 @@ func StartWebserver(conf *definitions.Config) {
 	mux.HandleFunc("/logout", HandleLogout)
 	mux.HandleFunc("/session", HandleSession)
 	mux.HandleFunc("/api", HandleAPI)
-	mux.HandleFunc("/ws", HandleWebsocketConnection)
+	mux.HandleFunc("/ws/api", HandleWebsocketAPI)
 	mux.HandleFunc("/", HandleWebinterface)
 
 	go func() {

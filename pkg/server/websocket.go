@@ -10,7 +10,7 @@ import (
 	"nhooyr.io/websocket/wsjson"
 )
 
-func HandleWebsocketConnection(w http.ResponseWriter, r *http.Request) {
+func HandleWebsocketAPI(w http.ResponseWriter, r *http.Request) {
 	c, err := websocket.Accept(w, r, nil)
 	if err != nil {
 		slog.Error("Accepting Websocket Connection", err)

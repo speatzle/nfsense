@@ -1,2 +1,2 @@
-{{range $rule := .Netfilter.ForwardRules}}
-        {{ matcher $.Services $.Addresses $rule.Match }}{{ if $rule.Counter }} counter{{ end }} {{ $rule.Verdict.String }}{{ if ne $rule.Comment "" }} comment "{{ $rule.Comment }}"{{ end }}{{ end }}
+{{range $rule := .Firewall.ForwardRules}}
+        {{ matcher $.Firewall.Services $.Firewall.Addresses $rule.Match }}{{ if $rule.Counter }} counter{{ end }} {{ $rule.Verdict.String }}{{ if ne $rule.Comment "" }} comment "{{ $rule.Comment }}"{{ end }}{{ end }}

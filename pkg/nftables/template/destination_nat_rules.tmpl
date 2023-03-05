@@ -1,2 +1,2 @@
-{{ range $rule := .Netfilter.DestinationNATRules }}
-        {{ matcher $.Services $.Addresses $rule.Match }}{{ if $rule.Counter }} counter{{ end }}{{ if ne $rule.Comment "" }} comment "{{ $rule.Comment }}"{{ end }}{{ end }}
+{{ range $rule := .Firewall.DestinationNATRules }}
+        {{ matcher $.Firewall.Services $.Firewall.Addresses $rule.Match }}{{ if $rule.Counter }} counter{{ end }}{{ if ne $rule.Comment "" }} comment "{{ $rule.Comment }}"{{ end }}{{ end }}

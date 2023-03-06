@@ -49,12 +49,12 @@ func (h *Handler) HandleRequest(ctx context.Context, r io.Reader, w io.Writer) e
 	}
 
 	if req.Jsonrpc != "2.0" {
-		return respondError(w, "", ErrMethodNotFound, fmt.Errorf("Unsupported Jsonrpc version %v", req.Jsonrpc))
+		return respondError(w, req.ID, ErrMethodNotFound, fmt.Errorf("Unsupported Jsonrpc version %v", req.Jsonrpc))
 	}
 
 	method, ok := h.methods[req.Method]
 	if !ok {
-		return respondError(w, "", ErrMethodNotFound, fmt.Errorf("Unknown Method %v", req.Method))
+		return respondError(w, req.ID, ErrMethodNotFound, fmt.Errorf("Unknown Method %v", req.Method))
 	}
 
 	p := reflect.New(method.inType)
@@ -64,7 +64,7 @@ func (h *Handler) HandleRequest(ctx context.Context, r io.Reader, w io.Writer) e
 	dec.DisallowUnknownFields()
 	err = dec.Decode(paramPointer)
 	if err != nil {
-		return respondError(w, "", ErrInvalidParams, fmt.Errorf("Parsing Request: %w", err))
+		return respondError(w, req.ID, ErrInvalidParams, fmt.Errorf("Parsing Request: %w", err))
 	}
 
 	params := make([]reflect.Value, 3)

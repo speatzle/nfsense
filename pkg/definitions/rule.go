@@ -3,15 +3,15 @@ package definitions
 import "encoding/json"
 
 type Rule struct {
-	Name    string `json:"name"`
-	Match   Match  `json:"match"`
+	Name    string `json:"name" validate:"required"`
+	Match   Match  `json:"match" validate:"required,dive"`
 	Comment string `json:"comment,omitempty"`
 	Counter bool   `json:"counter,omitempty"`
 }
 
 type ForwardRule struct {
 	Rule
-	Verdict Verdict `json:"verdict"`
+	Verdict Verdict `json:"verdict" validate:"min=0,max=2"`
 }
 
 type Verdict int

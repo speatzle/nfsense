@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"golang.org/x/exp/slog"
+	"nfsense.net/nfsense/pkg/definitions"
 	"nfsense.net/nfsense/pkg/jsonrpc"
 	"nfsense.net/nfsense/pkg/server"
 )
@@ -26,6 +27,14 @@ func main() {
 	}
 
 	slog.Info("Config Loaded", "config", conf)
+
+	err = definitions.ValidateConfig(conf)
+	if err != nil {
+		slog.Error("Validating Config", err)
+		os.Exit(1)
+	}
+
+	slog.Info("Validating Config")
 
 	if *applyPtr {
 		slog.Info("Applying Config...")

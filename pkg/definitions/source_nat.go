@@ -4,7 +4,7 @@ import "encoding/json"
 
 type SourceNATRule struct {
 	Rule
-	Type    SnatType `json:"type"`
+	Type    SnatType `json:"type" validate:"min=0,max=1"`
 	Address string   `json:"address,omitempty"`
 	Service string   `json:"service,omitempty"`
 }

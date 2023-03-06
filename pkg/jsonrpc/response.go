@@ -17,7 +17,7 @@ type response struct {
 func respond(w io.Writer, resp response) {
 	err := json.NewEncoder(w).Encode(resp)
 	if err != nil {
-		slog.Warn("write response", err)
+		slog.Warn("write response", "err", err)
 	}
 }
 

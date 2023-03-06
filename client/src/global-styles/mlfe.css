@@ -1,0 +1,33 @@
+/* MLFE: Marginless FlexEverything (A CSS Reset for creating Layouts) */
+:root {
+  font-family: sans-serif;
+  line-height: 1;
+  user-select: none; 
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0px;
+  margin: 0px;
+  user-select: inherit;
+  color: inherit;
+  overflow: hidden;
+}
+
+div, ul, ol, nav {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+}
+
+h1 { font-size: calc(1rem + calc(1rem / 1))}
+h2 { font-size: calc(1rem + calc(1rem / 2))}
+h3 { font-size: calc(1rem + calc(1rem / 3))}
+h4 { font-size: calc(1rem + calc(1rem / 4))}
+h5 { font-size: calc(1rem + calc(1rem / 5))}
+h6 { font-size: calc(1rem + calc(1rem / 6))}
+
+ul, ol {
+  gap: 0.5rem;
+  padding-left: 1rem;
+}

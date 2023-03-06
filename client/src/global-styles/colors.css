@@ -1,0 +1,34 @@
+/* Coloring */
+:root {
+  /* Color Definitions */
+  --cl-md-50: #FAFAFA;
+  --cl-md-100: #F5F5F5;
+  --cl-md-200: #EEEEEE;
+  --cl-md-300: #E0E0E0;
+  --cl-md-400: #BDBDBD;
+  --cl-md-500: #9E9E9E;
+  --cl-md-600: #757575;
+  --cl-md-700: #616161;
+  --cl-md-800: #424242;
+  --cl-md-900: #212121;
+
+  /* Color Uses */
+  --cl-bg: var(--cl-md-900);
+  --cl-bg-mid: var(--cl-md-800);
+  --cl-bg-low: var(--cl-md-700);
+  --cl-fg: var(--cl-md-100);
+
+  /* Apply as default */
+  background-color: var(--cl-bg);
+  color: var(--cl-fg);
+}
+
+/* Changes for light mode */
+@media screen and (prefers-color-scheme: light) {
+  :root {
+    --cl-bg: var(--cl-md-100);
+    --cl-bg-mid: var(--cl-md-200);
+    --cl-bg-low: var(--cl-md-300);
+    --cl-fg: var(--cl-md-900);
+  }
+}

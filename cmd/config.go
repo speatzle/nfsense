@@ -15,9 +15,7 @@ func LoadConfiguration(file string) (*definitions.Config, error) {
 		return nil, fmt.Errorf("opening Config File %w", err)
 	}
 	defer configFile.Close()
-	if err != nil {
-		fmt.Println(err.Error())
-	}
+
 	jsonParser := json.NewDecoder(configFile)
 	jsonParser.DisallowUnknownFields()
 	err = jsonParser.Decode(&config)

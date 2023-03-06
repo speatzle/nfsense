@@ -20,6 +20,8 @@ const (
 type respError struct {
 	Code    ErrorCode `json:"code"`
 	Message string    `json:"message"`
+	// cannot be omitempty because of frontend library
+	Data any `json:"data"`
 }
 
 func respondError(w io.Writer, id any, code ErrorCode, err error) error {

@@ -3,6 +3,7 @@ package definitions
 import "encoding/json"
 
 type Rule struct {
+	ID      uint64 `json:"id" validate:"required,gt=0"`
 	Name    string `json:"name" validate:"required"`
 	Match   Match  `json:"match" validate:"required,dive"`
 	Comment string `json:"comment,omitempty"`

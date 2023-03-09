@@ -11,10 +11,12 @@ import (
 type SessionKeyType string
 
 const SessionKey SessionKeyType = "session"
+const SessionCookieName string = "session"
 
 type Session struct {
 	Username string
 	Expires  time.Time
+	// TODO Add []websocket.Conn pointer to close all active websockets, alternativly do this via context cancelation
 }
 
 var sessionsSync sync.Mutex
@@ -41,7 +43,7 @@ func GenerateSession(w http.ResponseWriter, username string) {
 		Username: username,
 		Expires:  expires,
 	}
-	http.SetCookie(w, &http.Cookie{Name: "session", HttpOnly: true, SameSite: http.SameSiteStrictMode, Value: id, Expires: expires})
+	http.SetCookie(w, &http.Cookie{Name: SessionCookieName, HttpOnly: true, SameSite: http.SameSiteStrictMode, Value: id, Expires: expires})
 }
 
 func CleanupSessions(stop chan struct{}) {
@@ -78,7 +80,7 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleLogout(w http.ResponseWriter, r *http.Request) {
-	http.SetCookie(w, &http.Cookie{Name: "session", Value: "", Expires: time.Now()})
+	http.SetCookie(w, &http.Cookie{Name: SessionCookieName, Value: "", Expires: time.Now()})
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -93,6 +95,6 @@ func HandleSession(w http.ResponseWriter, r *http.Request) {
 	if s != nil {
 		s.Expires = time.Now().Add(time.Minute * 5)
 	}
-	http.SetCookie(w, &http.Cookie{Name: "session", HttpOnly: true, SameSite: http.SameSiteStrictMode, Value: id, Expires: s.Expires})
+	http.SetCookie(w, &http.Cookie{Name: SessionCookieName, HttpOnly: true, SameSite: http.SameSiteStrictMode, Value: id, Expires: s.Expires})
 	w.WriteHeader(http.StatusOK)
 }

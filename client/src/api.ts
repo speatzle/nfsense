@@ -1,7 +1,8 @@
 import { RequestManager, HTTPTransport, WebSocketTransport, Client } from "@open-rpc/client-js";
+import axios from "axios";
 const httpTransport = new HTTPTransport("http://"+ window.location.host +"/api");
-const socktransport = new WebSocketTransport("ws://"+ window.location.host + "/ws/api");
-const manager = new RequestManager([socktransport, httpTransport], () => crypto.randomUUID());
+// const socktransport = new WebSocketTransport("ws://"+ window.location.host + "/ws/api");
+const manager = new RequestManager([httpTransport], () => crypto.randomUUID());
 const client = new Client(manager);
 
 let deAuthenticatedCallback;
@@ -30,23 +31,31 @@ export async function authenticate(username: string, password: string): Promise<
   }
 }
 
+export async function logout(): Promise<any> {
+  const pResponse = axios.post("/logout", null, {timeout: 10100});
+  try {
+    const response = await pResponse;
+    return { data: response.data, error: null};
+  } catch (error) {
+    return { data: null, error: error};
+  }
+}
+
 export async function checkAuthentication() {
-  const res = await apiCall("session-check", {});
-  if (res.error == "HTTP: Your Session cookie is invalid") return {auth: 0, error: null};
-  if (res.error == "HTTP: Your Session Requires TFA") return {auth: 1, error: null};
-  else if (res.error) return {auth: 0, error: res.error};
-  else {
-    /* TODO add commit_hash storing
+  const pResponse = axios.post("/session", null, {timeout: 10100});
+  try {
+    const response = await pResponse;
     const last_hash = window.localStorage.getItem("commit_hash");
 
     if (last_hash) {
-      if (last_hash !== res.data.commit_hash) {
+      if (last_hash !== response.data.commit_hash) {
         console.log("Detected New Backend Version, Reloading...");
         window.localStorage.removeItem("commit_hash");
-        window.location.reload(true);
+        window.location.reload();
       }
-    } else window.localStorage.setItem("commit_hash", res.data.commit_hash);
-    */
+    } else window.localStorage.setItem("commit_hash", response.data.commit_hash);
     return {auth: 2, error: null};
+  } catch (error) {
+    return {auth: 0, error: error};
   }
 }

@@ -3,7 +3,7 @@ import IDashboard from '~icons/ri/dashboard-2-line';
 import IRule from '~icons/material-symbols/rule-folder-outline-sharp';
 import IAddress from '~icons/eos-icons/ip';
 
-import { authenticate, checkAuthentication, setup } from "./api";
+import { authenticate, logout, checkAuthentication, setup } from "./api";
 
 enum NavState { Open, Reduced, Collapsed };
 const NavStateCount = 3;
@@ -31,17 +31,18 @@ async function tryLogin() {
     console.info("authentication error");
   } else {
     // TODO Check for MFA here
-    authState = 1;
+    authState = AuthState.Authenticated;
   }
 }
 
 async function tryLogout() {
-  authState = 0;
+  logout();
+  authState = AuthState.Unauthenticated;
 }
 
 function deAuthenticatedCallback() {
   console.info("Unauthenticated");
-  authState = 0;
+  authState = AuthState.Unauthenticated;
 }
 
 onMounted(async() => {
@@ -49,7 +50,7 @@ onMounted(async() => {
   let res = await checkAuthentication();
   authState = res.auth;
   loginDisabled = false;
-  if (authState > 0) {
+  if (authState === AuthState.Authenticated) {
     console.info("Already Authenticated ", authState);
   }
   else console.info("Check Authentication error",res.error);

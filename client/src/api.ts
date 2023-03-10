@@ -15,8 +15,10 @@ export async function apiCall(method: string, params: Record<string, any>): Prom
   try {
     const result = await client.request({method, params});
     console.debug("api call result", result);
+    return { Data: result, Error: null};
   } catch (ex){
     console.debug("api call epic fail", ex);
+    return { Data: null, Error: ex};
   }
 }
 

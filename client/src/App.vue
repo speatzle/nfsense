@@ -10,7 +10,7 @@ const NavStateCount = 3;
 let navState = $ref(NavState.Open);
 const navRoutes = {
   "/": { icon: IDashboard, caption: "Dashboard" },
-  "/rules": { icon: IRule, caption: "Rules" },
+  "/firewall/rules": { icon: IRule, caption: "Rules" },
   "/addresses": { icon: IAddress, caption: "Addresses" },
 };
 

@@ -63,7 +63,7 @@ onMounted(async() => {
   setup(UnauthorizedCallback);
   await checkAuth();
   setInterval(function () {
-    if (authState === AuthState.Authenticated) {
+    if (authState === AuthState.Authenticated && !document.hidden) {
       checkAuth();
     }
   }.bind(this), 120000);

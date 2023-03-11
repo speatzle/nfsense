@@ -36,24 +36,37 @@ async function tryLogin() {
 }
 
 async function tryLogout() {
-  logout();
+  console.info("Logging out...");
   authState = AuthState.Unauthenticated;
+  logout();
 }
 
-function deAuthenticatedCallback() {
+function UnauthorizedCallback() {
   console.info("Unauthenticated");
   authState = AuthState.Unauthenticated;
 }
 
-onMounted(async() => {
-  setup(deAuthenticatedCallback);
+async function checkAuth() {
+  console.info("Checking Auth State...");
   let res = await checkAuthentication();
   authState = res.auth;
   loginDisabled = false;
   if (authState === AuthState.Authenticated) {
     console.info("Already Authenticated ", authState);
+  } else if (res.error == null) {
+    console.info("Unauthorized");
   }
   else console.info("Check Authentication error",res.error);
+}
+
+onMounted(async() => {
+  setup(UnauthorizedCallback);
+  await checkAuth();
+  setInterval(function () {
+    if (authState === AuthState.Authenticated) {
+      checkAuth();
+    }
+  }.bind(this), 120000);
 });
 
 </script>
@@ -97,11 +110,11 @@ onMounted(async() => {
       <FocusTrap>
         <form @submit="$event => $event.preventDefault()" :disabled="loginDisabled">
           <h1>nfSense Login</h1>
-          <label for="username" v-text="'Username'"/>
-          <input name="username" v-model="username"/>
-          <label for="password" v-text="'Password'" type="password"/>
-          <input name="password" v-model="password"/>
-
+          <h2 :hidden="!loginDisabled">Logging in...</h2>
+          <label for="username" v-text="'Username'" :hidden="loginDisabled" />
+          <input name="username" v-model="username" :hidden="loginDisabled" :disabled="loginDisabled"/>
+          <label for="password" v-text="'Password'" type="password" :hidden="loginDisabled"/>
+          <input name="password" v-model="password" :hidden="loginDisabled" :disabled="loginDisabled"/>
           <button @click="tryLogin">Login</button>
         </form>
       </FocusTrap>

@@ -10,6 +10,7 @@ import (
 	"runtime/debug"
 
 	"golang.org/x/exp/slog"
+	"nfsense.net/nfsense/pkg/session"
 )
 
 type Handler struct {
@@ -25,7 +26,7 @@ func NewHandler(maxRequestSize int64) *Handler {
 	}
 }
 
-func (h *Handler) HandleRequest(ctx context.Context, r io.Reader, w io.Writer) error {
+func (h *Handler) HandleRequest(ctx context.Context, s *session.Session, r io.Reader, w io.Writer) error {
 	defer func() {
 		if r := recover(); r != nil {
 			slog.Error("Recovered Panic Handling JSONRPC Request", fmt.Errorf("%v", r), "stack", debug.Stack())
@@ -50,6 +51,10 @@ func (h *Handler) HandleRequest(ctx context.Context, r io.Reader, w io.Writer) e
 
 	if req.Jsonrpc != "2.0" {
 		return respondError(w, req.ID, ErrMethodNotFound, fmt.Errorf("Unsupported Jsonrpc version %v", req.Jsonrpc))
+	}
+
+	if s == nil {
+		return respondError(w, req.ID, 401, fmt.Errorf("Unauthorized"))
 	}
 
 	method, ok := h.methods[req.Method]

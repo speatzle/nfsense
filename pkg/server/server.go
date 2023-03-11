@@ -10,6 +10,7 @@ import (
 
 	"nfsense.net/nfsense/pkg/definitions"
 	"nfsense.net/nfsense/pkg/jsonrpc"
+	"nfsense.net/nfsense/pkg/session"
 )
 
 var server http.Server
@@ -32,7 +33,7 @@ func StartWebserver(conf *definitions.Config, _apiHandler *jsonrpc.Handler) {
 
 	stopCleanup = make(chan struct{})
 
-	go CleanupSessions(stopCleanup)
+	go session.CleanupSessions(stopCleanup)
 
 	go func() {
 		if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {

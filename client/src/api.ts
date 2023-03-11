@@ -5,19 +5,24 @@ const httpTransport = new HTTPTransport("http://"+ window.location.host +"/api")
 const manager = new RequestManager([httpTransport], () => crypto.randomUUID());
 const client = new Client(manager);
 
-let deAuthenticatedCallback;
+let UnauthorizedCallback: Function;
 
-export function setup(_deAuthenticatedCallback: () => void) {
-  deAuthenticatedCallback = _deAuthenticatedCallback;
+export function setup(_UnauthorizedCallback: () => void) {
+  UnauthorizedCallback = _UnauthorizedCallback;
 }
 
 export async function apiCall(method: string, params: Record<string, any>): Promise<any>{
+  console.debug("Starting API Call...");
   try {
     const result = await client.request({method, params});
     console.debug("api call result", result);
     return { Data: result, Error: null};
   } catch (ex){
-    console.debug("api call epic fail", ex);
+    if (ex == "Error: Unauthorized") {
+      UnauthorizedCallback();
+    } else {
+      console.debug("api call epic fail", ex);
+    }
     return { Data: null, Error: ex};
   }
 }
@@ -57,7 +62,10 @@ export async function checkAuthentication() {
       }
     } else window.localStorage.setItem("commit_hash", response.data.commit_hash);
     return {auth: 2, error: null};
-  } catch (error) {
+  } catch (error: any) {
+    if (error.response.status == 401) {
+      return {auth: 0, error: null};
+    }
     return {auth: 0, error: error};
   }
 }

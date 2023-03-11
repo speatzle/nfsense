@@ -1,9 +1,9 @@
-import { RequestManager, HTTPTransport, WebSocketTransport, Client } from "@open-rpc/client-js";
+import WebSocketServer  from 'ws';
+import JsonRPC from 'simple-jsonrpc-js';
 import axios from "axios";
-const httpTransport = new HTTPTransport("http://"+ window.location.host +"/api");
-// const socktransport = new WebSocketTransport("ws://"+ window.location.host + "/ws/api");
-const manager = new RequestManager([httpTransport], () => crypto.randomUUID());
-const client = new Client(manager);
+
+let jrpc = new JsonRPC.connect_xhr('/api');
+// let socket = new WebSocket("ws://"+ window.location.host +"/ws/api");
 
 let UnauthorizedCallback: Function;
 
@@ -14,11 +14,11 @@ export function setup(_UnauthorizedCallback: () => void) {
 export async function apiCall(method: string, params: Record<string, any>): Promise<any>{
   console.debug("Starting API Call...");
   try {
-    const result = await client.request({method, params});
+    const result = await jrpc.call(method, params);
     console.debug("api call result", result);
     return { Data: result, Error: null};
-  } catch (ex){
-    if (ex == "Error: Unauthorized") {
+  } catch (ex: any){
+    if (ex.code === 401) {
       UnauthorizedCallback();
     } else {
       console.debug("api call epic fail", ex);

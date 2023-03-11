@@ -46,7 +46,7 @@ func (h *Handler) HandleRequest(ctx context.Context, s *session.Session, r io.Re
 	dec.DisallowUnknownFields()
 	err = dec.Decode(&req)
 	if err != nil {
-		return respondError(w, "", ErrParse, fmt.Errorf("Parsing Request: %w", err))
+		return respondError(w, "", ErrParse, fmt.Errorf("Decodeing Request: %w", err))
 	}
 
 	if req.Jsonrpc != "2.0" {
@@ -65,11 +65,13 @@ func (h *Handler) HandleRequest(ctx context.Context, s *session.Session, r io.Re
 	p := reflect.New(method.inType)
 	paramPointer := p.Interface()
 
-	dec = json.NewDecoder(bytes.NewReader(req.Params))
-	dec.DisallowUnknownFields()
-	err = dec.Decode(paramPointer)
-	if err != nil {
-		return respondError(w, req.ID, ErrInvalidParams, fmt.Errorf("Parsing Request: %w", err))
+	if len(req.Params) != 0 {
+		dec = json.NewDecoder(bytes.NewReader(req.Params))
+		dec.DisallowUnknownFields()
+		err = dec.Decode(paramPointer)
+		if err != nil {
+			return respondError(w, req.ID, ErrInvalidParams, fmt.Errorf("Decoding Parameters: %w", err))
+		}
 	}
 
 	params := make([]reflect.Value, 3)

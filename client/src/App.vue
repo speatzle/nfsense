@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import { authenticate, logout, checkAuthentication, setup } from "./api";
+
+// Icons
 import IDashboard from '~icons/ri/dashboard-2-line';
 import IRule from '~icons/material-symbols/rule-folder-outline-sharp';
 import IAddress from '~icons/eos-icons/ip';
-
-import { authenticate, logout, checkAuthentication, setup } from "./api";
 
 enum NavState { Open, Reduced, Collapsed };
 const NavStateCount = 3;
@@ -21,6 +22,23 @@ let loginDisabled = $ref(true);
 let username = $ref("");
 let password = $ref("");
 
+const mobileMedia = window.matchMedia("only screen and (max-width: 768px)");
+if (mobileMedia.matches) {
+  navState = NavState.Collapsed;
+}
+
+function collapseNavIfMobile() {
+  if (mobileMedia.matches && navState === NavState.Open) {
+    // Give new page time to find initial left before transitioning
+    setTimeout(() => navState = NavState.Collapsed, 0);
+  }
+}
+
+function toggleNavState() {
+  navState = (navState + 1) % NavStateCount;
+  if (mobileMedia.matches && navState === NavState.Reduced)
+    navState++;
+}
 
 async function tryLogin() {
   loginDisabled = true;
@@ -29,7 +47,8 @@ async function tryLogin() {
   loginDisabled = false;
   if (res.error != null) {
     console.info("authentication error");
-  } else {
+  }
+  else {
     // TODO Check for MFA here
     authState = AuthState.Authenticated;
   }
@@ -78,15 +97,16 @@ onMounted(async() => {
     'nav-state-collapsed': navState === NavState.Collapsed,
     'nav-state-reduced': navState === NavState.Reduced,
   }">
-    <button class="nav-head" @click="() => navState = (navState + 1) % NavStateCount">
-      nfSense
+    <button class="nav-head" @click="toggleNavState">
+      <i-mdi-hamburger-menu/>
+      <h1>nfSense</h1>
     </button>
 
     <Portal from="page-header" class="page-header pad gap"/>
 
     <div class="nav-body">
       <template v-for="(options, route) in navRoutes" :key="route">
-        <router-link :to="route" class="button">
+        <router-link :to="route" class="button" @click="collapseNavIfMobile">
           <component :is="options.icon"/>
           {{ options.caption }}
         </router-link>
@@ -134,36 +154,37 @@ onMounted(async() => {
 .layout {
   grid-template-rows: auto 1fr;
   grid-template-columns: auto 1fr;
+  grid-template-areas:
+    "NH PH"
+    "NB PC";
 }
 .login { place-items: center; }
 
+.nav-head { grid-area: NH; }
+.nav-body { grid-area: NB; }
+.page-header { grid-area: PH; }
+.page-content { grid-area: PC; }
+
 /* Navigation */
 .nav-head, .nav-body { background: var(--cl-bg-low); }
-.nav-head {
-  font-size: 2rem;
-  font-weight: bold;
-}
+
+.nav-head { font-weight: bold; }
+.nav-head > svg { display: none; }
+.nav-head > h1 { flex-grow: 1; }
+
 .nav-body .button { justify-content: left; }
 .nav-body .flex-row * { flex: 1; }
 
 /* Page */
 .page-header {
-  grid-row: 1;
-  grid-column: 2;
   flex-flow: row nowrap;
   align-items: center;
 }
-.page-header button svg {
-  margin: -0.25rem;
-}
-.page-content {
-  grid-row: 2;
-  grid-column: 2;
-  background: var(--cl-bg);
-}
+.page-header button svg { margin: -0.25rem; }
+.page-content { background: var(--cl-bg); }
 
 /* Nav-Body-Collapsing */
-.nav-body, .page-content {
+.nav-body, .page-header, .page-content {
   position: relative;
   left: 0%;
   width: 100%;
@@ -183,5 +204,35 @@ onMounted(async() => {
 :not(.nav-state-open) > .nav-body > .flex-row {
   flex-direction: column;
   align-items: start;
+}
+
+/* Mobile Layout */
+@media only screen and (max-width: 768px) {
+  .layout {
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas:
+      "NH NH"
+      "NB PH"
+      "NB PC";
+  }
+
+  .nav-head > svg {
+    display: initial;
+  }
+
+  .nav-state-collapsed .page-header {
+    left: calc(-100vw + 100%);
+    width: calc(0% + 100vw);
+  }
+  .nav-state-reduced .page-header {
+    left: calc(calc(-100vw + 100%) + var(--reduced-width));
+    width: calc(calc(0% + 100vw) - var(--reduced-width));
+  }
+  .nav-state-open .nav-body { width: calc(0% + 100vw); }
+  .nav-state-open .page-content,
+  .nav-state-open .page-header {
+    left: 100%;
+  }
 }
 </style>

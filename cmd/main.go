@@ -34,7 +34,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	slog.Info("Validating Config")
+	slog.Info("Validating Config...")
 
 	if *applyPtr {
 		slog.Info("Applying Config...")
@@ -54,7 +54,7 @@ func main() {
 	slog.Info("Starting Webserver...")
 	server.StartWebserver(conf, apiHandler)
 
-	slog.Info("Ready")
+	slog.Info("Ready.")
 
 	// Handle Exit Signal
 	sigChan := make(chan os.Signal, 1)

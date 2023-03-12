@@ -3,22 +3,76 @@ import IDashboard from '~icons/ri/dashboard-2-line';
 import IRule from '~icons/material-symbols/rule-folder-outline-sharp';
 import IAddress from '~icons/eos-icons/ip';
 
-
+import { authenticate, logout, checkAuthentication, setup } from "./api";
 
 enum NavState { Open, Reduced, Collapsed };
 const NavStateCount = 3;
 let navState = $ref(NavState.Open);
-let loggedOut = $ref(false);
-
 const navRoutes = {
   "/": { icon: IDashboard, caption: "Dashboard" },
-  "/rules": { icon: IRule, caption: "Rules" },
+  "/firewall/rules": { icon: IRule, caption: "Rules" },
   "/addresses": { icon: IAddress, caption: "Addresses" },
 };
+
+enum AuthState { Unauthenticated, MfaRequired, Authenticated };
+let authState = $ref(AuthState.Unauthenticated);
+let loginDisabled = $ref(true);
+
+let username = $ref("");
+let password = $ref("");
+
+
+async function tryLogin() {
+  loginDisabled = true;
+  const res = await authenticate(username, password);
+  password = "";
+  loginDisabled = false;
+  if (res.error != null) {
+    console.info("authentication error");
+  } else {
+    // TODO Check for MFA here
+    authState = AuthState.Authenticated;
+  }
+}
+
+async function tryLogout() {
+  console.info("Logging out...");
+  authState = AuthState.Unauthenticated;
+  logout();
+}
+
+function UnauthorizedCallback() {
+  console.info("Unauthenticated");
+  authState = AuthState.Unauthenticated;
+}
+
+async function checkAuth() {
+  console.info("Checking Auth State...");
+  let res = await checkAuthentication();
+  authState = res.auth;
+  loginDisabled = false;
+  if (authState === AuthState.Authenticated) {
+    console.info("Already Authenticated ", authState);
+  } else if (res.error == null) {
+    console.info("Unauthorized");
+  }
+  else console.info("Check Authentication error",res.error);
+}
+
+onMounted(async() => {
+  setup(UnauthorizedCallback);
+  await checkAuth();
+  setInterval(function () {
+    if (authState === AuthState.Authenticated && !document.hidden) {
+      checkAuth();
+    }
+  }.bind(this), 120000);
+});
+
 </script>
 
 <template>
-  <div v-if="!loggedOut" :class="{
+  <div v-if="authState === AuthState.Authenticated" :class="{
     'layout': 1,
     'nav-state-open': navState === NavState.Open,
     'nav-state-collapsed': navState === NavState.Collapsed,
@@ -41,10 +95,10 @@ const navRoutes = {
       <div class="flex-row">
         <router-link class="button" to="/help"><i-material-symbols-help-outline/></router-link>
         <router-link class="button" to="/settings"><i-material-symbols-settings/></router-link>
-        <button @click="() => loggedOut = true"><i-material-symbols-logout/></button>
+        <button @click="tryLogout"><i-material-symbols-logout/></button>
       </div>
     </div>
-    <router-view v-slot="{ Component, route }" v-if="!loggedOut">
+    <router-view v-slot="{ Component, route }" v-if="authState === AuthState.Authenticated">
       <Transition name="fade">
         <component :is="Component" :key="{route}" class="page-content pad gap"/>
       </Transition>
@@ -52,16 +106,16 @@ const navRoutes = {
   </div>
 
   <Transition name="fade">
-    <div class="login" v-if="loggedOut">
+    <div class="login" v-if="authState === AuthState.Unauthenticated">
       <FocusTrap>
-        <form @submit="$event => $event.preventDefault()">
+        <form @submit="$event => $event.preventDefault()" :disabled="loginDisabled">
           <h1>nfSense Login</h1>
-          <label for="username" v-text="'Username'"/>
-          <input name="username"/>
-          <label for="password" v-text="'Password'" type="password"/>
-          <input name="password"/>
-
-          <button @click="() => loggedOut = false">Login</button>
+          <h2 :hidden="!loginDisabled">Logging in...</h2>
+          <label for="username" v-text="'Username'" :hidden="loginDisabled" />
+          <input name="username" v-model="username" :hidden="loginDisabled" :disabled="loginDisabled"/>
+          <label for="password" v-text="'Password'" type="password" :hidden="loginDisabled"/>
+          <input name="password" v-model="password" :hidden="loginDisabled" :disabled="loginDisabled"/>
+          <button @click="tryLogin">Login</button>
         </form>
       </FocusTrap>
     </div>

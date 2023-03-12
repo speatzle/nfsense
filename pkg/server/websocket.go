@@ -9,17 +9,18 @@ import (
 	"time"
 
 	"golang.org/x/exp/slog"
+	"nfsense.net/nfsense/pkg/session"
 	"nhooyr.io/websocket"
 )
 
 func HandleWebsocketAPI(w http.ResponseWriter, r *http.Request) {
-	_, s := GetSession(r)
+	_, s := session.GetSession(r)
 	if s == nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	ctx, cancel := context.WithCancel(context.WithValue(r.Context(), SessionKey, s))
+	ctx, cancel := context.WithCancel(context.WithValue(r.Context(), session.SessionKey, s))
 	defer cancel()
 	c, err := websocket.Accept(w, r, nil)
 	if err != nil {
@@ -51,7 +52,7 @@ func HandleWebsocketAPI(w http.ResponseWriter, r *http.Request) {
 			ctx, cancel := context.WithTimeout(ctx, time.Second*10)
 			defer cancel()
 
-			err := apiHandler.HandleRequest(ctx, bytes.NewReader(m), w)
+			err := apiHandler.HandleRequest(ctx, s, bytes.NewReader(m), w)
 			if err != nil {
 				slog.Error("Handling Websocket API Request", err)
 			}

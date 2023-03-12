@@ -14,7 +14,6 @@ type Config struct {
 
 func ValidateConfig(conf *Config) error {
 	val := validator.New()
-	slog.Info("Registering validator")
 	val.RegisterValidation("test", nilIfOtherNil)
 	return val.Struct(conf)
 }

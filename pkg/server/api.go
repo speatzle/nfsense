@@ -8,14 +8,17 @@ import (
 	"time"
 
 	"golang.org/x/exp/slog"
+	"nfsense.net/nfsense/pkg/session"
 )
 
 func HandleAPI(w http.ResponseWriter, r *http.Request) {
-	_, s := GetSession(r)
+	slog.Info("Api Handler hit")
+	_, s := session.GetSession(r)
 	if s == nil {
+		// Fallthrough after so that jsonrpc can still deliver a valid jsonrpc error
 		w.WriteHeader(http.StatusUnauthorized)
-		return
 	}
+
 	defer func() {
 		if r := recover(); r != nil {
 			slog.Error("Recovered Panic Handling HTTP API Request", fmt.Errorf("%v", r), "stack", debug.Stack())
@@ -23,10 +26,10 @@ func HandleAPI(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}()
-	ctx, cancel := context.WithTimeout(context.WithValue(r.Context(), SessionKey, s), time.Second*10)
+	ctx, cancel := context.WithTimeout(context.WithValue(r.Context(), session.SessionKey, s), time.Second*10)
 	defer cancel()
 
-	err := apiHandler.HandleRequest(ctx, r.Body, w)
+	err := apiHandler.HandleRequest(ctx, s, r.Body, w)
 	if err != nil {
 		slog.Error("Handling HTTP API Request", err)
 	}

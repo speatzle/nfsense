@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { apiCall } from "../api";
+import Multiselect from 'vue-multiselect';
 
 async function doShit(){
   apiCall("Firewall.GetForwardRules", {});
 }
+let value = $ref("");
+let options = [{ name: 'Vue.js', code: 'vu' },
+  { name: 'Javascript', code: 'js' },
+  { name: 'Open Source', code: 'os' }];
 
 </script>
 
@@ -12,7 +17,8 @@ async function doShit(){
     <PageHeader title="Dashboard">
       <button @click="doShit">Example Buttons</button>
     </PageHeader>
-
-    This is the main page, currently written in markdown because that's *pog*.
+    <multiselect v-model="value" placeholder="Search" label="name" track-by="code" :options="options" :multiple="true"></multiselect>
   </div>
 </template>
+
+<style src="vue-multiselect/dist/vue-multiselect.css"></style>

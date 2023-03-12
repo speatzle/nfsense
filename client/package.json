@@ -23,6 +23,7 @@
     "simple-jsonrpc-js": "^1.2.0",
     "vue": "^3.2.45",
     "vue-i18n": "9",
+    "vue-multiselect": "3.0.0-beta.1",
     "vue-router": "4",
     "ws": "^8.13.0"
   },

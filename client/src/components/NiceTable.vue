@@ -84,6 +84,22 @@ function atPath(value: any, path: string): any {
   }
   return value;
 }
+
+let draggedRow = $ref(-1);
+let draggedOverRow = $ref(-1);
+function dragDropRow() {
+  if (data) {
+    const row = data[draggedRow];
+    data.splice(draggedRow, 1);
+    data.splice(draggedOverRow, 0, row);
+    data = data;
+  }
+  // Reset drag data
+  draggedRow = 0;
+  draggedOverRow = 0;
+  // Kill selection
+  selection = [];
+}
 </script>
 
 <template>
@@ -103,9 +119,17 @@ function atPath(value: any, path: string): any {
     </thead>
     <tbody>
       <tr v-for="(row, index) in displayData" :key="index"
+          draggable="true"
           @click="() => rowSelection(index)"
           @dblclick="() => emit('rowAction', index)"
-          :class="{'selected': selection.includes(index)}">
+          @dragstart="() => draggedRow = index"
+          @dragenter="() => draggedOverRow = index"
+          @dragend="() => dragDropRow()"
+          :class="{
+            'selected': selection.includes(index),
+            'dragged-over-before': index === draggedOverRow && draggedOverRow < draggedRow,
+            'dragged-over-after': index === draggedOverRow && draggedOverRow > draggedRow,
+          }">
         <td v-for="{path, component} of columns" :key="path">
           {{ component ? "" : atPath(row, path) }}
           <component v-if="component" :is="component"/>
@@ -118,5 +142,16 @@ function atPath(value: any, path: string): any {
 <style scoped>
 .selected {
   background-color: red;
+}
+
+.dragged-over-before {
+  border-top: 0.25rem solid var(--cl-fg);
+}
+.dragged-over-after {
+  border-bottom: 0.25rem solid var(--cl-fg);
+}
+
+tr {
+  cursor: grab;
 }
 </style>

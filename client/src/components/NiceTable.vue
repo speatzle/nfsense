@@ -45,7 +45,7 @@ function toggleSorting(columnName: string) {
     <tbody>
       <!-- eslint-disable-next-line vue/require-v-for-key -->
       <tr v-for="row of displayData">
-        <td v-for="cell in row" :key="cell" v-text="cell"/>
+        <td v-for="[column] in Object.entries(columns ?? {})" :key="column" v-text="row[column]"/>
       </tr>
     </tbody>
   </table>

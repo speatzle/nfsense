@@ -49,16 +49,20 @@ function toggleSorting(columnName: string) {
 
 function rowSelection(index: number) {
   if (shiftState) {
-    let last = selection[selection.length-1];
-    let start = index;
-    let end = last;
-    if (last < start) {
-      start = last;
-      end = index;
-    }
-    for (let i = start; i < end; i++ ) {
-      if (!selection.includes(i)) {
-        selection =  [...selection, i];
+    if (selection.length === 0) {
+      selection = [index];
+    } else {
+      let last = selection[selection.length-1];
+      let start = index;
+      let end = last;
+      if (last < start) {
+        start = last;
+        end = index;
+      }
+      for (let i = start; i <= end; i++ ) {
+        if (!selection.includes(i)) {
+          selection =  [...selection, i];
+        }
       }
     }
   } else if (ctrlState) {

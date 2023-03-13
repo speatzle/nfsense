@@ -2,6 +2,15 @@
 import { apiCall } from "../../api";
 
 let rules = $ref([]);
+const columns = [
+  {heading: 'Name', path: 'name'},
+  {heading: 'Source', path: 'match.source_addresses'},
+  {heading: 'Destination', path: 'match.destination_addresses'},
+  {heading: 'Service', path: 'match.services'},
+  {heading: 'Verdict', path: 'verdict'},
+  {heading: 'Counter', path: 'counter'},
+  {heading: 'Comment', path: 'comment'},
+];
 
 async function loadRules(){
   let res = await apiCall("Firewall.GetForwardRules", {});
@@ -24,6 +33,6 @@ onMounted(async() => {
     <PageHeader title="Forward Rules">
       <button @click="loadRules">Load Rules</button>
     </PageHeader>
-    <NiceTable :columns="{name: 'Name', verdict: 'Verdict'}" :sort-self="false" v-model:data="rules"/>
+    <NiceTable :columns="columns" v-model:data="rules"/>
   </div>
 </template>

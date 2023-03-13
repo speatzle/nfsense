@@ -149,7 +149,7 @@ onMounted(async() => {
   left: 0px; right: 0px; top: 0px; bottom: 0px;
 
   display: grid;
-  background-color: var(--cl-bg);
+  background-color: var(--cl-background);
 }
 .layout {
   grid-template-rows: auto 1fr;
@@ -166,7 +166,7 @@ onMounted(async() => {
 .page-content { grid-area: PC; }
 
 /* Navigation */
-.nav-head, .nav-body { background: var(--cl-bg-low); }
+.nav-head, .nav-body { background: var(--cl-secondary-container); }
 
 .nav-head { font-weight: bold; }
 .nav-head > svg { display: none; }
@@ -181,7 +181,7 @@ onMounted(async() => {
   align-items: center;
 }
 .page-header button svg { margin: -0.25rem; }
-.page-content { background: var(--cl-bg); }
+.page-content { background: var(--cl-background); }
 
 /* Nav-Body-Collapsing */
 .nav-body, .page-header, .page-content {

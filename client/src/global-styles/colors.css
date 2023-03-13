@@ -1,34 +1,127 @@
 /* Coloring */
 :root {
   /* Color Definitions */
-  --cl-md-50: #FAFAFA;
-  --cl-md-100: #F5F5F5;
-  --cl-md-200: #EEEEEE;
-  --cl-md-300: #E0E0E0;
-  --cl-md-400: #BDBDBD;
-  --cl-md-500: #9E9E9E;
-  --cl-md-600: #757575;
-  --cl-md-700: #616161;
-  --cl-md-800: #424242;
-  --cl-md-900: #212121;
+  --cl-md-p-10: #21005E;
+  --cl-md-p-20: #371E73;
+  --cl-md-p-30: #4F378B;
+  --cl-md-p-40: #6750A4;
+  --cl-md-p-80: #D0BCFF;
+  --cl-md-p-90: #EADDFF;
+  --cl-md-p-100: #FFFFFF;
+
+  --cl-md-s-10: #1E192B;
+  --cl-md-s-20: #332D41;
+  --cl-md-s-30: #4A4458;
+  --cl-md-s-40: #625B71;
+  --cl-md-s-80: #CCC2DC;
+  --cl-md-s-90: #E8DEF8;
+  --cl-md-s-100: #FFFFFF;
+
+  --cl-md-t-10: #370B1E;
+  --cl-md-t-20: #492532;
+  --cl-md-t-30: #633B48;
+  --cl-md-t-40: #7D5260;
+  --cl-md-t-80: #EFB8C8;
+  --cl-md-t-90: #FFD8E4;
+  --cl-md-t-100: #FFFFFF;
+
+  --cl-md-e-10: #410E0B;
+  --cl-md-e-20: #601410;
+  --cl-md-e-30: #8C1D18;
+  --cl-md-e-40: #B3261E;
+  --cl-md-e-80: #F2B8B5;
+  --cl-md-e-90: #F9DEDC;
+  --cl-md-e-100: #FFFFFF;
+
+  --cl-md-n-10: #1C1B1F;
+  --cl-md-n-90: #E6E1E5;
+  --cl-md-n-99: #FFFBFE;
+
+  --cl-md-nv-30: #49454F;
+  --cl-md-nv-50: #79747E;
+  --cl-md-nv-60: #938F99;
+  --cl-md-nv-80: #CAC4D0;
+  --cl-md-nv-90: #E7E0EC;
 
   /* Color Uses */
-  --cl-bg: var(--cl-md-900);
-  --cl-bg-mid: var(--cl-md-800);
-  --cl-bg-low: var(--cl-md-700);
-  --cl-fg: var(--cl-md-100);
+  --cl-bg: var(--cl-error);
+  --cl-bg-mid: var(--cl-error);
+  --cl-bg-low: var(--cl-error);
+  --cl-fg: var(--cl-error);
+
+  /* Dark Theme */
+  --cl-primary: var(--cl-md-p-80);
+  --cl-on-primary: var(--cl-md-p-20);
+  --cl-primary-container: var(--cl-md-p-30);
+  --cl-on-primary-container: var(--cl-md-p-90);
+  
+  --cl-secondary: var(--cl-md-s-80);
+  --cl-on-secondary: var(--cl-md-s-20);
+  --cl-secondary-container: var(--cl-md-s-30);
+  --cl-on-secondary-container: var(--cl-md-s-90);
+
+  --cl-tertiary: var(--cl-md-t-80);
+  --cl-on-tertiary: var(--cl-md-t-20);
+  --cl-tertiary-container: var(--cl-md-t-30);
+  --cl-on-tertiary-container: var(--cl-md-t-90);
+
+  --cl-error: var(--cl-md-e-80);
+  --cl-on-error: var(--cl-md-e-20);
+  --cl-error-container: var(--cl-md-e-30);
+  --cl-on-error-container: var(--cl-md-e-90);
+
+  --cl-background: var(--cl-md-n-10);
+  --cl-on-background: var(--cl-md-n-90);
+
+  --cl-surface: var(--cl-md-n-10);
+  --cl-on-surface: var(--cl-md-n-90);
+
+  --cl-surface-variant: var(--cl-md-nv-30);
+  --cl-on-surface-variant: var(--cl-md-nv-80);
+
+  --cl-outline: var(--cl-md-nv-60);
+  --cl-outline-variant: var(--cl-md-nv-30);
+
 
   /* Apply as default */
-  background-color: var(--cl-bg);
-  color: var(--cl-fg);
+  background-color: var(--cl-background);
+  color: var(--cl-on-background);
 }
 
 /* Changes for light mode */
 @media screen and (prefers-color-scheme: light) {
   :root {
-    --cl-bg: var(--cl-md-100);
-    --cl-bg-mid: var(--cl-md-200);
-    --cl-bg-low: var(--cl-md-300);
-    --cl-fg: var(--cl-md-900);
+    /* Light Theme */
+    --cl-primary: var(--cl-md-p-40);
+    --cl-on-primary: var(--cl-md-p-100);
+    --cl-primary-container: var(--cl-md-p-90);
+    --cl-on-primary-container: var(--cl-md-p-10);
+    
+    --cl-secondary: var(--cl-md-s-40);
+    --cl-on-secondary: var(--cl-md-s-100);
+    --cl-secondary-container: var(--cl-md-s-90);
+    --cl-on-secondary-container: var(--cl-md-s-10);
+  
+    --cl-tertiary: var(--cl-md-t-40);
+    --cl-on-tertiary: var(--cl-md-t-100);
+    --cl-tertiary-container: var(--cl-md-t-90);
+    --cl-on-tertiary-container: var(--cl-md-t-10);
+  
+    --cl-error: var(--cl-md-e-40);
+    --cl-on-error: var(--cl-md-e-100);
+    --cl-error-container: var(--cl-md-e-90);
+    --cl-on-error-container: var(--cl-md-e-10);
+  
+    --cl-background: var(--cl-md-n-99);
+    --cl-on-background: var(--cl-md-n-10);
+  
+    --cl-surface: var(--cl-md-n-99);
+    --cl-on-surface: var(--cl-md-n-10);
+  
+    --cl-surface-variant: var(--cl-md-nv-90);
+    --cl-on-surface-variant: var(--cl-md-nv-30);
+  
+    --cl-outline: var(--cl-md-nv-50);
+    --cl-outline-variant: var(--cl-md-nv-80);
   }
 }

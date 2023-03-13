@@ -73,3 +73,7 @@ tbody tr:nth-child(even) {
   color: inherit;
   border: 1px solid var(--cl-fg);
 }
+
+.multiselect, .multiselect * {
+  all: initial;
+}

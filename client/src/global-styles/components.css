@@ -14,15 +14,10 @@ button, .button {
   align-items: center;
   justify-content: center;
   white-space: nowrap;
-  color: var(--cl-fg);
-  background-color: var(--cl-bg-el);
 }
 .button > svg, button > svg {
   min-width: 1.5rem;
   min-height: 1.5rem;
-}
-.button:hover, button:hover {
-  background-color: var(--cl-bg-hl);
 }
 
 form {
@@ -31,25 +26,16 @@ form {
   padding: 0.5rem;
   gap: 0.5rem;
 
-  background-color: var(--cl-bg);
 }
 form > :is(button, .button, h1) {
   grid-column: 1 / 3;
-}
-form button, form .button, form input {
-  color: var(--cl-fg);
-  background-color: var(--cl-bg-el);
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
 }
-thead {
-  background-color: var(--cl-bg-el);
-}
 th:hover {
-  background-color: var(--cl-bg-hl);
   cursor: pointer;
 }
 th, td {
@@ -63,14 +49,35 @@ th > *{
 th svg {
   height: 1rem;
 }
-tbody tr:nth-child(even) {
-  background-color: var(--cl-bg-el)
-}
 
 .search-bar {
   display: block;
   padding: 0.4rem;
-  background-color: var(--cl-bg-el);
-  color: var(--cl-fg);
   border: 1px solid var(--cl-fg);
+}
+
+/* Coloring */
+button, .button {
+  background-color: var(--cl-bg-el);
+}
+.button:hover, button:hover {
+  background-color: var(--cl-bg-hl);
+}
+
+input {
+  background-color: var(--cl-bg-el);
+  border: 1px solid var(--cl-fg);
+}
+
+th {
+  background-color: var(--cl-bg-el);
+}
+
+tbody tr:hover, th:hover {
+  background-color: var(--cl-bg-hl);
+}
+
+/* Button Background Exception for Nav Menu */
+.nav-body > button, .button {
+  background-color: var(--cl-bg);
 }

@@ -30,6 +30,7 @@ specifiers:
   vite-plugin-vue-markdown: ^0.22.4
   vue: ^3.2.45
   vue-i18n: '9'
+  vue-multiselect: 3.0.0-beta.1
   vue-router: '4'
   vue-tsc: ^1.0.24
   ws: ^8.13.0
@@ -47,6 +48,7 @@ dependencies:
   simple-jsonrpc-js: 1.2.0
   vue: 3.2.47
   vue-i18n: 9.2.2_vue@3.2.47
+  vue-multiselect: 3.0.0-beta.1
   vue-router: 4.1.6_vue@3.2.47
   ws: 8.13.0
 
@@ -3827,6 +3829,11 @@ packages:
       '@intlify/vue-devtools': 9.2.2
       '@vue/devtools-api': 6.5.0
       vue: 3.2.47
+    dev: false
+
+  /vue-multiselect/3.0.0-beta.1:
+    resolution: {integrity: sha512-V+jpydtjyHcQ+yjHsEWEBrDAopOx/pufNkSAXNVDAGQ+ESDEJ7wYejNd9H1RiCnFOYK4yf1XSGqE+Mp3HJXmdg==}
+    engines: {node: '>= 4.0.0', npm: '>= 3.0.0'}
     dev: false
 
   /vue-router/4.1.6_vue@3.2.47:

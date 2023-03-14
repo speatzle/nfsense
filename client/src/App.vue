@@ -97,14 +97,14 @@ onMounted(async() => {
     'nav-state-collapsed': navState === NavState.Collapsed,
     'nav-state-reduced': navState === NavState.Reduced,
   }">
-    <button class="nav-head" @click="toggleNavState">
+    <button class="nav-head cl-secondary" @click="toggleNavState">
       <i-mdi-hamburger-menu/>
       <h1>nfSense</h1>
     </button>
 
     <Portal from="page-header" class="page-header pad gap"/>
 
-    <div class="nav-body">
+    <div class="nav-body cl-secondary">
       <template v-for="(options, route) in navRoutes" :key="route">
         <router-link :to="route" class="button" @click="collapseNavIfMobile">
           <component :is="options.icon"/>
@@ -118,6 +118,7 @@ onMounted(async() => {
         <button @click="tryLogout"><i-material-symbols-logout/></button>
       </div>
     </div>
+
     <router-view v-slot="{ Component, route }" v-if="authState === AuthState.Authenticated">
       <Transition name="fade">
         <component :is="Component" :key="{route}" class="page-content pad gap"/>
@@ -128,7 +129,7 @@ onMounted(async() => {
   <Transition name="fade">
     <div class="login" v-if="authState === AuthState.Unauthenticated">
       <FocusTrap>
-        <form @submit="$event => $event.preventDefault()" :disabled="loginDisabled" class="cl-side">
+        <form @submit="$event => $event.preventDefault()" :disabled="loginDisabled" class="cl-secondary">
           <h1>nfSense Login</h1>
           <h2 :hidden="!loginDisabled">Logging in...</h2>
           <label for="username" v-text="'Username'" :hidden="loginDisabled" />
@@ -149,7 +150,6 @@ onMounted(async() => {
   left: 0px; right: 0px; top: 0px; bottom: 0px;
 
   display: grid;
-  background-color: var(--cl-bg);
 }
 .layout {
   grid-template-rows: auto 1fr;
@@ -165,9 +165,6 @@ onMounted(async() => {
 .page-header { grid-area: PH; }
 .page-content { grid-area: PC; }
 
-/* Navigation */
-.nav-head, .nav-body { background: var(--cl-secondary-container); }
-
 .nav-head { font-weight: bold; }
 .nav-head > svg { display: none; }
 .nav-head > h1 { flex-grow: 1; }
@@ -181,7 +178,6 @@ onMounted(async() => {
   align-items: center;
 }
 .page-header button svg { margin: -0.25rem; }
-.page-content { background: var(--cl-background); }
 
 /* Nav-Body-Collapsing */
 .nav-body, .page-header, .page-content {

@@ -128,7 +128,7 @@ onMounted(async() => {
   <Transition name="fade">
     <div class="login" v-if="authState === AuthState.Unauthenticated">
       <FocusTrap>
-        <form @submit="$event => $event.preventDefault()" :disabled="loginDisabled">
+        <form @submit="$event => $event.preventDefault()" :disabled="loginDisabled" class="cl-side">
           <h1>nfSense Login</h1>
           <h2 :hidden="!loginDisabled">Logging in...</h2>
           <label for="username" v-text="'Username'" :hidden="loginDisabled" />
@@ -149,7 +149,7 @@ onMounted(async() => {
   left: 0px; right: 0px; top: 0px; bottom: 0px;
 
   display: grid;
-  background-color: var(--cl-background);
+  background-color: var(--cl-bg);
 }
 .layout {
   grid-template-rows: auto 1fr;

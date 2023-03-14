@@ -14,15 +14,15 @@ button, .button {
   align-items: center;
   justify-content: center;
   white-space: nowrap;
-  color: var(--cl-on-primary);
-  background-color: var(--cl-primary);
+  color: var(--cl-fg);
+  background-color: var(--cl-bg-el);
 }
 .button > svg, button > svg {
   min-width: 1.5rem;
   min-height: 1.5rem;
 }
 .button:hover, button:hover {
-  background-color: var(--cl-primary);
+  background-color: var(--cl-bg-hl);
 }
 
 form {
@@ -31,14 +31,14 @@ form {
   padding: 0.5rem;
   gap: 0.5rem;
 
-  background-color: var(--cl-secondary-container);
+  background-color: var(--cl-bg);
 }
 form > :is(button, .button, h1) {
   grid-column: 1 / 3;
 }
 form button, form .button, form input {
-  color: var(--cl-on-secondary);
-  background-color: var(--cl-secondary);
+  color: var(--cl-fg);
+  background-color: var(--cl-bg-el);
 }
 
 table {
@@ -46,15 +46,15 @@ table {
   border-collapse: collapse;
 }
 thead {
-  background-color: var(--cl-secondary-container);
+  background-color: var(--cl-bg-el);
 }
 th:hover {
-  background-color: var(--cl-secondary);
+  background-color: var(--cl-bg-hl);
   cursor: pointer;
 }
 th, td {
   padding: 0.5rem;
-  border: 0.125rem solid var(--cl-outline);
+  border: 0.125rem solid var(--cl-fg);
 }
 th > *{
   justify-content: center;
@@ -64,13 +64,13 @@ th svg {
   height: 1rem;
 }
 tbody tr:nth-child(even) {
-  background-color: var(--cl-surface-variant)
+  background-color: var(--cl-bg-el)
 }
 
 .search-bar {
   display: block;
   padding: 0.4rem;
-  background-color: var(--cl-secondary-container);
-  color: var(--cl-on-secondary-container);
-  border: 1px solid var(--cl-outline);
+  background-color: var(--cl-bg-el);
+  color: var(--cl-fg);
+  border: 1px solid var(--cl-fg);
 }

@@ -13,6 +13,7 @@ type SessionKeyType string
 
 const SessionKey SessionKeyType = "session"
 const SessionCookieName string = "session"
+const SessionLifeTime = time.Minute * 15
 
 type Session struct {
 	Username string
@@ -42,7 +43,7 @@ func ExtendSession(s *Session) {
 	sessionsSync.Lock()
 	defer sessionsSync.Unlock()
 	if s != nil {
-		s.Expires = time.Now().Add(time.Minute * 5)
+		s.Expires = time.Now().Add(SessionLifeTime)
 	}
 }
 
@@ -60,7 +61,7 @@ func GetSession(r *http.Request) (string, *Session) {
 
 func GenerateSession(w http.ResponseWriter, username string) {
 	id := uuid.New().String()
-	expires := time.Now().Add(time.Minute * 5)
+	expires := time.Now().Add(SessionLifeTime)
 	sessionsSync.Lock()
 	defer sessionsSync.Unlock()
 	sessions[id] = &Session{

@@ -12,7 +12,8 @@ let navState = $ref(NavState.Open);
 const navRoutes = {
   "/": { icon: IDashboard, caption: "Dashboard" },
   "/firewall/rules": { icon: IRule, caption: "Rules" },
-  "/addresses": { icon: IAddress, caption: "Addresses" },
+  "/object/addresses": { icon: IAddress, caption: "Addresses" },
+  "/object/services": { icon: IAddress, caption: "Services" },
 };
 
 enum AuthState { Unauthenticated, MfaRequired, Authenticated };

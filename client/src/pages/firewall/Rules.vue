@@ -33,6 +33,6 @@ onMounted(async() => {
     <PageHeader title="Forward Rules">
       <button @click="loadRules">Load Rules</button>
     </PageHeader>
-    <NiceTable :columns="columns" v-model:data="rules"/>
+    <NiceTable class="cl-p-3" :columns="columns" v-model:data="rules"/>
   </div>
 </template>

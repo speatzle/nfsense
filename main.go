@@ -12,6 +12,7 @@ import (
 
 	"golang.org/x/exp/slog"
 	"nfsense.net/nfsense/internal/api/firewall"
+	"nfsense.net/nfsense/internal/api/object"
 	"nfsense.net/nfsense/internal/definitions"
 	"nfsense.net/nfsense/internal/jsonrpc"
 	"nfsense.net/nfsense/internal/nftables"
@@ -93,6 +94,7 @@ func LoadConfiguration(file string) (*definitions.Config, error) {
 
 func RegisterAPIMethods(apiHandler *jsonrpc.Handler, conf *definitions.Config) {
 	apiHandler.Register("Firewall", &firewall.Firewall{Conf: conf})
+	apiHandler.Register("Object", &object.Object{Conf: conf})
 }
 
 func apply(conf *definitions.Config) error {

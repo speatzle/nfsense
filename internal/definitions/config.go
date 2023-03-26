@@ -10,6 +10,7 @@ import (
 type Config struct {
 	ConfigVersion uint64   `json:"config_version" validate:"required,eq=1"`
 	Firewall      Firewall `json:"firewall" validate:"required,dive"`
+	Object        Object   `json:"object" validate:"required,dive"`
 }
 
 func ValidateConfig(conf *Config) error {

@@ -1,4 +1,4 @@
-package firewall
+package object
 
 import (
 	"context"
@@ -13,8 +13,8 @@ type GetAddressesResult struct {
 	Addresses map[string]definitions.Address
 }
 
-func (f *Firewall) GetAddresses(ctx context.Context, params GetForwardRulesParameters) (GetAddressesResult, error) {
+func (f *Object) GetAddresses(ctx context.Context, params GetAddressesParameters) (GetAddressesResult, error) {
 	return GetAddressesResult{
-		Addresses: f.Conf.Firewall.Addresses,
+		Addresses: f.Conf.Object.Addresses,
 	}, nil
 }

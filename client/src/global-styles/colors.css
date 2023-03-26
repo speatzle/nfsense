@@ -128,8 +128,9 @@
   /* More can be added as needed. */
   --cl-fg: var(--cl-1-8); /* Foreground (Text, outlines) */
   --cl-bg: var(--cl-1-1); /* Background */
-  --cl-bg-hl: var(--cl-1-2); /* Highlight Background (Component on Hover, select, ...) */
+  --cl-bg-hl: var(--cl-1-2); /* Highlight Background (Component on Hover, ...) */
   --cl-bg-el: var(--cl-1-3); /* Element Background (Component) */
+  --cl-bg-sl: var(--cl-1-4);
 
   /* Table Color Assignments */
   --cl-table-body: var(--cl-1-1);
@@ -150,6 +151,7 @@
   --cl-bg: var(--cl-1-2);
   --cl-bg-hl: var(--cl-1-3);
   --cl-bg-el: var(--cl-1-4);
+  --cl-bg-sl: var(--cl-1-5);
 
   --cl-table-body: var(--cl-1-2);
   --cl-table-head: var(--cl-1-3);

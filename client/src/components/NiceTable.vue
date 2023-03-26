@@ -144,10 +144,6 @@ function dragDropRow() {
 </template>
 
 <style scoped>
-.selected {
-  background-color: red;
-}
-
 .dragged-over-before {
   border-top: 0.25rem solid var(--cl-fg);
 }

@@ -1,22 +1,16 @@
 /* --- YACS --- */
 :root {
   /* Light/Dark-Agnostic Base Tints, defined as HSL */
-  --cl-base-0-h: 260;
-  /* Color 0 Base Hue */
-  --cl-base-0-s: 20%;
-  /* Color 0 Base Saturation */
-  --cl-base-0-l: 100%;
-  /* Color 0 Base Lightness (Only usefull for darkening really) */
-  --cl-base-1-h: 260;
-  /* Same definitions for another tint */
+  --cl-base-0-h: 260; /* Color 0 Base Hue */
+  --cl-base-0-s: 20%; /* Color 0 Base Saturation */
+  --cl-base-0-l: 100%; /* Color 0 Base Lightness (Only usefull for darkening really) */
+  --cl-base-1-h: 260; /* Same definitions for another tint */
   --cl-base-1-s: 50%;
   --cl-base-1-l: 100%;
 
   /* --- Linear Scaling with buffer --- */
-  --lin-0-buf: 5%;
-  /* Edge-Buffer for lightness spectrum, reduces contrast */
-  --lin-0-flux: calc(var(--cl-base-0-l) - var(--lin-0-buf) * 2);
-  /* Variable Lightness Space */
+  --lin-0-buf: 5%; /* Edge-Buffer for lightness spectrum, reduces contrast */
+  --lin-0-flux: calc(var(--cl-base-0-l) - var(--lin-0-buf) * 2); /* Variable Lightness Space */
   --lin-0-step: calc(var(--lin-0-flux) / 7);
   /* Increment per Step, 8 steps - 1 = 7 increments */
   /* Actual color steps */
@@ -86,20 +80,62 @@
   }
 }
 
+.cl-force-dark {
+  --cl-0-1: var(--cl-base-0-1);
+  --cl-0-2: var(--cl-base-0-2);
+  --cl-0-3: var(--cl-base-0-3);
+  --cl-0-4: var(--cl-base-0-4);
+  --cl-0-5: var(--cl-base-0-5);
+  --cl-0-6: var(--cl-base-0-6);
+  --cl-0-7: var(--cl-base-0-7);
+  --cl-0-8: var(--cl-base-0-8);
+
+  --cl-1-1: var(--cl-base-1-1);
+  --cl-1-2: var(--cl-base-1-2);
+  --cl-1-3: var(--cl-base-1-3);
+  --cl-1-4: var(--cl-base-1-4);
+  --cl-1-5: var(--cl-base-1-5);
+  --cl-1-6: var(--cl-base-1-6);
+  --cl-1-7: var(--cl-base-1-7);
+  --cl-1-8: var(--cl-base-1-8);
+}
+
+.cl-force-light {
+  --cl-0-1: var(--cl-base-0-8);
+  --cl-0-2: var(--cl-base-0-7);
+  --cl-0-3: var(--cl-base-0-6);
+  --cl-0-4: var(--cl-base-0-5);
+  --cl-0-5: var(--cl-base-0-4);
+  --cl-0-6: var(--cl-base-0-3);
+  --cl-0-7: var(--cl-base-0-2);
+  --cl-0-8: var(--cl-base-0-1);
+
+  --cl-1-1: var(--cl-base-1-8);
+  --cl-1-2: var(--cl-base-1-7);
+  --cl-1-3: var(--cl-base-1-6);
+  --cl-1-4: var(--cl-base-1-5);
+  --cl-1-5: var(--cl-base-1-4);
+  --cl-1-6: var(--cl-base-1-3);
+  --cl-1-7: var(--cl-base-1-2);
+  --cl-1-8: var(--cl-base-1-1);
+}
+
 /* --- Color Contexts --- */
 /* These Contexts are meant to make it easy to shift all color assignments for differentiated areas, like navigation bars or context menus */
 /* Primary Color Context */
 :root, .cl-primary {
   /* Color assignments, these finally have semantic value and will be used to style components. */
   /* More can be added as needed. */
-  --cl-fg: var(--cl-0-8);
-  /* Foreground (Text, outlines) */
-  --cl-bg: var(--cl-0-1);
-  /* Background */
-  --cl-bg-hl: var(--cl-1-2);
-  /* Highlight Background (Component on Hover, select, ...) */
-  --cl-bg-el: var(--cl-1-3);
-  /* Element Background (Component) */
+  --cl-fg: var(--cl-1-8); /* Foreground (Text, outlines) */
+  --cl-bg: var(--cl-1-1); /* Background */
+  --cl-bg-hl: var(--cl-1-2); /* Highlight Background (Component on Hover, select, ...) */
+  --cl-bg-el: var(--cl-1-3); /* Element Background (Component) */
+
+  /* Table Color Assignments */
+  --cl-table-body: var(--cl-1-1);
+  --cl-table-head: var(--cl-1-2);
+  --cl-table-hl: var(--cl-1-3);
+  --cl-table-sl: var(--cl-1-4);
 
   /* Set Default Colors */
   background-color: var(--cl-bg);
@@ -109,16 +145,18 @@
 /* Secondary Color Context, in this case for the sidebar */
 .cl-secondary {
   /* You can replace the base-tint on a per-assignment basis, though one tint per context is usual */
+  /* Just shift up all non-fg colors to create a lower-contrast/importance context */
   --cl-fg: var(--cl-1-8);
   --cl-bg: var(--cl-1-2);
-  /* Just shift up all non-fg colors to create a lower-contrast/importance context */
   --cl-bg-hl: var(--cl-1-3);
   --cl-bg-el: var(--cl-1-4);
+
+  --cl-table-body: var(--cl-1-2);
+  --cl-table-head: var(--cl-1-3);
+  --cl-table-hl: var(--cl-1-4);
+  --cl-table-sl: var(--cl-1-5);
   
   /* Set Default Colors */
   background-color: var(--cl-bg);
   color: var(--cl-fg);
 }
-
-.cl-p-3 { background-color: var(--cl-0-1); }
-.cl-s-3 { background-color: var(--cl-1-1);}

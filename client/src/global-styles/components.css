@@ -25,7 +25,6 @@ form {
   grid-template-columns: auto 1fr;
   padding: 0.5rem;
   gap: 0.5rem;
-
 }
 form > :is(button, .button, h1) {
   grid-column: 1 / 3;
@@ -70,18 +69,22 @@ button, .button {
 }
 
 input {
-  background-color: var(--cl-bg-el);
+  background-color: var(--cl-bg-hl);
   border: 1px solid var(--cl-fg);
 }
 
 table {
-  background-color: var(--cl-bg);
+  background-color: var(--cl-table-body);
 }
 
 th {
-  background-color: var(--cl-bg-el);
+  background-color: var(--cl-table-head);
 }
 
 tbody tr:hover, th:hover {
-  background-color: var(--cl-bg-hl);
+  background-color: var(--cl-table-hl);
+}
+
+tbody tr.selected {
+  background-color: var(--cl-table-sl)
 }

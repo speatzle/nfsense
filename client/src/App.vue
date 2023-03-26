@@ -97,14 +97,14 @@ onMounted(async() => {
     'nav-state-collapsed': navState === NavState.Collapsed,
     'nav-state-reduced': navState === NavState.Reduced,
   }">
-    <button class="nav-head cl-secondary" @click="toggleNavState">
+    <button class="nav-head cl-secondary cl-force-dark" @click="toggleNavState">
       <i-mdi-hamburger-menu/>
       <h1>nfSense</h1>
     </button>
 
     <Portal from="page-header" class="page-header pad gap"/>
 
-    <div class="nav-body cl-secondary">
+    <div class="nav-body cl-secondary cl-force-dark">
       <template v-for="(options, route) in navRoutes" :key="route">
         <router-link :to="route" class="button" @click="collapseNavIfMobile">
           <component :is="options.icon"/>
@@ -134,8 +134,8 @@ onMounted(async() => {
           <h2 :hidden="!loginDisabled">Logging in...</h2>
           <label for="username" v-text="'Username'" :hidden="loginDisabled" />
           <input name="username" v-model="username" :hidden="loginDisabled" :disabled="loginDisabled"/>
-          <label for="password" v-text="'Password'" type="password" :hidden="loginDisabled"/>
-          <input name="password" v-model="password" :hidden="loginDisabled" :disabled="loginDisabled"/>
+          <label for="password" v-text="'Password'" :hidden="loginDisabled"/>
+          <input name="password" type="password" v-model="password" :hidden="loginDisabled" :disabled="loginDisabled"/>
           <button @click="tryLogin">Login</button>
         </form>
       </FocusTrap>

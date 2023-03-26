@@ -60,7 +60,7 @@ th svg {
 button, .button {
   background-color: var(--cl-bg-el);
 }
-.button:hover, button:hover {
+.button:hover, button:hover, svg:hover {
   background-color: var(--cl-bg-hl);
 }
 
@@ -81,3 +81,8 @@ tbody tr:hover, th:hover {
 .nav-body > button, .button {
   background-color: var(--cl-bg);
 }
+
+.nav-body > * > button, .nav-body > * > button > svg {
+  background-color: var(--cl-bg);
+}
+

@@ -36,7 +36,7 @@ fieldset[disabled] .multiselect {
     top: 1px;
     width: 48px;
     height: 35px;
-    background: #fff;
+    background: var(--cl-bg-el);
     display: block
 }
 
@@ -139,7 +139,7 @@ fieldset[disabled] .multiselect {
     line-height: 20px;
     border: none;
     border-radius: 5px;
-    background: #fff;
+    background: var(--cl-bg-el);
     padding: 0 0 0 5px;
     width: 100%;
     transition: border .1s ease;
@@ -187,7 +187,7 @@ fieldset[disabled] .multiselect {
     padding: 8px 40px 0 8px;
     border-radius: 5px;
     border: 1px solid #e8e8e8;
-    background: #fff;
+    background: var(--cl-bg-el);
     font-size: 14px
 }
 
@@ -197,9 +197,9 @@ fieldset[disabled] .multiselect {
     padding: 4px 26px 4px 10px;
     border-radius: 5px;
     margin-right: 10px;
-    color: #fff;
+    color: var(--cl-fg);
     line-height: 1;
-    background: #41b883;
+    background: var(--cl-bg);
     margin-bottom: 5px;
     white-space: nowrap;
     overflow: hidden;
@@ -236,7 +236,7 @@ fieldset[disabled] .multiselect {
 
 .multiselect__tag-icon:focus:after,
 .multiselect__tag-icon:hover:after {
-    color: #fff
+    color: var(--cl-bg-el);
 }
 
 .multiselect__current {
@@ -295,7 +295,7 @@ fieldset[disabled] .multiselect {
 .multiselect__content-wrapper {
     position: absolute;
     display: block;
-    background: #fff;
+    background: var(--cl-bg-el);
     width: 100%;
     max-height: 240px;
     overflow: auto;
@@ -360,13 +360,13 @@ fieldset[disabled] .multiselect {
 .multiselect__option--highlight {
     background: #41b883;
     outline: none;
-    color: #fff
+    color: var(--cl-bg-el);
 }
 
 .multiselect__option--highlight:after {
     content: attr(data-select);
     background: #41b883;
-    color: #fff
+    color: var(--cl-bg-el);
 }
 
 .multiselect__option--selected {
@@ -382,13 +382,13 @@ fieldset[disabled] .multiselect {
 
 .multiselect__option--selected.multiselect__option--highlight {
     background: #ff6a6a;
-    color: #fff
+    color: var(--cl-bg-el);
 }
 
 .multiselect__option--selected.multiselect__option--highlight:after {
     background: #ff6a6a;
     content: attr(data-deselect);
-    color: #fff
+    color: var(--cl-bg-el);
 }
 
 .multiselect--disabled .multiselect__current,
@@ -411,7 +411,7 @@ fieldset[disabled] .multiselect {
 
 .multiselect__option--group.multiselect__option--highlight {
     background: #35495e;
-    color: #fff
+    color: var(--cl-bg-el);
 }
 
 .multiselect__option--group.multiselect__option--highlight:after {
@@ -424,13 +424,13 @@ fieldset[disabled] .multiselect {
 
 .multiselect__option--group-selected.multiselect__option--highlight {
     background: #ff6a6a;
-    color: #fff
+    color: var(--cl-bg-el);
 }
 
 .multiselect__option--group-selected.multiselect__option--highlight:after {
     background: #ff6a6a;
     content: attr(data-deselect);
-    color: #fff
+    color: var(--cl-bg-el);
 }
 
 .multiselect-enter-active,

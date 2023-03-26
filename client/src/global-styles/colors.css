@@ -119,3 +119,6 @@
   background-color: var(--cl-bg);
   color: var(--cl-fg);
 }
+
+.cl-p-3 { background-color: var(--cl-0-1); }
+.cl-s-3 { background-color: var(--cl-1-1);}

@@ -60,13 +60,22 @@ th svg {
 button, .button {
   background-color: var(--cl-bg-el);
 }
-.button:hover, button:hover, svg:hover {
+/* Button Background Exception for Nav Menu */
+.nav-body button,
+.nav-body .button {
+  background-color: var(--cl-bg);
+}
+.button:hover, button:hover {
   background-color: var(--cl-bg-hl);
 }
 
 input {
   background-color: var(--cl-bg-el);
   border: 1px solid var(--cl-fg);
+}
+
+table {
+  background-color: var(--cl-bg);
 }
 
 th {
@@ -76,13 +85,3 @@ th {
 tbody tr:hover, th:hover {
   background-color: var(--cl-bg-hl);
 }
-
-/* Button Background Exception for Nav Menu */
-.nav-body > button, .button {
-  background-color: var(--cl-bg);
-}
-
-.nav-body > * > button, .nav-body > * > button > svg {
-  background-color: var(--cl-bg);
-}
-

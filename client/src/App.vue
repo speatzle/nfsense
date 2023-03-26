@@ -5,6 +5,7 @@ import { authenticate, logout, checkAuthentication, setup } from "./api";
 import IDashboard from '~icons/ri/dashboard-2-line';
 import IRule from '~icons/material-symbols/rule-folder-outline-sharp';
 import IAddress from '~icons/eos-icons/ip';
+import IService from '~icons/material-symbols/home-repair-service';
 
 enum NavState { Open, Reduced, Collapsed };
 const NavStateCount = 3;
@@ -13,7 +14,7 @@ const navRoutes = {
   "/": { icon: IDashboard, caption: "Dashboard" },
   "/firewall/rules": { icon: IRule, caption: "Rules" },
   "/object/addresses": { icon: IAddress, caption: "Addresses" },
-  "/object/services": { icon: IAddress, caption: "Services" },
+  "/object/services": { icon: IService, caption: "Services" },
 };
 
 enum AuthState { Unauthenticated, MfaRequired, Authenticated };

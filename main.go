@@ -2,16 +2,20 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"golang.org/x/exp/slog"
-	"nfsense.net/nfsense/pkg/definitions"
-	"nfsense.net/nfsense/pkg/jsonrpc"
-	"nfsense.net/nfsense/pkg/server"
+	"nfsense.net/nfsense/internal/api/firewall"
+	"nfsense.net/nfsense/internal/definitions"
+	"nfsense.net/nfsense/internal/jsonrpc"
+	"nfsense.net/nfsense/internal/nftables"
+	"nfsense.net/nfsense/internal/server"
 )
 
 func main() {
@@ -68,4 +72,39 @@ func main() {
 	server.ShutdownWebserver(shutdownCtx)
 
 	slog.Info("Done")
+}
+
+func LoadConfiguration(file string) (*definitions.Config, error) {
+	var config definitions.Config
+	configFile, err := os.Open(file)
+	if err != nil {
+		return nil, fmt.Errorf("opening Config File %w", err)
+	}
+	defer configFile.Close()
+
+	jsonParser := json.NewDecoder(configFile)
+	jsonParser.DisallowUnknownFields()
+	err = jsonParser.Decode(&config)
+	if err != nil {
+		return nil, fmt.Errorf("decoding Config File %w", err)
+	}
+	return &config, nil
+}
+
+func RegisterAPIMethods(apiHandler *jsonrpc.Handler, conf *definitions.Config) {
+	apiHandler.Register("Firewall", &firewall.Firewall{Conf: conf})
+}
+
+func apply(conf *definitions.Config) error {
+	fileContent, err := nftables.GenerateNfTablesFile(*conf)
+	if err != nil {
+		return fmt.Errorf("Generating nftables file %w", err)
+	}
+
+	err = nftables.ApplyNfTablesFile(fileContent)
+	if err != nil {
+		return fmt.Errorf("Applying nftables %w", err)
+	}
+	slog.Info("Wrote nftables File!")
+	return nil
 }

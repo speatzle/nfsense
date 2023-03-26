@@ -3,7 +3,7 @@ package firewall
 import (
 	"context"
 
-	"nfsense.net/nfsense/pkg/definitions"
+	"nfsense.net/nfsense/internal/definitions"
 )
 
 type GetAddressesParameters struct {

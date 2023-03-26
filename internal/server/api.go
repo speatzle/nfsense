@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"golang.org/x/exp/slog"
-	"nfsense.net/nfsense/pkg/session"
+	"nfsense.net/nfsense/internal/session"
 )
 
 func HandleAPI(w http.ResponseWriter, r *http.Request) {

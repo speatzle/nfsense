@@ -1,6 +1,6 @@
 package util
 
-import "nfsense.net/nfsense/pkg/definitions"
+import "nfsense.net/nfsense/internal/definitions"
 
 // ResolveBaseAddresses Resolves all groups to their base Addresses
 func ResolveBaseAddresses(allAddresses map[string]definitions.Address, addressNames []string) []definitions.Address {

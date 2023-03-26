@@ -3,8 +3,8 @@ package nftables
 import (
 	"fmt"
 
-	"nfsense.net/nfsense/pkg/definitions"
-	"nfsense.net/nfsense/pkg/util"
+	"nfsense.net/nfsense/internal/definitions"
+	"nfsense.net/nfsense/internal/util"
 )
 
 func GenerateMatcher(services map[string]definitions.Service, addresses map[string]definitions.Address, match definitions.Match) (string, error) {

@@ -6,13 +6,17 @@ import IDashboard from '~icons/ri/dashboard-2-line';
 import IRule from '~icons/material-symbols/rule-folder-outline-sharp';
 import IAddress from '~icons/eos-icons/ip';
 import IService from '~icons/material-symbols/home-repair-service';
+import ISNAT from '~icons/mdi/arrow-expand-right';
+import IDNAT from '~icons/mdi/arrow-collapse-right';
 
 enum NavState { Open, Reduced, Collapsed };
 const NavStateCount = 3;
 let navState = $ref(NavState.Open);
 const navRoutes = {
   "/": { icon: IDashboard, caption: "Dashboard" },
-  "/firewall/rules": { icon: IRule, caption: "Rules" },
+  "/firewall/forwardrules": { icon: IRule, caption: "Rules" },
+  "/firewall/sourcenatrules": { icon: ISNAT, caption: "SNAT" },
+  "/firewall/destinationnatrules": { icon: IDNAT, caption: "DNAT" },
   "/object/addresses": { icon: IAddress, caption: "Addresses" },
   "/object/services": { icon: IService, caption: "Services" },
 };

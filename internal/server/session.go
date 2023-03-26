@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"golang.org/x/exp/slog"
-	"nfsense.net/nfsense/pkg/session"
+	"nfsense.net/nfsense/internal/session"
 )
 
 type LoginRequest struct {

@@ -8,9 +8,9 @@ import (
 
 	"golang.org/x/exp/slog"
 
-	"nfsense.net/nfsense/pkg/definitions"
-	"nfsense.net/nfsense/pkg/jsonrpc"
-	"nfsense.net/nfsense/pkg/session"
+	"nfsense.net/nfsense/internal/definitions"
+	"nfsense.net/nfsense/internal/jsonrpc"
+	"nfsense.net/nfsense/internal/session"
 )
 
 var server http.Server

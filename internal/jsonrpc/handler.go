@@ -10,7 +10,7 @@ import (
 	"runtime/debug"
 
 	"golang.org/x/exp/slog"
-	"nfsense.net/nfsense/pkg/session"
+	"nfsense.net/nfsense/internal/session"
 )
 
 type Handler struct {

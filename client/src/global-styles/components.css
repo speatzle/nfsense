@@ -67,7 +67,8 @@ button, .button {
 .nav-body .button {
   background-color: var(--cl-bg);
 }
-.button:hover, button:hover {
+.button:hover, button:hover,
+.button:focus, button:focus {
   background-color: var(--cl-bg-hl);
 }
 

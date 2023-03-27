@@ -13,7 +13,7 @@ let options = $ref([{name: 'Accept'}, {name: 'Drop'}, {name: 'Continue'}]);
 </script>
 
 <template>
-  <div>
+  <div style="overflow-y: auto;">
     <PageHeader title="Dashboard">
       <button @click="doShit">Example Buttons</button>
     </PageHeader>
@@ -29,6 +29,8 @@ let options = $ref([{name: 'Accept'}, {name: 'Drop'}, {name: 'Continue'}]);
       <pillbar :options="options" name="verdict" ></pillbar>
       <button>Submit</button>
     </form>
+    <Multiselect/>
+    asd
   </div>
 </template>
 

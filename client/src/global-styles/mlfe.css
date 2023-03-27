@@ -12,6 +12,7 @@
   user-select: inherit;
   color: inherit;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 div, ul, ol, nav {

@@ -7,7 +7,6 @@ const columns = [
   {heading: 'Source', path: 'match.source_addresses'},
   {heading: 'Destination', path: 'match.destination_addresses'},
   {heading: 'Service', path: 'match.services'},
-  {heading: 'Verdict', path: 'verdict'},
   {heading: 'Counter', path: 'counter'},
   {heading: 'Comment', path: 'comment'},
 ];

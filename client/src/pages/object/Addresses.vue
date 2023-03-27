@@ -19,6 +19,41 @@ async function load(){
   }
 }
 
+const displayData = $computed(() => {
+  let data: any;
+  data = [];
+  for (const name in addresses) {
+    data.push({
+      name,
+      value: getAddressValue(addresses[name]),
+      type: addresses[name].type,
+      comment: addresses[name].comment,
+    });
+  }
+  return data;
+});
+
+function getAddressValue(s: any): string {
+  let value: string;
+  switch (s.type) {
+  case "host":
+    value = s.host;
+    break;
+  case "range":
+    value = s.range;
+    break;
+  case "network":
+    value = s.network;
+    break;
+  case "group":
+    value = s.children;
+    break;
+  default:
+    value = "unkown";
+  }
+  return value;
+}
+
 onMounted(async() => {
   load();
 });
@@ -30,6 +65,6 @@ onMounted(async() => {
     <PageHeader title="Addresses">
       <button @click="load">Load Addresses</button>
     </PageHeader>
-    <NiceTable :columns="columns" v-model:data="addresses"/>
+    <NiceTable :columns="columns" v-model:data="displayData"/>
   </div>
 </template>

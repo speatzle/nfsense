@@ -1,0 +1,15 @@
+<script setup lang="ts">
+
+const props = defineModel<{
+  modelValue: string,
+}>();
+let { modelValue } = $(props);
+
+</script>
+
+<template>
+  <input v-model="modelValue">
+</template>
+
+<style scoped>
+</style>

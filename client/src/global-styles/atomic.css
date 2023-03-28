@@ -4,3 +4,4 @@
 .gap { gap: 0.5rem; }
 .flex-grow { flex-grow: 1; }
 .flex-row { flex-direction: row; }
+.scroll { overflow-y:auto; }

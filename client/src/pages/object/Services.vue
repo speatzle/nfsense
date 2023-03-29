@@ -66,10 +66,5 @@ onMounted(async() => {
 </script>
 
 <template>
-  <div>
-    <PageHeader title="Services">
-      <button @click="load">Load Services</button>
-    </PageHeader>
-    <NiceTable :columns="columns" v-model:data="displayData" :sort="true" :sort-self="true"/>
-  </div>
+  <TableView title="Services" :columns="columns" :load-data="load" v-model:data="displayData" :table-props="{sort:true, sortSelf: true}"/>
 </template>

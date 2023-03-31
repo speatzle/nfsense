@@ -5,6 +5,7 @@ import { authenticate, logout, checkAuthentication, setup } from "./api";
 import IDashboard from '~icons/ri/dashboard-2-line';
 import IRule from '~icons/material-symbols/rule-folder-outline-sharp';
 import IAddress from '~icons/eos-icons/ip';
+import IEthernet from '~icons/bi/ethernet';
 import IService from '~icons/material-symbols/home-repair-service';
 import ISNAT from '~icons/mdi/arrow-expand-right';
 import IDNAT from '~icons/mdi/arrow-collapse-right';
@@ -17,6 +18,7 @@ const navRoutes = {
   "/firewall/forwardrules": { icon: IRule, caption: "Rules" },
   "/firewall/sourcenatrules": { icon: ISNAT, caption: "SNAT" },
   "/firewall/destinationnatrules": { icon: IDNAT, caption: "DNAT" },
+  "/network/interfaces": { icon: IEthernet, caption: "Interfaces" },
   "/object/addresses": { icon: IAddress, caption: "Addresses" },
   "/object/services": { icon: IService, caption: "Services" },
 };

@@ -91,6 +91,7 @@ func (h *Handler) HandleRequest(ctx context.Context, s *session.Session, r io.Re
 		reqerr := res[1].Interface().(error)
 		slog.Error("API Method", reqerr, "method", req.Method, "id", req.ID)
 		respondError(w, req.ID, ErrInternalError, reqerr)
+		return nil
 	}
 
 	respondResult(w, req.ID, result)

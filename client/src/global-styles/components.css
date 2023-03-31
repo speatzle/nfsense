@@ -71,6 +71,10 @@ button, .button {
   background-color: var(--cl-bg-hl);
 }
 
+.button:disabled, button:disabled {
+  background-color: var(--cl-bg-hl);
+}
+
 input, textarea {
   background-color: var(--cl-bg-hl);
   border: 1px solid var(--cl-fg);

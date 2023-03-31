@@ -77,8 +77,8 @@ func GenerateAddressMatcher(allAddresses map[string]definitions.Address, match d
 			sourceAddresses = append(sourceAddresses, address.Host.String())
 		case definitions.Range:
 			sourceAddresses = append(sourceAddresses, address.Range.String())
-		case definitions.Network:
-			sourceAddresses = append(sourceAddresses, address.Network.String())
+		case definitions.NetworkAddress:
+			sourceAddresses = append(sourceAddresses, address.NetworkAddress.String())
 		default:
 			panic("invalid address type")
 		}
@@ -90,8 +90,8 @@ func GenerateAddressMatcher(allAddresses map[string]definitions.Address, match d
 			destinationAddresses = append(destinationAddresses, address.Host.String())
 		case definitions.Range:
 			destinationAddresses = append(destinationAddresses, address.Range.String())
-		case definitions.Network:
-			destinationAddresses = append(destinationAddresses, address.Network.String())
+		case definitions.NetworkAddress:
+			destinationAddresses = append(destinationAddresses, address.NetworkAddress.String())
 		default:
 			panic("invalid address type")
 		}

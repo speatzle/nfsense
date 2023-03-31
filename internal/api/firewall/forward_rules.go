@@ -6,14 +6,11 @@ import (
 	"nfsense.net/nfsense/internal/definitions"
 )
 
-type GetForwardRulesParameters struct {
-}
-
 type GetForwardRulesResult struct {
 	ForwardRules []definitions.ForwardRule
 }
 
-func (f *Firewall) GetForwardRules(ctx context.Context, params GetForwardRulesParameters) (GetForwardRulesResult, error) {
+func (f *Firewall) GetForwardRules(ctx context.Context, params struct{}) (GetForwardRulesResult, error) {
 	return GetForwardRulesResult{
 		ForwardRules: f.Conf.Firewall.ForwardRules,
 	}, nil

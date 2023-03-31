@@ -18,6 +18,36 @@ func (f *Network) GetInterfaces(ctx context.Context, params struct{}) (GetInterf
 	}, nil
 }
 
+type CreateInterfaceParameters struct {
+	Name      string
+	Interface definitions.Interface
+}
+
+func (f *Network) CreateInterface(ctx context.Context, params CreateInterfaceParameters) (struct{}, error) {
+	_, ok := f.Conf.Network.Interfaces[params.Name]
+	if ok {
+		return struct{}{}, fmt.Errorf("Interface already Exists")
+	}
+
+	f.Conf.Network.Interfaces[params.Name] = params.Interface
+	return struct{}{}, nil
+}
+
+type UpdateInterfaceParameters struct {
+	Name      string
+	Interface definitions.Interface
+}
+
+func (f *Network) UpdateInterface(ctx context.Context, params CreateInterfaceParameters) (struct{}, error) {
+	_, ok := f.Conf.Network.Interfaces[params.Name]
+	if !ok {
+		return struct{}{}, fmt.Errorf("Interface does not Exist")
+	}
+
+	f.Conf.Network.Interfaces[params.Name] = params.Interface
+	return struct{}{}, nil
+}
+
 type DeleteInterfaceParameters struct {
 	Name string
 }

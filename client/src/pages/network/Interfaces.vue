@@ -49,6 +49,16 @@ async function apply(){
   }
 }
 
+async function deleteInterface(){
+  let res = await apiCall("Network.DeleteInterface", {Interface: displayData[selection[0]].name});
+  if (res.Error === null) {
+    console.debug("deleted interface");
+  } else {
+    console.debug("error", res);
+  }
+  load();
+}
+
 onMounted(async() => {
   load();
 });
@@ -61,6 +71,6 @@ onMounted(async() => {
     <button @click="load">Refresh</button>
     <button @click="load">Create</button>
     <button @click="load" :disabled="selection.length != 1">Edit</button>
-    <button @click="load" :disabled="selection.length == 0">Delete</button>
+    <button @click="deleteInterface" :disabled="selection.length == 0">Delete</button>
   </TableView>
 </template>

@@ -2,7 +2,7 @@
 
 const props = defineModel<{
   title: string,
-  loadData: () => void,
+  loading: boolean,
   columns?: {
     heading: string,
     path: string,
@@ -10,32 +10,19 @@ const props = defineModel<{
   }[],
   data: Record<string, any>[],
   tableProps: any,
+  selection?: number[],
 }>();
 
-let { title, columns, loadData, data, tableProps } = $(props);
-
-let loading = $ref(true);
-
-async function load() {
-  console.debug("Start loading...");
-  loading = true;
-  loadData();
-  loading = false;
-  console.debug("Finished loading");
-}
-
-onMounted(async() => {
-  load();
-});
+let { title, columns, loadData, data, selection, tableProps } = $(props);
 
 </script>
 
 <template>
   <div>
     <PageHeader :title="title">
-      <button @click="load">Load</button>
+      <slot/>
     </PageHeader>
     <div v-if="loading" >Loading...</div>
-    <NiceTable v-else :columns="columns" v-bind="tableProps" :data="data"/>
+    <NiceTable v-else :columns="columns" v-model:selection="selection" v-bind="tableProps" :data="data"/>
   </div>
 </template>

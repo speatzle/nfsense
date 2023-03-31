@@ -1,5 +1,6 @@
 config.json
 nftables.conf
+interfaces.conf
 go.work
 nfsense
 nfsense.exe

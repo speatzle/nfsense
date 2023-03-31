@@ -40,6 +40,15 @@ async function load(){
   loading = false
 }
 
+async function apply(){
+  let res = await apiCall("Network.ApplyInterfaces", {});
+  if (res.Error === null) {
+    console.debug("apply log", res.Data.Log);
+  } else {
+    console.debug("error", res);
+  }
+}
+
 onMounted(async() => {
   load();
 });
@@ -48,7 +57,7 @@ onMounted(async() => {
 
 <template>
   <TableView title="Interfaces" :columns="columns" :loading="loading" v-model:selection="selection" v-model:data="displayData" :table-props="{sort:true, sortSelf: true}">
-    <button @click="load">Apply</button>
+    <button @click="apply">Apply</button>
     <button @click="load">Refresh</button>
     <button @click="load">Create</button>
     <button @click="load" :disabled="selection.length != 1">Edit</button>

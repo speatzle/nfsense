@@ -15,15 +15,18 @@ const props = defineModel<{
   sortSelf?: boolean,
   sortBy?: string,
   sortDesc?: boolean,
+  selection?: number[],
 }>();
-let { columns, data, sort, sortSelf, sortBy, sortDesc } = $(props);
+let { columns, data, sort, sortSelf, sortBy, sortDesc, selection } = $(props);
 
 const emit = defineEmits<{
   (event: 'rowAction', index: number): void,
   (event: 'selectionChanged'): void
 }>();
 
-let selection = $ref([] as number[]);
+if (selection == undefined) {
+  selection = [];
+}
 
 const displayData = $computed(() => (sortSelf && sortBy !== '')
   ? data?.sort((a, b) => {

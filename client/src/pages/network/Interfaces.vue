@@ -50,7 +50,7 @@ async function apply(){
 }
 
 async function deleteInterface(){
-  let res = await apiCall("Network.DeleteInterface", {Interface: displayData[selection[0]].name});
+  let res = await apiCall("Network.DeleteInterface", {name: displayData[selection[0]].name});
   if (res.Error === null) {
     console.debug("deleted interface");
   } else {

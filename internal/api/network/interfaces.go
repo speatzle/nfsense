@@ -19,16 +19,16 @@ func (f *Network) GetInterfaces(ctx context.Context, params struct{}) (GetInterf
 }
 
 type DeleteInterfaceParameters struct {
-	Interface string
+	Name string
 }
 
 func (f *Network) DeleteInterface(ctx context.Context, params DeleteInterfaceParameters) (struct{}, error) {
-	_, ok := f.Conf.Network.Interfaces[params.Interface]
+	_, ok := f.Conf.Network.Interfaces[params.Name]
 	if !ok {
 		return struct{}{}, fmt.Errorf("Interface does not Exist")
 	}
 
-	delete(f.Conf.Network.Interfaces, params.Interface)
+	delete(f.Conf.Network.Interfaces, params.Name)
 	return struct{}{}, nil
 }
 

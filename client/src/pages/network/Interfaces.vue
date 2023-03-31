@@ -2,6 +2,9 @@
 import { apiCall } from "../../api";
 
 let interfaces = $ref({});
+let loading = $ref(false);
+let selection = $ref([] as number[]);
+
 const columns = [
   {heading: 'Name', path: 'name'},
   {heading: 'Type', path: 'type'},
@@ -23,16 +26,10 @@ const displayData = $computed(() => {
     });
   }
   return data;
-}); 
-
-function getServicePortRange(s:any): string {
-  if (s.dport_end) {
-    return s.dport_start + "-" + s.dport_end;
-  }
-  return s.dport_start;
-}
+});
 
 async function load(){
+  loading = true
   let res = await apiCall("Network.GetInterfaces", {});
   if (res.Error === null) {
     console.debug("interfaces", res.Data.Interfaces);
@@ -40,6 +37,7 @@ async function load(){
   } else {
     console.debug("error", res);
   }
+  loading = false
 }
 
 onMounted(async() => {
@@ -49,5 +47,11 @@ onMounted(async() => {
 </script>
 
 <template>
-  <TableView title="Interfaces" :columns="columns" :load-data="load" v-model:data="displayData" :table-props="{sort:true, sortSelf: true}"/>
+  <TableView title="Interfaces" :columns="columns" :loading="loading" v-model:selection="selection" v-model:data="displayData" :table-props="{sort:true, sortSelf: true}">
+    <button @click="load">Apply</button>
+    <button @click="load">Refresh</button>
+    <button @click="load">Create</button>
+    <button @click="load" :disabled="selection.length != 1">Edit</button>
+    <button @click="load" :disabled="selection.length == 0">Delete</button>
+  </TableView>
 </template>

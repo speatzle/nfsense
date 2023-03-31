@@ -10,7 +10,7 @@ type GetInterfacesParameters struct {
 }
 
 type GetInterfacesResult struct {
-	Interfaces []definitions.Interface
+	Interfaces map[string]definitions.Interface
 }
 
 func (f *Network) GetInterfaces(ctx context.Context, params GetInterfacesParameters) (GetInterfacesResult, error) {

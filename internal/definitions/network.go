@@ -1,5 +1,5 @@
 package definitions
 
 type Network struct {
-	Interfaces []Interface `json:"interfaces" validate:"required,dive"`
+	Interfaces map[string]Interface `json:"interfaces" validate:"required,dive"`
 }

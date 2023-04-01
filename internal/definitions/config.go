@@ -1,6 +1,7 @@
 package definitions
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/go-playground/validator/v10"
@@ -12,6 +13,20 @@ type Config struct {
 	Firewall      Firewall `json:"firewall" validate:"required,dive"`
 	Object        Object   `json:"object" validate:"required,dive"`
 	Network       Network  `json:"network" validate:"required,dive"`
+}
+
+// Clone TODO find a better way to deep copy
+func (c *Config) Clone() *Config {
+	data, err := json.Marshal(c)
+	if err != nil {
+		panic(fmt.Errorf("Marshal Error: %w", err))
+	}
+	var clone Config
+	err = json.Unmarshal(data, &clone)
+	if err != nil {
+		panic(fmt.Errorf("Unmarshal Error: %w", err))
+	}
+	return &clone
 }
 
 func ValidateConfig(conf *Config) error {

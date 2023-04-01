@@ -67,7 +67,6 @@ onMounted(async() => {
 
 <template>
   <TableView title="Interfaces" :columns="columns" :loading="loading" v-model:selection="selection" v-model:data="displayData" :table-props="{sort:true, sortSelf: true}">
-    <button @click="apply">Apply</button>
     <button @click="load">Refresh</button>
     <button @click="load">Create</button>
     <button @click="load" :disabled="selection.length != 1">Edit</button>

@@ -71,6 +71,6 @@ onMounted(async() => {
     <button @click="load">Refresh</button>
     <button @click="load">Create</button>
     <button @click="load" :disabled="selection.length != 1">Edit</button>
-    <button @click="deleteInterface" :disabled="selection.length == 0">Delete</button>
+    <button @click="deleteInterface" :disabled="selection.length != 1">Delete</button>
   </TableView>
 </template>

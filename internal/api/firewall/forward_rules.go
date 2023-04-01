@@ -12,6 +12,6 @@ type GetForwardRulesResult struct {
 
 func (f *Firewall) GetForwardRules(ctx context.Context, params struct{}) (GetForwardRulesResult, error) {
 	return GetForwardRulesResult{
-		ForwardRules: f.Conf.Firewall.ForwardRules,
+		ForwardRules: f.ConfigManager.GetPendingConfig().Firewall.ForwardRules,
 	}, nil
 }

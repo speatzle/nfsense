@@ -1,7 +1,7 @@
 package object
 
-import "nfsense.net/nfsense/internal/definitions"
+import "nfsense.net/nfsense/internal/config"
 
 type Object struct {
-	Conf *definitions.Config
+	ConfigManager *config.ConfigManager
 }

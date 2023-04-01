@@ -1,9 +1,9 @@
 package firewall
 
 import (
-	"nfsense.net/nfsense/internal/definitions"
+	"nfsense.net/nfsense/internal/config"
 )
 
 type Firewall struct {
-	Conf *definitions.Config
+	ConfigManager *config.ConfigManager
 }

@@ -12,6 +12,6 @@ type GetSourceNATRulesResult struct {
 
 func (f *Firewall) GetSourceNATRules(ctx context.Context, params struct{}) (GetSourceNATRulesResult, error) {
 	return GetSourceNATRulesResult{
-		SourceNATRules: f.Conf.Firewall.SourceNATRules,
+		SourceNATRules: f.ConfigManager.GetPendingConfig().Firewall.SourceNATRules,
 	}, nil
 }

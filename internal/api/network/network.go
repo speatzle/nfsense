@@ -1,9 +1,7 @@
 package network
 
-import (
-	"nfsense.net/nfsense/internal/definitions"
-)
+import "nfsense.net/nfsense/internal/config"
 
 type Network struct {
-	Conf *definitions.Config
+	ConfigManager *config.ConfigManager
 }

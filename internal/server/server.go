@@ -8,7 +8,7 @@ import (
 
 	"golang.org/x/exp/slog"
 
-	"nfsense.net/nfsense/internal/definitions"
+	"nfsense.net/nfsense/internal/config"
 	"nfsense.net/nfsense/internal/jsonrpc"
 	"nfsense.net/nfsense/internal/session"
 )
@@ -18,7 +18,7 @@ var mux = http.NewServeMux()
 var apiHandler *jsonrpc.Handler
 var stopCleanup chan struct{}
 
-func StartWebserver(conf *definitions.Config, _apiHandler *jsonrpc.Handler) {
+func StartWebserver(configManager *config.ConfigManager, _apiHandler *jsonrpc.Handler) {
 	server.Addr = ":8080"
 	server.Handler = mux
 	apiHandler = _apiHandler

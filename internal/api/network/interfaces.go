@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"nfsense.net/nfsense/internal/definitions"
-	"nfsense.net/nfsense/internal/interfaces"
 )
 
 type GetInterfacesResult struct {
@@ -14,7 +13,7 @@ type GetInterfacesResult struct {
 
 func (f *Network) GetInterfaces(ctx context.Context, params struct{}) (GetInterfacesResult, error) {
 	return GetInterfacesResult{
-		Interfaces: f.Conf.Network.Interfaces,
+		Interfaces: f.ConfigManager.GetPendingConfig().Network.Interfaces,
 	}, nil
 }
 
@@ -24,12 +23,12 @@ type CreateInterfaceParameters struct {
 }
 
 func (f *Network) CreateInterface(ctx context.Context, params CreateInterfaceParameters) (struct{}, error) {
-	_, ok := f.Conf.Network.Interfaces[params.Name]
+	_, ok := f.ConfigManager.GetPendingConfig().Network.Interfaces[params.Name]
 	if ok {
 		return struct{}{}, fmt.Errorf("Interface already Exists")
 	}
 
-	f.Conf.Network.Interfaces[params.Name] = params.Interface
+	f.ConfigManager.GetPendingConfig().Network.Interfaces[params.Name] = params.Interface
 	return struct{}{}, nil
 }
 
@@ -39,12 +38,12 @@ type UpdateInterfaceParameters struct {
 }
 
 func (f *Network) UpdateInterface(ctx context.Context, params CreateInterfaceParameters) (struct{}, error) {
-	_, ok := f.Conf.Network.Interfaces[params.Name]
+	_, ok := f.ConfigManager.GetPendingConfig().Network.Interfaces[params.Name]
 	if !ok {
 		return struct{}{}, fmt.Errorf("Interface does not Exist")
 	}
 
-	f.Conf.Network.Interfaces[params.Name] = params.Interface
+	f.ConfigManager.GetPendingConfig().Network.Interfaces[params.Name] = params.Interface
 	return struct{}{}, nil
 }
 
@@ -53,29 +52,11 @@ type DeleteInterfaceParameters struct {
 }
 
 func (f *Network) DeleteInterface(ctx context.Context, params DeleteInterfaceParameters) (struct{}, error) {
-	_, ok := f.Conf.Network.Interfaces[params.Name]
+	_, ok := f.ConfigManager.GetPendingConfig().Network.Interfaces[params.Name]
 	if !ok {
 		return struct{}{}, fmt.Errorf("Interface does not Exist")
 	}
 
-	delete(f.Conf.Network.Interfaces, params.Name)
+	delete(f.ConfigManager.GetPendingConfig().Network.Interfaces, params.Name)
 	return struct{}{}, nil
-}
-
-type ApplyInterfacesResult struct {
-	Log string
-}
-
-func (f *Network) ApplyInterfaces(ctx context.Context, params struct{}) (ApplyInterfacesResult, error) {
-	data, err := interfaces.GenerateInterfacesFile(*f.Conf)
-	if err != nil {
-		return ApplyInterfacesResult{}, fmt.Errorf("Generating Interfaces File: %w", err)
-	}
-	log, err := interfaces.ApplyInterfacesFile(data)
-	if err != nil {
-		return ApplyInterfacesResult{}, fmt.Errorf("Applying Interfaces File: %w", err)
-	}
-	return ApplyInterfacesResult{
-		Log: log,
-	}, nil
 }

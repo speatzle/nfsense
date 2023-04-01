@@ -1,4 +1,5 @@
 config.json
+pending.json
 nftables.conf
 interfaces.conf
 go.work

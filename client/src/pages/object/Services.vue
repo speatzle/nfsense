@@ -2,6 +2,9 @@
 import { apiCall } from "../../api";
 
 let services = $ref({});
+let loading = $ref(false);
+let selection = $ref([] as number[]);
+
 const columns = [
   {heading: 'Name', path: 'name'},
   {heading: 'Type', path: 'type'},
@@ -50,6 +53,7 @@ function getServicePortRange(s:any): string {
 }
 
 async function load(){
+  loading = true
   let res = await apiCall("Object.GetServices", {});
   if (res.Error === null) {
     console.debug("services", res.Data.Services);
@@ -57,6 +61,17 @@ async function load(){
   } else {
     console.debug("error", res);
   }
+  loading = false
+}
+
+async function deleteService(){
+  let res = await apiCall("Object.DeleteService", {name: displayData[selection[0]].name});
+  if (res.Error === null) {
+    console.debug("deleted service");
+  } else {
+    console.debug("error", res);
+  }
+  load();
 }
 
 onMounted(async() => {
@@ -66,5 +81,10 @@ onMounted(async() => {
 </script>
 
 <template>
-  <TableView title="Services" :columns="columns" :load-data="load" v-model:data="displayData" :table-props="{sort:true, sortSelf: true}"/>
+  <TableView title="Services" :columns="columns" :loading="loading" v-model:selection="selection" v-model:data="displayData" :table-props="{sort:true, sortSelf: true}">
+    <button @click="load">Refresh</button>
+    <button @click="load">Create</button>
+    <button @click="load" :disabled="selection.length != 1">Edit</button>
+    <button @click="deleteService" :disabled="selection.length != 1">Delete</button>
+  </TableView>
 </template>

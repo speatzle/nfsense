@@ -42,7 +42,7 @@ th:hover {
 }
 th, td {
   padding: 0.5rem;
-  border: 0.125rem solid var(--cl-fg);
+  border: 0.125rem solid var(--cl-bg-el);
 }
 th > *{
   justify-content: center;

@@ -13,7 +13,7 @@ const props = defineModel<{
   selection?: number[],
 }>();
 
-let { title, columns, loadData, data, selection, tableProps } = $(props);
+let { title, loading, columns, data, selection, tableProps } = $(props);
 
 </script>
 

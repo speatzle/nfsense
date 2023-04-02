@@ -23,6 +23,7 @@ let { columns, data, sort, sortSelf, sortBy, sortDesc, selection, draggable } = 
 const emit = defineEmits<{
   (event: 'rowAction', index: number): void,
   (event: 'selectionChanged'): void
+  (event: 'draggedRow', draggedRow: number, draggedOverRow: number): void,
 }>();
 
 if (selection == undefined) {
@@ -101,7 +102,9 @@ function dragDropRow() {
     data.splice(draggedRow, 1);
     data.splice(draggedOverRow, 0, row);
     data = data;
+    emit("draggedRow", draggedRow, draggedOverRow);
   }
+
   // Reset drag data
   draggedRow = 0;
   draggedOverRow = 0;

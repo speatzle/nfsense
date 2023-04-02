@@ -15,6 +15,14 @@ const props = defineModel<{
 
 let { title, loading, columns, data, selection, tableProps } = $(props);
 
+const emit = defineEmits<{
+  (event: 'draggedRow', draggedRow: number, draggedOverRow: number): void,
+}>();
+
+async function draggedRow(draggedRow: number, draggedOverRow: number) {
+  emit("draggedRow", draggedRow, draggedOverRow);
+}
+
 </script>
 
 <template>
@@ -23,6 +31,6 @@ let { title, loading, columns, data, selection, tableProps } = $(props);
       <slot/>
     </PageHeader>
     <div v-if="loading" >Loading...</div>
-    <NiceTable v-else :columns="columns" v-model:selection="selection" v-bind="tableProps" :data="data"/>
+    <NiceTable v-else :columns="columns" v-model:selection="selection" @draggedRow="draggedRow" v-bind="tableProps" :data="data"/>
   </div>
 </template>

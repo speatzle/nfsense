@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"os"
 	"os/signal"
@@ -36,7 +37,9 @@ func main() {
 
 	err = configManager.LoadPendingConfigFromDisk()
 	if err != nil {
-		slog.Error("Loading Pending Config", err)
+		if !errors.Is(err, os.ErrNotExist) {
+			slog.Error("Loading Pending Config", err)
+		}
 		err = configManager.DiscardPendingConfig()
 		if err != nil {
 			slog.Error("Discarding Pending Config", err)

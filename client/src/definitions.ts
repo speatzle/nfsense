@@ -20,11 +20,11 @@ export const editTypes: { [key: string]: {[key: string]: any} } = {
       "interfaces": {
         title: "Interfaces",
         fields: [
-          {key: "name", label: "Name", component: () => TextBox },
+          {key: "name", label: "Name", component: () => TextBox, default: "placeholder"},
           {key: "type", label: "Type", component: () => PillBar, props: {options: [{name: 'Hardware', selected: true}, {name: 'VLAN'}, {name: 'Bond'}, {name: 'Brdige'}]}},
           {key: "hardware_interface", label: "Hardware Interface", component: () => TextBox },
           {key: "vlan_id", label: "VLAN ID", component: () => NumberBox, props: {min: 1, max: 4094} },
-          {key: "bond_members", label: "Nond Members", component: () => TextBox },
+          {key: "bond_members", label: "Bond Members", component: () => TextBox, if: () => true },
           {key: "bridge_members", label: "Bridge Memebers", component: () => TextBox },
           {key: "addressing_mode", label: "Addressing Mode", component: () => PillBar, props: {options: [{name: 'None', selected: true}, {name: 'Static'}, {name: 'DHCP'}]}},
           {key: "address", label: "Address", component: () => TextBox },

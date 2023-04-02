@@ -3,7 +3,7 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	"nfsense.net/nfsense/internal/definitions"
 )
@@ -14,7 +14,7 @@ func (m *ConfigManager) saveConfig(path string, conf *definitions.Config) error 
 		return fmt.Errorf("Marshal Config: %w", err)
 	}
 
-	err = ioutil.WriteFile(path, data, 0644)
+	err = os.WriteFile(path, data, 0644)
 	if err != nil {
 		return fmt.Errorf("Write Config: %w", err)
 	}

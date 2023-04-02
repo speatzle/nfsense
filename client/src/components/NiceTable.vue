@@ -16,8 +16,9 @@ const props = defineModel<{
   sortBy?: string,
   sortDesc?: boolean,
   selection?: number[],
+  draggable?: boolean,
 }>();
-let { columns, data, sort, sortSelf, sortBy, sortDesc, selection } = $(props);
+let { columns, data, sort, sortSelf, sortBy, sortDesc, selection, draggable } = $(props);
 
 const emit = defineEmits<{
   (event: 'rowAction', index: number): void,
@@ -126,7 +127,7 @@ function dragDropRow() {
     </thead>
     <tbody>
       <tr v-for="(row, index) in displayData" :key="index"
-          draggable="true"
+          :draggable="draggable"
           @click="() => rowSelection(index)"
           @dblclick="() => emit('rowAction', index)"
           @dragstart="() => draggedRow = index"

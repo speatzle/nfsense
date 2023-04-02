@@ -51,7 +51,7 @@ type MoveForwardRuleParameters struct {
 	ToIndex uint64 `json:"to_index"`
 }
 
-func (f *Firewall) MoveForwardRule(ctx context.Context, params DeleteForwardRuleParameters) (struct{}, error) {
+func (f *Firewall) MoveForwardRule(ctx context.Context, params MoveForwardRuleParameters) (struct{}, error) {
 	if int(params.Index) >= len(f.ConfigManager.GetPendingConfig().Firewall.ForwardRules) {
 		return struct{}{}, fmt.Errorf("ForwardRule does not Exist")
 	}
@@ -59,7 +59,13 @@ func (f *Firewall) MoveForwardRule(ctx context.Context, params DeleteForwardRule
 	t, conf := f.ConfigManager.StartTransaction()
 	defer t.Discard()
 
-	conf.Firewall.ForwardRules = append(conf.Firewall.ForwardRules[:params.Index], conf.Firewall.ForwardRules[params.Index+1:]...)
+	rule := conf.Firewall.ForwardRules[params.Index]
+	sliceWithoutRule := append(conf.Firewall.ForwardRules[:params.Index], conf.Firewall.ForwardRules[params.Index+1:]...)
+	newSlice := make([]definitions.ForwardRule, params.ToIndex+1)
+	copy(newSlice, sliceWithoutRule[:params.ToIndex])
+	newSlice[params.ToIndex] = rule
+	conf.Firewall.ForwardRules = append(newSlice, sliceWithoutRule[params.ToIndex:]...)
+
 	return struct{}{}, t.Commit()
 }
 

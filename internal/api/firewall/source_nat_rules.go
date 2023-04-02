@@ -51,7 +51,7 @@ type MoveSourceNATRuleParameters struct {
 	ToIndex uint64 `json:"to_index"`
 }
 
-func (f *Firewall) MoveSourceNATRule(ctx context.Context, params DeleteSourceNATRuleParameters) (struct{}, error) {
+func (f *Firewall) MoveSourceNATRule(ctx context.Context, params MoveSourceNATRuleParameters) (struct{}, error) {
 	if int(params.Index) >= len(f.ConfigManager.GetPendingConfig().Firewall.SourceNATRules) {
 		return struct{}{}, fmt.Errorf("SourceNATRule does not Exist")
 	}
@@ -59,7 +59,13 @@ func (f *Firewall) MoveSourceNATRule(ctx context.Context, params DeleteSourceNAT
 	t, conf := f.ConfigManager.StartTransaction()
 	defer t.Discard()
 
-	conf.Firewall.SourceNATRules = append(conf.Firewall.SourceNATRules[:params.Index], conf.Firewall.SourceNATRules[params.Index+1:]...)
+	rule := conf.Firewall.SourceNATRules[params.Index]
+	sliceWithoutRule := append(conf.Firewall.SourceNATRules[:params.Index], conf.Firewall.SourceNATRules[params.Index+1:]...)
+	newSlice := make([]definitions.SourceNATRule, params.ToIndex+1)
+	copy(newSlice, sliceWithoutRule[:params.ToIndex])
+	newSlice[params.ToIndex] = rule
+	conf.Firewall.SourceNATRules = append(newSlice, sliceWithoutRule[params.ToIndex:]...)
+
 	return struct{}{}, t.Commit()
 }
 

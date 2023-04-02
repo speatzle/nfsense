@@ -51,7 +51,7 @@ type MoveDestinationNATRuleParameters struct {
 	ToIndex uint64 `json:"to_index"`
 }
 
-func (f *Firewall) MoveDestinationNATRule(ctx context.Context, params DeleteDestinationNATRuleParameters) (struct{}, error) {
+func (f *Firewall) MoveDestinationNATRule(ctx context.Context, params MoveDestinationNATRuleParameters) (struct{}, error) {
 	if int(params.Index) >= len(f.ConfigManager.GetPendingConfig().Firewall.DestinationNATRules) {
 		return struct{}{}, fmt.Errorf("DestinationNATRule does not Exist")
 	}
@@ -59,7 +59,13 @@ func (f *Firewall) MoveDestinationNATRule(ctx context.Context, params DeleteDest
 	t, conf := f.ConfigManager.StartTransaction()
 	defer t.Discard()
 
-	conf.Firewall.DestinationNATRules = append(conf.Firewall.DestinationNATRules[:params.Index], conf.Firewall.DestinationNATRules[params.Index+1:]...)
+	rule := conf.Firewall.DestinationNATRules[params.Index]
+	sliceWithoutRule := append(conf.Firewall.DestinationNATRules[:params.Index], conf.Firewall.DestinationNATRules[params.Index+1:]...)
+	newSlice := make([]definitions.DestinationNATRule, params.ToIndex+1)
+	copy(newSlice, sliceWithoutRule[:params.ToIndex])
+	newSlice[params.ToIndex] = rule
+	conf.Firewall.DestinationNATRules = append(newSlice, sliceWithoutRule[params.ToIndex:]...)
+
 	return struct{}{}, t.Commit()
 }
 

@@ -40,7 +40,7 @@ type UpdateAddressParameters struct {
 	Address definitions.Address
 }
 
-func (f *Object) UpdateAddress(ctx context.Context, params CreateAddressParameters) (struct{}, error) {
+func (f *Object) UpdateAddress(ctx context.Context, params UpdateAddressParameters) (struct{}, error) {
 	_, ok := f.ConfigManager.GetPendingConfig().Object.Addresses[params.Name]
 	if !ok {
 		return struct{}{}, fmt.Errorf("Address does not Exist")

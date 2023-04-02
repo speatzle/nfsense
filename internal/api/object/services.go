@@ -40,7 +40,7 @@ type UpdateServiceParameters struct {
 	Service definitions.Service
 }
 
-func (f *Object) UpdateService(ctx context.Context, params CreateServiceParameters) (struct{}, error) {
+func (f *Object) UpdateService(ctx context.Context, params UpdateServiceParameters) (struct{}, error) {
 	_, ok := f.ConfigManager.GetPendingConfig().Object.Services[params.Name]
 	if !ok {
 		return struct{}{}, fmt.Errorf("Service does not Exist")

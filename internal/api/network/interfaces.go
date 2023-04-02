@@ -40,7 +40,7 @@ type UpdateInterfaceParameters struct {
 	Interface definitions.Interface
 }
 
-func (f *Network) UpdateInterface(ctx context.Context, params CreateInterfaceParameters) (struct{}, error) {
+func (f *Network) UpdateInterface(ctx context.Context, params UpdateInterfaceParameters) (struct{}, error) {
 	_, ok := f.ConfigManager.GetPendingConfig().Network.Interfaces[params.Name]
 	if !ok {
 		return struct{}{}, fmt.Errorf("Interface does not Exist")

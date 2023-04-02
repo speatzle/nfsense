@@ -40,15 +40,6 @@ async function load(){
   loading = false
 }
 
-async function apply(){
-  let res = await apiCall("Network.ApplyInterfaces", {});
-  if (res.Error === null) {
-    console.debug("apply log", res.Data.Log);
-  } else {
-    console.debug("error", res);
-  }
-}
-
 async function deleteInterface(){
   let res = await apiCall("Network.DeleteInterface", {name: displayData[selection[0]].name});
   if (res.Error === null) {

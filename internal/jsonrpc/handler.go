@@ -81,7 +81,7 @@ func (h *Handler) HandleRequest(ctx context.Context, s *session.Session, r io.Re
 
 	defer func() {
 		if r := recover(); r != nil {
-			slog.Error("Recovered Panic Executing API Method", fmt.Errorf("%v", r), "method", req.Method, "id", req.ID, "stack", debug.Stack())
+			slog.Error("Recovered Panic Executing API Method", fmt.Errorf("%v", r), "method", req.Method, "params", fmt.Sprintf("%+v", params[2]), "id", req.ID, "stack", debug.Stack())
 		}
 	}()
 	res := method.handlerFunc.Call(params)
@@ -89,7 +89,7 @@ func (h *Handler) HandleRequest(ctx context.Context, s *session.Session, r io.Re
 
 	if !res[1].IsNil() {
 		reqerr := res[1].Interface().(error)
-		slog.Error("API Method", reqerr, "method", req.Method, "id", req.ID)
+		slog.Error("API Method", reqerr, "method", req.Method, "id", req.ID, "params", fmt.Sprintf("%+v", params[2]))
 		respondError(w, req.ID, ErrInternalError, reqerr)
 		return nil
 	}

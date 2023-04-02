@@ -60,7 +60,7 @@ onMounted(async() => {
   <TableView title="Interfaces" :columns="columns" :loading="loading" v-model:selection="selection" v-model:data="displayData" :table-props="{sort:true, sortSelf: true}">
     <button @click="load">Refresh</button>
     <router-link class="button" to="/edit/network/interfaces">Create</router-link>
-    <router-link class="button" :disabled="selection.length != 1" :to="'/edit/network/interfaces/' + selection[0]">Edit</router-link>
+    <router-link class="button" :class="{ disabled: selection.length != 1 }" :to="'/edit/network/interfaces/' + selection[0]">Edit</router-link>
     <button @click="deleteInterface" :disabled="selection.length != 1">Delete</button>
   </TableView>
 </template>

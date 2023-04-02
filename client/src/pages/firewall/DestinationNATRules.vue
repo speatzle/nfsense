@@ -34,6 +34,17 @@ async function deleteRule(){
   load();
 }
 
+async function draggedRow(draggedRow: number, draggedOverRow: number) {
+  console.log("dragged", draggedRow, draggedOverRow);
+  let res = await apiCall("Firewall.MoveDestinationNATRule", {index: draggedRow, to_index: draggedOverRow});
+  if (res.Error === null) {
+    console.debug("deleted rule");
+  } else {
+    console.debug("error", res);
+  }
+  load();
+}
+
 onMounted(async() => {
   load();
 });
@@ -42,7 +53,7 @@ onMounted(async() => {
 
 <template>
   <div>
-      <TableView title="DNAT Rules" :columns="columns" :loading="loading" v-model:selection="selection" v-model:data="rules" :table-props="{sort:true, sortSelf: true, dragable: true}">
+      <TableView title="DNAT Rules" :columns="columns" :loading="loading" @draggedRow="draggedRow" v-model:selection="selection" v-model:data="rules" :table-props="{sort:true, sortSelf: true, draggable: true}">
       <button @click="load">Refresh</button>
       <button @click="load">Create</button>
       <button @click="load" :disabled="selection.length != 1">Edit</button>

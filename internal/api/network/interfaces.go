@@ -28,8 +28,11 @@ func (f *Network) CreateInterface(ctx context.Context, params CreateInterfacePar
 		return struct{}{}, fmt.Errorf("Interface already Exists")
 	}
 
-	f.ConfigManager.GetPendingConfig().Network.Interfaces[params.Name] = params.Interface
-	return struct{}{}, nil
+	t, conf := f.ConfigManager.StartTransaction()
+	defer t.Discard()
+
+	conf.Network.Interfaces[params.Name] = params.Interface
+	return struct{}{}, t.Commit()
 }
 
 type UpdateInterfaceParameters struct {
@@ -43,8 +46,11 @@ func (f *Network) UpdateInterface(ctx context.Context, params CreateInterfacePar
 		return struct{}{}, fmt.Errorf("Interface does not Exist")
 	}
 
-	f.ConfigManager.GetPendingConfig().Network.Interfaces[params.Name] = params.Interface
-	return struct{}{}, nil
+	t, conf := f.ConfigManager.StartTransaction()
+	defer t.Discard()
+
+	conf.Network.Interfaces[params.Name] = params.Interface
+	return struct{}{}, t.Commit()
 }
 
 type DeleteInterfaceParameters struct {
@@ -57,6 +63,9 @@ func (f *Network) DeleteInterface(ctx context.Context, params DeleteInterfacePar
 		return struct{}{}, fmt.Errorf("Interface does not Exist")
 	}
 
-	delete(f.ConfigManager.GetPendingConfig().Network.Interfaces, params.Name)
-	return struct{}{}, nil
+	t, conf := f.ConfigManager.StartTransaction()
+	defer t.Discard()
+
+	delete(conf.Network.Interfaces, params.Name)
+	return struct{}{}, t.Commit()
 }

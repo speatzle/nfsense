@@ -28,8 +28,11 @@ func (f *Object) CreateAddress(ctx context.Context, params CreateAddressParamete
 		return struct{}{}, fmt.Errorf("Address already Exists")
 	}
 
-	f.ConfigManager.GetPendingConfig().Object.Addresses[params.Name] = params.Address
-	return struct{}{}, nil
+	t, conf := f.ConfigManager.StartTransaction()
+	defer t.Discard()
+
+	conf.Object.Addresses[params.Name] = params.Address
+	return struct{}{}, t.Commit()
 }
 
 type UpdateAddressParameters struct {
@@ -43,8 +46,11 @@ func (f *Object) UpdateAddress(ctx context.Context, params CreateAddressParamete
 		return struct{}{}, fmt.Errorf("Address does not Exist")
 	}
 
-	f.ConfigManager.GetPendingConfig().Object.Addresses[params.Name] = params.Address
-	return struct{}{}, nil
+	t, conf := f.ConfigManager.StartTransaction()
+	defer t.Discard()
+
+	conf.Object.Addresses[params.Name] = params.Address
+	return struct{}{}, t.Commit()
 }
 
 type DeleteAddressParameters struct {
@@ -57,6 +63,9 @@ func (f *Object) DeleteAddress(ctx context.Context, params DeleteAddressParamete
 		return struct{}{}, fmt.Errorf("Interface does not Exist")
 	}
 
-	delete(f.ConfigManager.GetPendingConfig().Object.Addresses, params.Name)
-	return struct{}{}, nil
+	t, conf := f.ConfigManager.StartTransaction()
+	defer t.Discard()
+
+	delete(conf.Object.Addresses, params.Name)
+	return struct{}{}, t.Commit()
 }

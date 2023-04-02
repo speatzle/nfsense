@@ -28,8 +28,11 @@ func (f *Object) CreateService(ctx context.Context, params CreateServiceParamete
 		return struct{}{}, fmt.Errorf("Service already Exists")
 	}
 
-	f.ConfigManager.GetPendingConfig().Object.Services[params.Name] = params.Service
-	return struct{}{}, nil
+	t, conf := f.ConfigManager.StartTransaction()
+	defer t.Discard()
+
+	conf.Object.Services[params.Name] = params.Service
+	return struct{}{}, t.Commit()
 }
 
 type UpdateServiceParameters struct {
@@ -43,8 +46,11 @@ func (f *Object) UpdateService(ctx context.Context, params CreateServiceParamete
 		return struct{}{}, fmt.Errorf("Service does not Exist")
 	}
 
-	f.ConfigManager.GetPendingConfig().Object.Services[params.Name] = params.Service
-	return struct{}{}, nil
+	t, conf := f.ConfigManager.StartTransaction()
+	defer t.Discard()
+
+	conf.Object.Services[params.Name] = params.Service
+	return struct{}{}, t.Commit()
 }
 
 type DeleteServiceParameters struct {
@@ -57,6 +63,9 @@ func (f *Object) DeleteService(ctx context.Context, params DeleteServiceParamete
 		return struct{}{}, fmt.Errorf("Interface does not Exist")
 	}
 
-	delete(f.ConfigManager.GetPendingConfig().Object.Services, params.Name)
-	return struct{}{}, nil
+	t, conf := f.ConfigManager.StartTransaction()
+	defer t.Discard()
+
+	delete(conf.Object.Services, params.Name)
+	return struct{}{}, t.Commit()
 }

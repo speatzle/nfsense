@@ -7,5 +7,5 @@ func (m *ConfigManager) AreChangesPending() bool {
 }
 
 func (m *ConfigManager) GetPendingChangelog() (diff.Changelog, error) {
-	return diff.Diff(m.currentConfig, m.pendingConfig)
+	return diff.Diff(m.currentConfig, m.pendingConfig, diff.SliceOrdering(true))
 }

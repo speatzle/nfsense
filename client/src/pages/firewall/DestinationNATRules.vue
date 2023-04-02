@@ -2,6 +2,9 @@
 import { apiCall } from "../../api";
 
 let rules = $ref([]);
+let loading = $ref(false);
+let selection = $ref([] as number[]);
+
 const columns = [
   {heading: 'Name', path: 'name'},
   {heading: 'Source', path: 'match.source_addresses'},
@@ -11,27 +14,39 @@ const columns = [
   {heading: 'Comment', path: 'comment'},
 ];
 
-async function loadRules(){
+async function load(){
   let res = await apiCall("Firewall.GetDestinationNATRules", {});
   if (res.Error === null) {
-    rules = res.Data.DestinationNATRules;
+    rules = res.Data.destination_nat_rules;
     console.debug("rules", rules);
   } else {
     console.debug("error", res);
   }
 }
 
+async function deleteRule(){
+  let res = await apiCall("Firewall.DeleteDestinationNATRule", {index: selection[0]});
+  if (res.Error === null) {
+    console.debug("deleted rule");
+  } else {
+    console.debug("error", res);
+  }
+  load();
+}
+
 onMounted(async() => {
-  loadRules();
+  load();
 });
 
 </script>
 
 <template>
   <div>
-    <PageHeader title="DNAT Rules">
-      <button @click="loadRules">Load Rules</button>
-    </PageHeader>
-    <NiceTable :columns="columns" v-model:data="rules" draggable="true"/>
+      <TableView title="DNAT Rules" :columns="columns" :loading="loading" v-model:selection="selection" v-model:data="rules" :table-props="{sort:true, sortSelf: true, dragable: true}">
+      <button @click="load">Refresh</button>
+      <button @click="load">Create</button>
+      <button @click="load" :disabled="selection.length != 1">Edit</button>
+      <button @click="deleteRule" :disabled="selection.length != 1">Delete</button>
+    </TableView>
   </div>
 </template>

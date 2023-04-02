@@ -2,6 +2,9 @@
 import { apiCall } from "../../api";
 
 let rules = $ref([]);
+let loading = $ref(false);
+let selection = $ref([] as number[]);
+
 const columns = [
   {heading: 'Name', path: 'name'},
   {heading: 'Source', path: 'match.source_addresses'},
@@ -12,27 +15,39 @@ const columns = [
   {heading: 'Comment', path: 'comment'},
 ];
 
-async function loadRules(){
+async function load(){
   let res = await apiCall("Firewall.GetForwardRules", {});
   if (res.Error === null) {
-    rules = res.Data.ForwardRules;
+    rules = res.Data.forward_rules;
     console.debug("rules", rules);
   } else {
     console.debug("error", res);
   }
 }
 
+async function deleteRule(){
+  let res = await apiCall("Firewall.DeleteForwardRule", {index: selection[0]});
+  if (res.Error === null) {
+    console.debug("deleted rule");
+  } else {
+    console.debug("error", res);
+  }
+  load();
+}
+
 onMounted(async() => {
-  loadRules();
+  load();
 });
 
 </script>
 
 <template>
   <div>
-    <PageHeader title="Forward Rules">
-      <button @click="loadRules">Load Rules</button>
-    </PageHeader>
-    <NiceTable :columns="columns" v-model:data="rules" draggable="true"/>
+      <TableView title="Forward Rules" :columns="columns" :loading="loading" v-model:selection="selection" v-model:data="rules" :table-props="{sort:true, sortSelf: true, dragable: true}">
+      <button @click="load">Refresh</button>
+      <button @click="load">Create</button>
+      <button @click="load" :disabled="selection.length != 1">Edit</button>
+      <button @click="deleteRule" :disabled="selection.length != 1">Delete</button>
+    </TableView>
   </div>
 </template>

@@ -39,6 +39,11 @@ func (t *ConfigTransaction) Commit() error {
 		return fmt.Errorf("validating Config before Apply: %w", err)
 	}
 
+	err = t.configManager.saveConfig(t.configManager.pendingConfigFilePath, t.changes)
+	if err != nil {
+		return fmt.Errorf("Save Current Config: %w", err)
+	}
+
 	t.configManager.pendingConfig = t.changes.Clone()
 
 	return nil

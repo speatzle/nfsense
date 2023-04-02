@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"os"
 
 	"golang.org/x/exp/slog"
 	"nfsense.net/nfsense/internal/definitions"
@@ -22,6 +23,16 @@ func (m *ConfigManager) ApplyPendingChanges() error {
 			}
 			return err
 		}
+	}
+	m.currentConfig = m.pendingConfig.Clone()
+
+	err := m.saveConfig(m.currentConfigFilePath, m.pendingConfig)
+	if err != nil {
+		return fmt.Errorf("Save Current Config: %w", err)
+	}
+	err = os.Remove(m.pendingConfigFilePath)
+	if err != nil {
+		return fmt.Errorf("Delete Pending Config: %w", err)
 	}
 	return nil
 }

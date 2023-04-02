@@ -9,6 +9,7 @@ import IEthernet from '~icons/bi/ethernet';
 import IService from '~icons/material-symbols/home-repair-service';
 import ISNAT from '~icons/mdi/arrow-expand-right';
 import IDNAT from '~icons/mdi/arrow-collapse-right';
+import IConfig from '~icons/grommet-icons/document-config';
 
 enum NavState { Open, Reduced, Collapsed };
 const NavStateCount = 3;
@@ -21,6 +22,7 @@ const navRoutes = {
   "/network/interfaces": { icon: IEthernet, caption: "Interfaces" },
   "/object/addresses": { icon: IAddress, caption: "Addresses" },
   "/object/services": { icon: IService, caption: "Services" },
+  "/config/config": { icon: IConfig, caption: "Config" },
 };
 
 enum AuthState { Unauthenticated, MfaRequired, Authenticated };

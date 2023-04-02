@@ -6,18 +6,20 @@ const props = defineModel<{
     icon: Component,
     selected: boolean,
   }[],
+  modelValue: number,
 }>();
-let { options } = $(props);
+let { options, modelValue } = $(props);
 
 const emit = defineEmits<{
   (event: 'selectionChanged'): void
 }>();
 
-function select(option: any) {
+function select(option: any, index: number) {
   for(let opt of options) {
     opt.selected = false;
   }
   option.selected = true;
+  modelValue = index;
   emit('selectionChanged');
   console.debug("selected", options);
 }
@@ -26,7 +28,7 @@ function select(option: any) {
 
 <template>
   <div>
-    <button class="option" v-for="(option, index) in options" :key="index" :class="{selected:option.selected}" @click="select(option)">
+    <button class="option" v-for="(option, index) in options" :key="index" :class="{selected:option.selected}" @click="select(option, index)">
       <i class="material-icons" v-if="option.icon">{{ option.icon }}</i>
       {{ option.name }}
     </button>

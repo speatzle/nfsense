@@ -30,3 +30,11 @@ func (c *Config) GetPendingChangelog(ctx context.Context, params struct{}) (GetP
 		Changelog: log,
 	}, nil
 }
+
+func (c *Config) ApplyPendingChanges(ctx context.Context, params struct{}) (struct{}, error) {
+	return struct{}{}, c.ConfigManager.ApplyPendingChanges()
+}
+
+func (c *Config) DiscardPendingChanges(ctx context.Context, params struct{}) (struct{}, error) {
+	return struct{}{}, c.ConfigManager.DiscardPendingConfig()
+}

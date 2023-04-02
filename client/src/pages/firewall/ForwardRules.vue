@@ -56,8 +56,8 @@ onMounted(async() => {
   <div>
       <TableView title="Forward Rules" :columns="columns" :loading="loading" @draggedRow="draggedRow" v-model:selection="selection" v-model:data="rules" :table-props="{sort:true, sortSelf: true, draggable: true}">
       <button @click="load">Refresh</button>
-      <button @click="load">Create</button>
-      <button @click="load" :disabled="selection.length != 1">Edit</button>
+      <router-link class="button" to="/edit/firewall/forwardrules">Create</router-link>
+      <router-link class="button" :disabled="selection.length != 1" :to="'/edit/firewall/forwardrules/' + selection[0]">Edit</router-link>
       <button @click="deleteRule" :disabled="selection.length != 1">Delete</button>
     </TableView>
   </div>

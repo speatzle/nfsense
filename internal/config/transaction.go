@@ -44,6 +44,8 @@ func (t *ConfigTransaction) Commit() error {
 	return nil
 }
 
+// Discard Discards the Transaction.
+// Is a noop if The Transaction Already Finished due to a Commit() or another Discard()
 func (t *ConfigTransaction) Discard() {
 	t.mutex.Lock()
 	defer t.mutex.Unlock()

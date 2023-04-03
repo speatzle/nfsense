@@ -1,68 +1,61 @@
 <script setup lang="ts">
-import { loadConfigFromFile } from 'vite';
-
 
 const props = defineModel<{
   title: string
-  fields: {
-    key: string,
-    label: string,
-    component: () => Component,
-    props: any,
-    default: any,
-    if?: () => boolean,
-  }[]
+  sections: {
+    title: string
+    fields: {
+      key: string,
+      label: string,
+      as: string,
+      props: any,
+      default: any,
+      enabled?: (values: Record<string, any>) => Boolean,
+      rules?: (value: any) => true | string,
+    }[],
+  }[],
   modelValue: any,
 }>();
 
-let { title, fields, modelValue } = $(props);
+let { sections } = $(props);
 
-let enabled = $ref({name: true} as any);
-
-const emit = defineEmits<{
-  (event: 'update:modelValue'): void,
-  (event: 'update:enabled'): void
-}>();
-
-onMounted(async() => {
-  for (const field of fields) {
-    if (modelValue[field.key] == undefined) {
-      if (!field.default) {
-        modelValue[field.key] = {};
-      } else {
-        modelValue[field.key] = field.default;
-      }
-      enabled[field.key] = true;
-    }
-  }
-  
-  console.log("modelValue", modelValue, enabled);
-});
 </script>
 
 <template>
-  <div class="form">
-    <h2>{{ title }}</h2>
-    <template v-for="(field, index) in fields" :key="index">
-      <template v-if="enabled[field.key]">
-        <label :for="field.key" v-text="field.label"/>
-        <component :name="field.key" :is="field.component()" v-bind="field.props" v-model="modelValue[field.key]"/>
-      </template>
+  <ValidationForm as="div" v-slot="{ values }" @submit="false">
+    <template v-for="(section, index) in sections" :key="index">
+      <h4 v-if="section.title">{{ section.title }}</h4>
+      <div class="section">
+        <template v-for="(field, index) in section.fields" :key="index">
+          <template v-if="field.enabled ? field.enabled(values) : true">
+            <label :for="field.key" v-text="field.label" />
+            <Field :name="field.key" :as="field.as" :rules="field.rules" v-bind="field.props" />
+            <ErrorMessage :name="field.key" />
+          </template>
+        </template>
+      </div>
     </template>
-  </div>
+    <p>{{ values }}</p>
+  </ValidationForm>
 </template>
 
 <style scoped>
-.form {
+.section {
   display: grid;
   grid-template-columns: auto 1fr;
   padding: 0.5rem;
   gap: 0.5rem;
 }
-.form > :is(button, .button, h2) {
+
+h4,
+p {
   grid-column: 1 / 3;
 }
-.form > :is(label) {
-  grid-column: 1;
+
+h4 {
+  background-color: var(--cl-bg-hl);
+  padding: 0.3rem;
+  padding-left: 0.5rem;
+  ;
 }
 </style>

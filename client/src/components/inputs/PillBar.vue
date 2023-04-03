@@ -3,16 +3,29 @@
 const props = defineModel<{
   options: {
     name: string,
+    key: string,
     icon: Component,
-    selected: boolean,
   }[],
-  modelValue: number,
+  modelValue: number | string,
+  useIndex: boolean,
 }>();
-let { options, modelValue } = $(props);
+let { options, modelValue, useIndex } = $(props);
+
+function setSelection(option: any, index: number){
+  if (useIndex) {
+      modelValue = index
+    } else {
+      modelValue = option.key
+    }
+}
 
 onMounted(async() => {
   if (modelValue === undefined) {
-    modelValue = 0
+    if (useIndex) {
+      modelValue = 0
+    } else {
+      modelValue = options[0].key
+    }
   }
 });
 
@@ -20,7 +33,7 @@ onMounted(async() => {
 
 <template>
   <div>
-    <button class="option" v-for="(option, index) in options" :key="index" :class="{selected: modelValue == index}" @click="modelValue = index">
+    <button class="option" v-for="(option, index) in options" :key="index" :class="{selected:  modelValue == index || modelValue == option.key}" @click="setSelection(option, index)">
       <i class="material-icons" v-if="option.icon">{{ option.icon }}</i>
       {{ option.name }}
     </button>

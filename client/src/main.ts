@@ -7,6 +7,7 @@ import 'vue-toast-notification/dist/theme-default.css';
 
 import PillBar from "./components/inputs/PillBar.vue";
 import TextBox from "./components/inputs/TextBox.vue";
+import NumberBox from "./components/inputs/NumberBox.vue";
 import MultilineTextBox from "./components/inputs/MultilineTextBox.vue";
 import CheckBox from "./components/inputs/CheckBox.vue";
 
@@ -32,6 +33,7 @@ app.use(ToastPlugin);
 // Global Components
 app.component('PillBar', PillBar)
 app.component('TextBox', TextBox)
+app.component('NumberBox', NumberBox)
 app.component('MultilineTextBox', MultilineTextBox)
 app.component('CheckBox', CheckBox)
 app.component('ValidationForm', Form)

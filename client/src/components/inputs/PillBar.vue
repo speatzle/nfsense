@@ -10,25 +10,17 @@ const props = defineModel<{
 }>();
 let { options, modelValue } = $(props);
 
-const emit = defineEmits<{
-  (event: 'selectionChanged'): void
-}>();
-
-function select(option: any, index: number) {
-  for(let opt of options) {
-    opt.selected = false;
+onMounted(async() => {
+  if (modelValue === undefined) {
+    modelValue = 0
   }
-  option.selected = true;
-  modelValue = index;
-  emit('selectionChanged');
-  console.debug("selected", options);
-}
+});
 
 </script>
 
 <template>
   <div>
-    <button class="option" v-for="(option, index) in options" :key="index" :class="{selected:option.selected}" @click="select(option, index)">
+    <button class="option" v-for="(option, index) in options" :key="index" :class="{selected: modelValue == index}" @click="modelValue = index">
       <i class="material-icons" v-if="option.icon">{{ option.icon }}</i>
       {{ option.name }}
     </button>

@@ -14,7 +14,7 @@ async function create(value: any) {
   console.debug("value", value);
   let res = await apiCall(editTypes[subsystem].name +".Create"+ editTypes[subsystem][entity].name, value);
   if (res.Error === null) {
-    $toast.success("Created " + entity);
+    $toast.success("Created " + editTypes[subsystem][entity].name);
     $router.go(-1)
   } else {
     console.debug("error", res);

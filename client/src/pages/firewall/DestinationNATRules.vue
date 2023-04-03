@@ -55,8 +55,8 @@ onMounted(async() => {
   <div>
       <TableView title="DNAT Rules" :columns="columns" :loading="loading" @draggedRow="draggedRow" v-model:selection="selection" v-model:data="rules" :table-props="{sort:true, sortSelf: true, draggable: true}">
       <button @click="load">Refresh</button>
-      <router-link class="button" to="/edit/firewall/destinationnatrules">Create</router-link>
-      <router-link class="button" :class="{ disabled: selection.length != 1 }" :to="'/edit/firewall/destinationnatrules/' + selection[0]">Edit</router-link>
+      <router-link class="button" to="/firewall/destinationnatrules/edit">Create</router-link>
+      <router-link class="button" :class="{ disabled: selection.length != 1 }" :to="'/firewall/destinationnatrules/edit/' + selection[0]">Edit</router-link>
       <button @click="deleteRule" :disabled="selection.length != 1">Delete</button>
     </TableView>
   </div>

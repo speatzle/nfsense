@@ -33,7 +33,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
         {
           title: "Addressing",
           fields: [
-            { key: "addressing_mode", label: "Addressing Mode", as: "PillBar", props: { options: [{ name: 'None', selected: true }, { name: 'Static' }, { name: 'DHCP' }] } },
+            { key: "addressing_mode", label: "Addressing Mode", as: "PillBar", props: { options: [{ name: 'None', key: 'none' }, { name: 'Static', key: 'static' }, { name: 'DHCP', key: 'dhcp' }] } },
             { key: "address", label: "Address", as: "TextBox", enabled: (values: any) => (values["addressing_mode"] == 1) },
             { key: "comment", label: "Comment", as: "MultilineTextBox" },
           ],

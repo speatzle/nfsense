@@ -9,7 +9,7 @@ type Interface struct {
 	Type              InterfaceType           `json:"type" validate:"min=0,max=3"`
 	AddressingMode    InterfaceAddressingMode `json:"addressing_mode" validate:"min=0,max=2"`
 	Address           *netip.Addr             `json:"address,omitempty" validate:"excluded_unless=AddressingMode 1"`
-	HardwareInterface *string                 `json:"hardware_interface,omitempty" validate:"excluded_unless=Type 0"`
+	HardwareInterface *string                 `json:"hardware_interface,omitempty"`
 	// TODO fix Validator for int pointers with min=0,max=4094
 	VlanID        *uint     `json:"vlan_id,omitempty" validate:"excluded_unless=Type 1"`
 	BondMembers   *[]string `json:"bond_members,omitempty" validate:"excluded_unless=Type 2"`

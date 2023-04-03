@@ -7,7 +7,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
         { 
           fields: [
           { key: "name", label: "Name", as: "TextBox" },
-          { key: "verdict", label: "Verdict", as: "PillBar", props: { options: [{ name: 'Accept' }, { name: 'Drop' }, { name: 'Continue' }] } },
+          { key: "verdict", label: "Verdict", as: "PillBar", props: { options: [{ name: 'Accept', key: 'accept' }, { name: 'Drop', key: 'drop' }, { name: 'Continue', key: 'continue' }] } },
           { key: "counter", label: "Counter", as: "CheckBox", },
           { key: "comment", label: "Comment", as: "MultilineTextBox", },
         ],
@@ -23,7 +23,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
         {
           fields: [
             { key: "name", label: "Name", as: "TextBox", default: "placeholder" },
-            { key: "type", label: "Type", as: "PillBar", props: { options: [{ name: 'Hardware' }, { name: 'VLAN' }, { name: 'Bond' }, { name: 'Bridge' }] } },
+            { key: "type", label: "Type", as: "PillBar", props: { options: [{ name: 'Hardware', key: 'hardware' }, { name: 'VLAN', key: 'vlan' }, { name: 'Bond', key: 'bond' }, { name: 'Bridge', key: 'bridge' }] } },
             { key: "hardware_interface", label: "Hardware Interface", as: "TextBox", enabled: (values: any) => (values["type"] == 0) },
             { key: "vlan_id", label: "VLAN ID", as: "NumberBox", props: { min: 1, max: 4094 }, enabled: (values: any) => (values["type"] == 1) },
             { key: "bond_members", label: "Bond Members", as: "TextBox", enabled: (values: any) => (values["type"] == 2) },

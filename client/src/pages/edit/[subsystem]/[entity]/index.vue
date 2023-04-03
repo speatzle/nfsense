@@ -17,7 +17,7 @@ async function create() {
       <button @click="create">Create</button>
       <button @click="$router.go(-1)">Discard</button>
     </PageHeader>
-    <NiceForm class="scroll cl-secondary" :title="editTypes[subsystem][entity].title" :fields="editTypes[subsystem][entity].fields" v-model="data"/>
+    <NiceForm class="scroll cl-secondary" :title="editTypes[subsystem][entity].title" :sections="editTypes[subsystem][entity].sections" v-model="data"/>
   </div>
   <div v-else>
     <PageHeader title="Error"/>

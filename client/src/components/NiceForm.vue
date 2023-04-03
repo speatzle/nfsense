@@ -24,7 +24,7 @@ let { sections, submit, discard } = $(props);
 </script>
 
 <template>
-  <ValidationForm as="form" v-slot="{ values }" @submit="submit">
+  <ValidationForm as="div" v-slot="{ values, handleSubmit }" @submit="submit">
     <template v-for="(section, index) in sections" :key="index">
       <h4 v-if="section.title">{{ section.title }}</h4>
       <div class="section">
@@ -39,7 +39,7 @@ let { sections, submit, discard } = $(props);
     </template>
     <div class="actions">
       <div class="flex-grow"/>
-      <button>Submit</button>
+      <button @click="handleSubmit($event, submit)">Submit</button>
       <div class="space"/>
       <button @click="discard">Discard</button>
       <div class="flex-grow"/>

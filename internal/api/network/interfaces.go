@@ -18,8 +18,8 @@ func (f *Network) GetInterfaces(ctx context.Context, params struct{}) (GetInterf
 }
 
 type CreateInterfaceParameters struct {
-	Name      string
-	Interface definitions.Interface
+	Name string
+	definitions.Interface
 }
 
 func (f *Network) CreateInterface(ctx context.Context, params CreateInterfaceParameters) (struct{}, error) {
@@ -36,8 +36,8 @@ func (f *Network) CreateInterface(ctx context.Context, params CreateInterfacePar
 }
 
 type UpdateInterfaceParameters struct {
-	Name      string
-	Interface definitions.Interface
+	Name string
+	definitions.Interface
 }
 
 func (f *Network) UpdateInterface(ctx context.Context, params UpdateInterfaceParameters) (struct{}, error) {

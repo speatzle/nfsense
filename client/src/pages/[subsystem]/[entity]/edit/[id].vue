@@ -14,11 +14,11 @@ async function update() {
 </script>
 <template>
   <div v-if="editTypes[subsystem][entity]">
-    <PageHeader :title="'Edit ' + editTypes[subsystem][entity].title">
+    <PageHeader :title="'Edit ' + editTypes[subsystem][entity].name">
       <button @click="update">Update</button>
       <button @click="$router.go(-1)">Discard</button>
     </PageHeader>
-    <NiceForm class="scroll cl-secondary" :title="editTypes[subsystem][entity].title" :sections="editTypes[subsystem][entity].sections" v-model="data"/>
+    <NiceForm class="scroll cl-secondary" :sections="editTypes[subsystem][entity].sections" v-model="data"/>
   </div>
   <div v-else>
     <PageHeader title="Error"/>

@@ -1,7 +1,8 @@
 export const editTypes: { [key: string]: { [key: string]: any } } = {
   "firewall": {
+    name: "Firewall",
     "forwardrules": {
-      title: "Forward Rule",
+      name: "ForwardRule",
       sections: [
         { 
           fields: [
@@ -15,8 +16,9 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
     },
   },
   "network": {
+    name: "Network",
     "interfaces": {
-      title: "Interfaces",
+      name: "Interface",
       sections: [
         {
           fields: [

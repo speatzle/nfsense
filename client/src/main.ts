@@ -31,13 +31,13 @@ app.use(head);
 app.use(ToastPlugin);
 
 // Global Components
-app.component('PillBar', PillBar)
-app.component('TextBox', TextBox)
-app.component('NumberBox', NumberBox)
-app.component('MultilineTextBox', MultilineTextBox)
-app.component('CheckBox', CheckBox)
-app.component('ValidationForm', Form)
-app.component('Field', Field)
-app.component('ErrorMessage', ErrorMessage)
+app.component('PillBar', PillBar);
+app.component('TextBox', TextBox);
+app.component('NumberBox', NumberBox);
+app.component('MultilineTextBox', MultilineTextBox);
+app.component('CheckBox', CheckBox);
+app.component('ValidationForm', Form);
+app.component('Field', Field);
+app.component('ErrorMessage', ErrorMessage);
 
 app.mount('#app');

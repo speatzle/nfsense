@@ -1,8 +1,19 @@
+import { toFormValidator } from '@vee-validate/zod';
+import * as zod from 'zod';
+
 export const editTypes: { [key: string]: { [key: string]: any } } = {
   "firewall": {
     name: "Firewall",
     "forwardrules": {
       name: "ForwardRule",
+      validationSchema: toFormValidator(
+        zod.object({
+          name: zod.string(),
+          verdict: zod.string(),
+          counter: zod.boolean(),
+          comment: zod.string().optional(),
+        }),
+      ),
       sections: [
         { 
           fields: [
@@ -19,6 +30,15 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
     name: "Network",
     "interfaces": {
       name: "Interface",
+      validationSchema: toFormValidator(
+        zod.object({
+          name: zod.string(),
+          type: zod.string(),
+          hardware_interface: zod.string().optional(),
+          vlan_id: zod.number().optional(),
+          comment: zod.string().optional(),
+        }),
+      ),
       sections: [
         {
           fields: [

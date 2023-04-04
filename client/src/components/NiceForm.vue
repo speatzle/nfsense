@@ -2,6 +2,7 @@
 
 const props = defineModel<{
   title: string
+  validationSchema: Record<string, string | Function>,
   sections: {
     title: string
     fields: {
@@ -19,12 +20,12 @@ const props = defineModel<{
   discard: () => void,
 }>();
 
-let { sections, submit, discard } = $(props);
+let { sections, submit, discard, validationSchema } = $(props);
 
 </script>
 
 <template>
-  <ValidationForm as="div" v-slot="{ values, handleSubmit }" @submit="submit">
+  <ValidationForm as="div" v-slot="{ values, handleSubmit }" @submit="submit" :validationSchema="validationSchema">
     <template v-for="(section, index) in sections" :key="index">
       <h4 v-if="section.title">{{ section.title }}</h4>
       <div class="section">

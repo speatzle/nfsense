@@ -1,0 +1,13 @@
+[Match]
+{{ if .VlanID -}}
+OriginalName={{ .Name .VlanID }}
+{{- else -}}
+MACAddress={{ .Mac }}
+{{- end }}
+[Link]
+{{ if .VlanID -}}
+MACAddress={{ .Mac }}
+{{ end -}}
+{{ if .Alias -}}
+Alias={{ .Alias }}
+{{- end }}

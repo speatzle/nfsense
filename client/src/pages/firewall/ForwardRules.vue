@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { apiCall } from "../../api";
+import getPlugins from '../../plugins';
+const p = getPlugins();
 
 let rules = $ref([]);
 let loading = $ref(false);
@@ -29,6 +31,7 @@ async function deleteRule(){
   let res = await apiCall("Firewall.DeleteForwardRule", {index: selection[0]});
   if (res.Error === null) {
     console.debug("deleted rule");
+    p.toast.success("Deleted Rule");
   } else {
     console.debug("error", res);
   }
@@ -39,7 +42,8 @@ async function draggedRow(draggedRow: number, draggedOverRow: number) {
   console.log("dragged", draggedRow, draggedOverRow);
   let res = await apiCall("Firewall.MoveForwardRule", {index: draggedRow, to_index: draggedOverRow});
   if (res.Error === null) {
-    console.debug("deleted rule");
+    console.debug("moved rule");
+    p.toast.success("Moved Rule");
   } else {
     console.debug("error", res);
   }

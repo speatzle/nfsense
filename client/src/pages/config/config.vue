@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { apiCall } from "../../api";
+import getPlugins from '../../plugins';
+const p = getPlugins();
+
 
 let changelog = $ref([]);
 let loading = $ref(false);
@@ -41,6 +44,7 @@ async function apply(){
   let res = await apiCall("Config.ApplyPendingChanges", {});
   if (res.Error === null) {
     console.debug("apply");
+    p.toast.success("Applied Pending Config");
   } else {
     console.debug("error", res);
   }
@@ -50,7 +54,8 @@ async function apply(){
 async function discard(){
   let res = await apiCall("Config.DiscardPendingChanges", {});
   if (res.Error === null) {
-    console.debug("apply");
+    console.debug("discard");
+    p.toast.success("Discarded Pending Config");
   } else {
     console.debug("error", res);
   }

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 
 import { editTypes } from "../../../../definitions";
+import getPlugins from '../../../../plugins';
+const p = getPlugins();
 
 const props = $defineProps<{subsystem: string, entity: string, id: string}>();
 const { subsystem, entity, id } = $(props);
@@ -8,7 +10,7 @@ const { subsystem, entity, id } = $(props);
 let data = $ref({} as {});
 
 async function update() {
-  
+
 }
 
 </script>

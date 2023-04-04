@@ -31,7 +31,8 @@ let { sections, submit, discard } = $(props);
         <template v-for="(field, index) in section.fields" :key="index">
           <template v-if="field.enabled ? field.enabled(values) : true">
             <label :for="field.key" v-text="field.label" />
-            <Field :name="field.key" :as="field.as" :rules="field.rules" v-bind="field.props" />
+            <Field v-if="field.as == 'NumberBox'" :name="field.key" :as="field.as" :rules="field.rules" v-bind="field.props" @update:modelValue="values[field.key] = Number(values[field.key])"/>
+            <Field v-else :name="field.key" :as="field.as" :rules="field.rules" v-bind="field.props"/>
             <ErrorMessage :name="field.key" />
           </template>
         </template>

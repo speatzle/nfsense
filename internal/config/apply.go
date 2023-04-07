@@ -13,7 +13,7 @@ import (
 func (m *ConfigManager) ApplyPendingChanges() error {
 	slog.Info("Applying Pending Changes...")
 	for _, fn := range m.applyFunctions {
-		err := fn(*m.pendingConfig)
+		err := fn(*m.currentConfig, *m.pendingConfig)
 		if err != nil {
 			slog.Error("Applying Pending Changes", err)
 			err2 := revertToCurrent(m)
@@ -39,7 +39,7 @@ func (m *ConfigManager) ApplyPendingChanges() error {
 
 func revertToCurrent(m *ConfigManager) error {
 	for _, fn := range m.applyFunctions {
-		err := fn(*m.currentConfig)
+		err := fn(*m.pendingConfig, *m.currentConfig)
 		if err != nil {
 			return err
 		}
@@ -47,6 +47,6 @@ func revertToCurrent(m *ConfigManager) error {
 	return nil
 }
 
-func (m *ConfigManager) RegisterApplyFunction(fn func(definitions.Config) error) {
+func (m *ConfigManager) RegisterApplyFunction(fn func(currentConfig definitions.Config, pendingConfig definitions.Config) error) {
 	m.applyFunctions = append(m.applyFunctions, fn)
 }

@@ -15,7 +15,7 @@ type ConfigManager struct {
 
 	transactionMutex sync.Mutex
 
-	applyFunctions []func(definitions.Config) error
+	applyFunctions []func(currentConfig definitions.Config, pendingConfig definitions.Config) error
 }
 
 func CreateConfigManager() *ConfigManager {

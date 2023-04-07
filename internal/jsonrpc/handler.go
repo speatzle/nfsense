@@ -82,6 +82,7 @@ func (h *Handler) HandleRequest(ctx context.Context, s *session.Session, r io.Re
 	defer func() {
 		if r := recover(); r != nil {
 			slog.Error("Recovered Panic Executing API Method", fmt.Errorf("%v", r), "method", req.Method, "params", fmt.Sprintf("%+v", params[2]), "id", req.ID, "stack", debug.Stack())
+			respondError(w, req.ID, ErrInternalError, fmt.Errorf("%v", r))
 		}
 	}()
 	res := method.handlerFunc.Call(params)

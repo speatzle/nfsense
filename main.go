@@ -16,6 +16,7 @@ import (
 	"nfsense.net/nfsense/internal/api/object"
 	"nfsense.net/nfsense/internal/config"
 	"nfsense.net/nfsense/internal/jsonrpc"
+	"nfsense.net/nfsense/internal/networkd"
 	"nfsense.net/nfsense/internal/server"
 )
 
@@ -26,6 +27,7 @@ func main() {
 	slog.Info("Starting...")
 
 	configManager := config.CreateConfigManager()
+	configManager.RegisterApplyFunction(networkd.ApplyNetworkdConfiguration)
 
 	err := configManager.LoadCurrentConfigFromDisk()
 	if err != nil {

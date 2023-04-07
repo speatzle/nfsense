@@ -2,14 +2,13 @@ package definitions
 
 import (
 	"encoding/json"
-	"net/netip"
 )
 
 type Interface struct {
 	Alias             string                  `json:"alias" validate:"min=0,max=3"`
 	Type              InterfaceType           `json:"type" validate:"min=0,max=3"`
 	AddressingMode    InterfaceAddressingMode `json:"addressing_mode" validate:"min=0,max=2"`
-	Address           *netip.Addr             `json:"address,omitempty" validate:"excluded_unless=AddressingMode 1"`
+	Address           *IPNet                  `json:"address,omitempty" validate:"excluded_unless=AddressingMode 1"`
 	HardwareInterface *string                 `json:"hardware_interface,omitempty"`
 	// TODO fix Validator for int pointers with min=0,max=4094
 	VlanID        *uint     `json:"vlan_id,omitempty" validate:"excluded_unless=Type 1"`

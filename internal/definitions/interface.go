@@ -6,12 +6,14 @@ import (
 )
 
 type Interface struct {
+	Alias             string                  `json:"alias" validate:"min=0,max=3"`
 	Type              InterfaceType           `json:"type" validate:"min=0,max=3"`
 	AddressingMode    InterfaceAddressingMode `json:"addressing_mode" validate:"min=0,max=2"`
 	Address           *netip.Addr             `json:"address,omitempty" validate:"excluded_unless=AddressingMode 1"`
 	HardwareInterface *string                 `json:"hardware_interface,omitempty"`
 	// TODO fix Validator for int pointers with min=0,max=4094
 	VlanID        *uint     `json:"vlan_id,omitempty" validate:"excluded_unless=Type 1"`
+	VlanParent    *string   `json:"vlan_parent,omitempty"`
 	BondMembers   *[]string `json:"bond_members,omitempty" validate:"excluded_unless=Type 2"`
 	BridgeMembers *[]string `json:"bridge_members,omitempty" validate:"excluded_unless=Type 3"`
 	Comment       string    `json:"comment,omitempty"`

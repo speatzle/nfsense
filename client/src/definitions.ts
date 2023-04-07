@@ -45,6 +45,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
             { key: "name", label: "Name", as: "TextBox", default: "placeholder" },
             { key: "type", label: "Type", as: "PillBar", props: { options: [{ name: 'Hardware', key: 'hardware' }, { name: 'VLAN', key: 'vlan' }, { name: 'Bond', key: 'bond' }, { name: 'Bridge', key: 'bridge' }] } },
             { key: "hardware_interface", label: "Hardware Interface", as: "TextBox", enabled: (values: any) => (values["type"] == 'hardware') },
+            { key: "vlan_parent", label: "VLAN Parent", as: "TextBox", enabled: (values: any) => (values["type"] == 'vlan') },
             { key: "vlan_id", label: "VLAN ID", as: "NumberBox", props: { min: 1, max: 4094 }, enabled: (values: any) => (values["type"] == 'vlan') },
             { key: "bond_members", label: "Bond Members", as: "TextBox", enabled: (values: any) => (values["type"] == 'bond') },
             { key: "bridge_members", label: "Bridge Members", as: "TextBox", enabled: (values: any) => (values["type"] == 'bridge') },

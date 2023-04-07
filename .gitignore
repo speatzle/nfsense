@@ -5,3 +5,5 @@ interfaces.conf
 go.work
 nfsense
 nfsense.exe
+out/*
+out

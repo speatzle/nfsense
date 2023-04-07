@@ -1,0 +1,8 @@
+[Match]
+OriginalName= {{ .HardwareInterface }}
+
+[Link]
+Name= {{ .Name }}
+{{ if .Alias -}}
+Alias= {{ .Alias }}
+{{- end }}

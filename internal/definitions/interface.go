@@ -5,7 +5,7 @@ import (
 )
 
 type Interface struct {
-	Alias             string                  `json:"alias" validate:"min=0,max=3"`
+	Alias             string                  `json:"alias,omitempty" validate:"min=0,max=3"`
 	Type              InterfaceType           `json:"type" validate:"min=0,max=3"`
 	AddressingMode    InterfaceAddressingMode `json:"addressing_mode" validate:"min=0,max=2"`
 	Address           *IPNet                  `json:"address,omitempty" validate:"excluded_unless=AddressingMode 1"`

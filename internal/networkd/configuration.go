@@ -16,7 +16,8 @@ type NetworkdConfigFile struct {
 type InterfaceWithName struct {
 	Name string
 	definitions.Interface
-	Vlans []string
+	Vlans        []string
+	StaticRoutes []definitions.StaticRoute
 }
 
 type BondMembership struct {
@@ -128,6 +129,7 @@ func GenerateNetworkdConfiguration(conf definitions.Config) ([]NetworkdConfigFil
 
 	// Step 6 Generate addressing network files
 	for name, inter := range conf.Network.Interfaces {
+		// Vlans
 		vlans := []string{}
 		if inter.Type != definitions.Vlan {
 			vlans := []string{}
@@ -141,11 +143,20 @@ func GenerateNetworkdConfiguration(conf definitions.Config) ([]NetworkdConfigFil
 			slog.Info("Vlans on interface", "interface", name, "count", len(vlans))
 		}
 
+		// Static Routes
+		staticRoutes := []definitions.StaticRoute{}
+		for _, route := range conf.Network.StaticRoutes {
+			if route.Interface == name {
+				staticRoutes = append(staticRoutes, route)
+			}
+		}
+
 		buf := new(bytes.Buffer)
 		err := templates.ExecuteTemplate(buf, "config-addressing.network.tmpl", InterfaceWithName{
-			Name:      name,
-			Interface: inter,
-			Vlans:     vlans,
+			Name:         name,
+			Interface:    inter,
+			Vlans:        vlans,
+			StaticRoutes: staticRoutes,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("executing config-addressing.network.tmpl template: %w", err)

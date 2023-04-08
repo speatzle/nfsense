@@ -15,3 +15,12 @@ DHCP=yes
 {{- range .Vlans }}
 VLAN={{ . }}
 {{- end}}
+
+{{- range .StaticRoutes }}
+[Route]
+Destination={{ Destination }}
+Gateway={{ Gateway }}
+{{- if ne .Metric 0 }}
+Metric={{ Metric }}
+{{- end }}
+{{end}}

@@ -7,8 +7,8 @@ Name={{ .Name }}
 
 [Network]
 LLMNR=no
-{{- if eq .AddressingMode 2 }}
-DHCP=yes
-{{- else }}
+{{- if eq .AddressingMode 1 }}
 Address={{ .Address }}
+{{- else if eq .AddressingMode 2 }}
+DHCP=yes
 {{- end }}

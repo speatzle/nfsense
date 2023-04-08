@@ -5,11 +5,11 @@ import (
 )
 
 type Interface struct {
-	Alias             string                  `json:"alias,omitempty" validate:"min=0,max=3"`
-	Type              InterfaceType           `json:"type" validate:"min=0,max=3"`
-	AddressingMode    InterfaceAddressingMode `json:"addressing_mode" validate:"min=0,max=2"`
-	Address           *IPCIDR                 `json:"address,omitempty" validate:"excluded_unless=AddressingMode 1"`
-	HardwareInterface *string                 `json:"hardware_interface,omitempty"`
+	Alias           string                  `json:"alias,omitempty" validate:"min=0,max=3"`
+	Type            InterfaceType           `json:"type" validate:"min=0,max=3"`
+	AddressingMode  InterfaceAddressingMode `json:"addressing_mode" validate:"min=0,max=2"`
+	Address         *IPCIDR                 `json:"address,omitempty" validate:"excluded_unless=AddressingMode 1"`
+	HardwareAddress *HardwareAddress        `json:"hardware_address,omitempty"`
 	// TODO fix Validator for int pointers with min=0,max=4094
 	VlanID        *uint     `json:"vlan_id,omitempty"`
 	VlanParent    *string   `json:"vlan_parent,omitempty"`

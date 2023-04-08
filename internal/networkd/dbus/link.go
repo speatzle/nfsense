@@ -29,11 +29,11 @@ func GetLinks(dbusConn dbus.Conn) ([]Link, error) {
 		name := link[1].(string)
 		path := link[2].(dbus.ObjectPath)
 		linkObj := dbusConn.Object("org.freedesktop.network1", path)
-		carrierState, err := linkObj.GetProperty("CarrierState")
+		carrierState, err := linkObj.GetProperty("org.freedesktop.network1.Link.CarrierState")
 		if err != nil {
 			return nil, fmt.Errorf("GetProperty CarrierState %w", err)
 		}
-		operationalState, err := linkObj.GetProperty("OperationalState")
+		operationalState, err := linkObj.GetProperty("org.freedesktop.network1.Link.OperationalState")
 		if err != nil {
 			return nil, fmt.Errorf("GetProperty OperationalState %w", err)
 		}

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 
+	"golang.org/x/exp/slog"
 	"nfsense.net/nfsense/internal/definitions"
 )
 
@@ -138,6 +139,8 @@ func GenerateNetworkdConfiguration(conf definitions.Config) ([]NetworkdConfigFil
 					vlans = append(vlans, vlanName)
 				}
 			}
+
+			slog.Info("Vlans on interface", "interface", name, "count", len(vlans))
 
 			if len(vlans) != 0 {
 				buf := new(bytes.Buffer)

@@ -149,7 +149,7 @@ func GenerateNetworkdConfiguration(conf definitions.Config) ([]NetworkdConfigFil
 					return nil, fmt.Errorf("executing vlan-assignments.network.tmpl template: %w", err)
 				}
 				files = append(files, NetworkdConfigFile{
-					Name:    fmt.Sprintf("60-bridge-membership-%v.network", name),
+					Name:    fmt.Sprintf("60-vlan-assignments-%v.network", name),
 					Content: buf.String(),
 				})
 			}

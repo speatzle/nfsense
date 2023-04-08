@@ -18,9 +18,9 @@ VLAN={{ . }}
 
 {{- range .StaticRoutes }}
 [Route]
-Destination={{ Destination }}
-Gateway={{ Gateway }}
+Destination={{ .Destination }}
+Gateway={{ .Gateway }}
 {{- if ne .Metric 0 }}
-Metric={{ Metric }}
+Metric={{ .Metric }}
 {{- end }}
 {{end}}

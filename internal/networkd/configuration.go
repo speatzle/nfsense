@@ -35,25 +35,7 @@ type VlanAssignments struct {
 func GenerateNetworkdConfiguration(conf definitions.Config) ([]NetworkdConfigFile, error) {
 	files := []NetworkdConfigFile{}
 
-	// Step 1 Generate hardware rename link files
-	for name, inter := range conf.Network.Interfaces {
-		if inter.Type == definitions.Hardware {
-			buf := new(bytes.Buffer)
-			err := templates.ExecuteTemplate(buf, "rename-hardware.link.tmpl", InterfaceWithName{
-				Name:      name,
-				Interface: inter,
-			})
-			if err != nil {
-				return nil, fmt.Errorf("executing rename-hardware.link template: %w", err)
-			}
-			files = append(files, NetworkdConfigFile{
-				Name:    fmt.Sprintf("10-rename-%v.link", name),
-				Content: buf.String(),
-			})
-		}
-	}
-
-	// Step 2 Generate vlan netdev files
+	// Step 1 Generate vlan netdev files
 	for name, inter := range conf.Network.Interfaces {
 		if inter.Type == definitions.Vlan {
 			buf := new(bytes.Buffer)
@@ -65,13 +47,13 @@ func GenerateNetworkdConfiguration(conf definitions.Config) ([]NetworkdConfigFil
 				return nil, fmt.Errorf("executing create-vlan.netdev.tmpl template: %w", err)
 			}
 			files = append(files, NetworkdConfigFile{
-				Name:    fmt.Sprintf("20-create-vlan-%v.netdev", name),
+				Name:    fmt.Sprintf("10-create-vlan-%v.netdev", name),
 				Content: buf.String(),
 			})
 		}
 	}
 
-	// Step 3 Generate bond netdev files
+	// Step 2 Generate bond netdev files
 	for name, inter := range conf.Network.Interfaces {
 		if inter.Type == definitions.Bond {
 			buf := new(bytes.Buffer)
@@ -83,13 +65,13 @@ func GenerateNetworkdConfiguration(conf definitions.Config) ([]NetworkdConfigFil
 				return nil, fmt.Errorf("executing create-bond.netdev.tmpl template: %w", err)
 			}
 			files = append(files, NetworkdConfigFile{
-				Name:    fmt.Sprintf("30-create-bond-%v.netdev", name),
+				Name:    fmt.Sprintf("20-create-bond-%v.netdev", name),
 				Content: buf.String(),
 			})
 		}
 	}
 
-	// Step 4 Generate bridge netdev files
+	// Step 3 Generate bridge netdev files
 	for name, inter := range conf.Network.Interfaces {
 		if inter.Type == definitions.Bridge {
 			buf := new(bytes.Buffer)
@@ -101,13 +83,13 @@ func GenerateNetworkdConfiguration(conf definitions.Config) ([]NetworkdConfigFil
 				return nil, fmt.Errorf("executing create-bridge.netdev.tmpl template: %w", err)
 			}
 			files = append(files, NetworkdConfigFile{
-				Name:    fmt.Sprintf("40-create-bridge-%v.netdev", name),
+				Name:    fmt.Sprintf("30-create-bridge-%v.netdev", name),
 				Content: buf.String(),
 			})
 		}
 	}
 
-	// Step 5 Generate Bond Members
+	// Step 4 Generate Bond Members
 	for name, inter := range conf.Network.Interfaces {
 		if inter.Type == definitions.Bond {
 			for _, member := range *inter.BondMembers {
@@ -120,14 +102,14 @@ func GenerateNetworkdConfiguration(conf definitions.Config) ([]NetworkdConfigFil
 					return nil, fmt.Errorf("executing bond-membership.network.tmpl template: %w", err)
 				}
 				files = append(files, NetworkdConfigFile{
-					Name:    fmt.Sprintf("50-bond-membership-%v.network", name),
+					Name:    fmt.Sprintf("40-bond-membership-%v.network", name),
 					Content: buf.String(),
 				})
 			}
 		}
 	}
 
-	// Step 6 Generate Bridge Members
+	// Step 5 Generate Bridge Members
 	for name, inter := range conf.Network.Interfaces {
 		if inter.Type == definitions.Bridge {
 			for _, member := range *inter.BridgeMembers {
@@ -140,14 +122,14 @@ func GenerateNetworkdConfiguration(conf definitions.Config) ([]NetworkdConfigFil
 					return nil, fmt.Errorf("executing bridge-membership.network.tmpl template: %w", err)
 				}
 				files = append(files, NetworkdConfigFile{
-					Name:    fmt.Sprintf("60-bridge-membership-%v.network", name),
+					Name:    fmt.Sprintf("50-bridge-membership-%v.network", name),
 					Content: buf.String(),
 				})
 			}
 		}
 	}
 
-	// Step 7 Generate Vlan Assignments
+	// Step 6 Generate Vlan Assignments
 	for name, inter := range conf.Network.Interfaces {
 		if inter.Type != definitions.Vlan {
 			vlans := []string{}
@@ -167,14 +149,14 @@ func GenerateNetworkdConfiguration(conf definitions.Config) ([]NetworkdConfigFil
 					return nil, fmt.Errorf("executing vlan-assignments.network.tmpl template: %w", err)
 				}
 				files = append(files, NetworkdConfigFile{
-					Name:    fmt.Sprintf("70-bridge-membership-%v.network", name),
+					Name:    fmt.Sprintf("60-bridge-membership-%v.network", name),
 					Content: buf.String(),
 				})
 			}
 		}
 	}
 
-	// Step 8 Generate addressing network files
+	// Step 7 Generate addressing network files
 	for name, inter := range conf.Network.Interfaces {
 		buf := new(bytes.Buffer)
 		err := templates.ExecuteTemplate(buf, "config-addressing.network.tmpl", InterfaceWithName{
@@ -185,7 +167,7 @@ func GenerateNetworkdConfiguration(conf definitions.Config) ([]NetworkdConfigFil
 			return nil, fmt.Errorf("executing config-addressing.network.tmpl template: %w", err)
 		}
 		files = append(files, NetworkdConfigFile{
-			Name:    fmt.Sprintf("80-config-hardware-%v.network", name),
+			Name:    fmt.Sprintf("70-config-hardware-%v.network", name),
 			Content: buf.String(),
 		})
 	}

@@ -91,7 +91,7 @@ func GenerateNetworkdConfiguration(conf definitions.Config) ([]NetworkdConfigFil
 
 	// Step 4 Generate Bond Members
 	for name, inter := range conf.Network.Interfaces {
-		if inter.Type == definitions.Bond {
+		if inter.Type == definitions.Bond && inter.BondMembers != nil {
 			for _, member := range *inter.BondMembers {
 				buf := new(bytes.Buffer)
 				err := templates.ExecuteTemplate(buf, "bond-membership.network.tmpl", BondMembership{
@@ -111,7 +111,7 @@ func GenerateNetworkdConfiguration(conf definitions.Config) ([]NetworkdConfigFil
 
 	// Step 5 Generate Bridge Members
 	for name, inter := range conf.Network.Interfaces {
-		if inter.Type == definitions.Bridge {
+		if inter.Type == definitions.Bridge && inter.BridgeMembers != nil {
 			for _, member := range *inter.BridgeMembers {
 				buf := new(bytes.Buffer)
 				err := templates.ExecuteTemplate(buf, "bridge-membership.network.tmpl", BridgeMembership{

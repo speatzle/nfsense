@@ -167,7 +167,7 @@ func GenerateNetworkdConfiguration(conf definitions.Config) ([]NetworkdConfigFil
 			return nil, fmt.Errorf("executing config-addressing.network.tmpl template: %w", err)
 		}
 		files = append(files, NetworkdConfigFile{
-			Name:    fmt.Sprintf("70-config-hardware-%v.network", name),
+			Name:    fmt.Sprintf("70-config-addressing-%v.network", name),
 			Content: buf.String(),
 		})
 	}

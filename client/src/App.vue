@@ -10,6 +10,7 @@ import IService from '~icons/material-symbols/home-repair-service';
 import ISNAT from '~icons/mdi/arrow-expand-right';
 import IDNAT from '~icons/mdi/arrow-collapse-right';
 import IConfig from '~icons/grommet-icons/document-config';
+import IStaticRoutes from '~icons/material-symbols/drive-folder-upload-outline-sharp';
 
 enum NavState { Open, Reduced, Collapsed };
 const NavStateCount = 3;
@@ -20,6 +21,7 @@ const navRoutes = {
   "/firewall/sourcenatrules": { icon: ISNAT, caption: "SNAT" },
   "/firewall/destinationnatrules": { icon: IDNAT, caption: "DNAT" },
   "/network/interfaces": { icon: IEthernet, caption: "Interfaces" },
+  "/network/staticroutes": { icon: IStaticRoutes, caption: "Static Routes" },
   "/object/addresses": { icon: IAddress, caption: "Addresses" },
   "/object/services": { icon: IService, caption: "Services" },
   "/config/config": { icon: IConfig, caption: "Config" },

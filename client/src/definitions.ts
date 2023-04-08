@@ -61,5 +61,24 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
         }
       ],
     },
+    "staticroutes": {
+      name: "StaticRoute",
+      validationSchema: toFormValidator(
+        zod.object({
+          name: zod.string(),
+        }),
+      ),
+      sections: [
+        {
+          fields: [
+            { key: "name", label: "Name", as: "TextBox", },
+            { key: "interface", label: "Interface", as: "TextBox" },
+            { key: "gateway", label: "Gateway", as: "TextBox" },
+            { key: "destination", label: "Destination", as: "TextBox" },
+            { key: "metric", label: "Metric", as: "NumberBox" },
+          ],
+        },
+      ],
+    },
   },
 };

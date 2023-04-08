@@ -27,8 +27,8 @@ func GetLinks(dbusConn dbus.Conn) ([]Link, error) {
 
 	for _, link := range links {
 		name := link[1].(string)
-		path := link[2].(string)
-		linkObj := dbusConn.Object("org.freedesktop.network1", dbus.ObjectPath(path))
+		path := link[2].(dbus.ObjectPath)
+		linkObj := dbusConn.Object("org.freedesktop.network1", path)
 		carrierState, err := linkObj.GetProperty("CarrierState")
 		if err != nil {
 			return nil, fmt.Errorf("GetProperty CarrierState %w", err)

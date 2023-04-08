@@ -5,7 +5,22 @@ import (
 	"fmt"
 
 	"nfsense.net/nfsense/internal/definitions"
+	"nfsense.net/nfsense/internal/networkd/dbus"
 )
+
+type GetLinksResult struct {
+	Links []dbus.Link
+}
+
+func (f *Network) GetLinks(ctx context.Context, params struct{}) (GetLinksResult, error) {
+	links, err := dbus.GetLinks(*f.DbusConn)
+	if err != nil {
+		return GetLinksResult{}, fmt.Errorf("Getting Links: %w", err)
+	}
+	return GetLinksResult{
+		Links: links,
+	}, nil
+}
 
 type GetInterfacesResult struct {
 	Interfaces map[string]definitions.Interface

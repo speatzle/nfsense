@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/godbus/dbus/v5"
 	"golang.org/x/exp/slog"
 	configAPI "nfsense.net/nfsense/internal/api/config"
 	"nfsense.net/nfsense/internal/api/firewall"
@@ -26,10 +27,17 @@ func main() {
 
 	slog.Info("Starting...")
 
+	dbusConn, err := dbus.ConnectSystemBus()
+	if err != nil {
+		slog.Error("Connecting to DBus", err)
+		// os.Exit(1)
+	}
+	defer dbusConn.Close()
+
 	configManager := config.CreateConfigManager()
 	configManager.RegisterApplyFunction(networkd.ApplyNetworkdConfiguration)
 
-	err := configManager.LoadCurrentConfigFromDisk()
+	err = configManager.LoadCurrentConfigFromDisk()
 	if err != nil {
 		slog.Error("Loading Current Config", err)
 		os.Exit(1)
@@ -62,7 +70,7 @@ func main() {
 
 	slog.Info("Setup API...")
 	apiHandler := jsonrpc.NewHandler(100 << 20)
-	RegisterAPIMethods(apiHandler, configManager)
+	RegisterAPIMethods(apiHandler, configManager, dbusConn)
 
 	slog.Info("Starting Webserver...")
 	server.StartWebserver(configManager, apiHandler)
@@ -83,9 +91,9 @@ func main() {
 	slog.Info("Done")
 }
 
-func RegisterAPIMethods(apiHandler *jsonrpc.Handler, configManager *config.ConfigManager) {
+func RegisterAPIMethods(apiHandler *jsonrpc.Handler, configManager *config.ConfigManager, dbusConn *dbus.Conn) {
 	apiHandler.Register("Config", &configAPI.Config{ConfigManager: configManager})
 	apiHandler.Register("Firewall", &firewall.Firewall{ConfigManager: configManager})
-	apiHandler.Register("Network", &network.Network{ConfigManager: configManager})
+	apiHandler.Register("Network", &network.Network{ConfigManager: configManager, DbusConn: dbusConn})
 	apiHandler.Register("Object", &object.Object{ConfigManager: configManager})
 }

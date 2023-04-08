@@ -1,10 +1,10 @@
 [Match]
-Name= {{ .Name }}
+Name={{ .Name }}
 
 [Network]
 LLMNR=no
 {{- if eq .AddressingMode 2 }}
 DHCP=yes
 {{- else }}
-Address= {{ .Address }}
+Address={{ .Address }}
 {{- end }}

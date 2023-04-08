@@ -1,8 +1,8 @@
 [Match]
-PermanentMACAddress= {{ .HardwareAddress }}
+PermanentMACAddress={{ .HardwareAddress }}
 
 [Link]
-Name= {{ .Name }}
+Name={{ .Name }}
 {{ if .Alias -}}
-Alias= {{ .Alias }}
+Alias={{ .Alias }}
 {{- end }}

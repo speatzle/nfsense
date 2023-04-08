@@ -1,7 +1,7 @@
 [Match]
-Name= {{ .Name }}
+Name={{ .Name }}
 
 [Network]
 {{- range .Vlans }}
-VLAN= {{ . }}
+VLAN={{ . }}
 {{- end}}

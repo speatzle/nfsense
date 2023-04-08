@@ -145,9 +145,13 @@ func GenerateNetworkdConfiguration(conf definitions.Config) ([]NetworkdConfigFil
 			slog.Info("Vlans on interface", "interface", name, "count", len(vlans))
 
 			if len(vlans) != 0 {
+				parentName := name
+				if inter.Type == definitions.Hardware {
+					parentName = *inter.HardwareDevice
+				}
 				buf := new(bytes.Buffer)
 				err := templates.ExecuteTemplate(buf, "vlan-assignments.network.tmpl", VlanAssignments{
-					Name:  name,
+					Name:  parentName,
 					Vlans: vlans,
 				})
 				if err != nil {

@@ -16,6 +16,7 @@ type NetworkdConfigFile struct {
 type InterfaceWithName struct {
 	Name string
 	definitions.Interface
+	Vlans []string
 }
 
 type BondMembership struct {
@@ -26,11 +27,6 @@ type BondMembership struct {
 type BridgeMembership struct {
 	Name       string
 	BridgeName string
-}
-
-type VlanAssignments struct {
-	Name  string
-	Vlans []string
 }
 
 func GenerateNetworkdConfiguration(conf definitions.Config) ([]NetworkdConfigFile, error) {
@@ -130,8 +126,9 @@ func GenerateNetworkdConfiguration(conf definitions.Config) ([]NetworkdConfigFil
 		}
 	}
 
-	// Step 6 Generate Vlan Assignments
+	// Step 6 Generate addressing network files
 	for name, inter := range conf.Network.Interfaces {
+		vlans := []string{}
 		if inter.Type != definitions.Vlan {
 			vlans := []string{}
 			for vlanName, vlanInter := range conf.Network.Interfaces {
@@ -141,42 +138,20 @@ func GenerateNetworkdConfiguration(conf definitions.Config) ([]NetworkdConfigFil
 					}
 				}
 			}
-
 			slog.Info("Vlans on interface", "interface", name, "count", len(vlans))
-
-			if len(vlans) != 0 {
-				parentName := name
-				if inter.Type == definitions.Hardware {
-					parentName = *inter.HardwareDevice
-				}
-				buf := new(bytes.Buffer)
-				err := templates.ExecuteTemplate(buf, "vlan-assignments.network.tmpl", VlanAssignments{
-					Name:  parentName,
-					Vlans: vlans,
-				})
-				if err != nil {
-					return nil, fmt.Errorf("executing vlan-assignments.network.tmpl template: %w", err)
-				}
-				files = append(files, NetworkdConfigFile{
-					Name:    fmt.Sprintf("60-vlan-assignments-%v.network", name),
-					Content: buf.String(),
-				})
-			}
 		}
-	}
 
-	// Step 7 Generate addressing network files
-	for name, inter := range conf.Network.Interfaces {
 		buf := new(bytes.Buffer)
 		err := templates.ExecuteTemplate(buf, "config-addressing.network.tmpl", InterfaceWithName{
 			Name:      name,
 			Interface: inter,
+			Vlans:     vlans,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("executing config-addressing.network.tmpl template: %w", err)
 		}
 		files = append(files, NetworkdConfigFile{
-			Name:    fmt.Sprintf("70-config-addressing-%v.network", name),
+			Name:    fmt.Sprintf("60-config-addressing-%v.network", name),
 			Content: buf.String(),
 		})
 	}

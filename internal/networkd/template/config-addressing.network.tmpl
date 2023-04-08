@@ -12,3 +12,6 @@ Address={{ .Address }}
 {{- else if eq .AddressingMode 2 }}
 DHCP=yes
 {{- end }}
+{{- range .Vlans }}
+VLAN={{ . }}
+{{- end}}

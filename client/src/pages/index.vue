@@ -23,7 +23,7 @@ onMounted(async() => {
 </script>
 
 <template>
-  <div>
+  <div style="overflow-y: auto;">
     <PageHeader title="Dashboard">
     </PageHeader>
     <div v-if="!loading" v-for="(link, index) in links" :key="index">
@@ -32,7 +32,6 @@ onMounted(async() => {
     <div v-else>
       Loading...
     </div>
-
   </div>
 </template>
 

@@ -14,3 +14,6 @@ export function equals(a: any, b: any): boolean {
 export function isNullish(value: any) {
   return !!(value === null || value === undefined);
 }
+
+export type Index = string | number | symbol;
+export type MaybeIndex = Index | null;

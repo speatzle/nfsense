@@ -1,10 +1,6 @@
 <!-- Base component that implements selecting single and multiple values from a list in a type-unsafe manner -->
-<script lang="ts">
-export type Index = string | number | symbol;
-</script>
-
 <script setup lang="ts">
-import { equals, isNullish } from '../../util';
+import { equals, isNullish, Index } from '../../util';
 // --- Prop setup ---
 const props = withDefaults(defineProps<{
   // Two-Way Bindings (v-model)
@@ -33,10 +29,10 @@ const emit = defineEmits<{
 // Hook up two-way bindings
 let modelValue = $ref(multiple ? props.modelValue ?? [] : props.modelValue);
 watch(() => props.modelValue, (val: any) => { if (!equals(val, modelValue)) modelValue = val; }, { deep: true });
-watch($$(modelValue), (val: any) => { if(!equals(val, props.modelValue)) emit('update:modelValue', modelValue); }, { deep: true });
+watch($$(modelValue), (val: any) => emit('update:modelValue', modelValue), { deep: true });
 let search = $ref(props.search);
 watch(() => props.search, (val: string) => { if (!equals(val, search)) search = val; }, { deep: true });
-watch($$(search), (val) => { if(!equals(val, props.search)) emit('update:search', search); }, { deep: true });
+watch($$(search), (val) => emit('update:search', search), { deep: true });
 
 // --- Everything Else  ---
 let expanded = $ref(false);

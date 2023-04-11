@@ -15,14 +15,14 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
         }),
       ),
       sections: [
-        { 
+        {
           fields: [
-          { key: "name", label: "Name", as: "TextBox" },
-          { key: "verdict", label: "Verdict", as: "PillBar", props: { options: [{ name: 'Accept', key: 'accept' }, { name: 'Drop', key: 'drop' }, { name: 'Continue', key: 'continue' }] } },
-          { key: "counter", label: "Counter", as: "CheckBox", },
-          { key: "comment", label: "Comment", as: "MultilineTextBox", },
-        ],
-      },
+            { key: "name", label: "Name", as: "TextBox" },
+            { key: "verdict", label: "Verdict", as: "PillBar", props: { options: { accept: { display: 'Accept' }, drop: { display: 'Drop' }, continue: { display: 'Continue' } } } },
+            { key: "counter", label: "Counter", as: "CheckBox" },
+            { key: "comment", label: "Comment", as: "MultilineTextBox" },
+          ],
+        },
       ],
     },
   },
@@ -43,7 +43,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
         {
           fields: [
             { key: "name", label: "Name", as: "TextBox", default: "placeholder" },
-            { key: "type", label: "Type", as: "PillBar", props: { options: [{ name: 'Hardware', key: 'hardware' }, { name: 'VLAN', key: 'vlan' }, { name: 'Bond', key: 'bond' }, { name: 'Bridge', key: 'bridge' }] } },
+            { key: "type", label: "Type", as: "PillBar", props: { options: { hardware: { display: 'Hardware' }, vlan: { display: 'VLAN' }, bond: { display: 'Bond' }, bridge: { display: 'Bridge' } } } },
             { key: "hardware_device", label: "Hardware Device", as: "TextBox", enabled: (values: any) => (values["type"] == 'hardware') },
             { key: "vlan_parent", label: "VLAN Parent", as: "TextBox", enabled: (values: any) => (values["type"] == 'vlan') },
             { key: "vlan_id", label: "VLAN ID", as: "NumberBox", props: { min: 1, max: 4094 }, enabled: (values: any) => (values["type"] == 'vlan') },
@@ -54,11 +54,11 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
         {
           title: "Addressing",
           fields: [
-            { key: "addressing_mode", label: "Addressing Mode", as: "PillBar", props: { options: [{ name: 'None', key: 'none' }, { name: 'Static', key: 'static' }, { name: 'DHCP', key: 'dhcp' }] } },
+            { key: "addressing_mode", label: "Addressing Mode", as: "PillBar", props: { options: { none: { display: 'None' }, static: { display: 'Static' }, dhcp: { display: 'DHCP' } } } },
             { key: "address", label: "Address", as: "TextBox", enabled: (values: any) => (values["addressing_mode"] == 'static') },
             { key: "comment", label: "Comment", as: "MultilineTextBox" },
           ],
-        }
+        },
       ],
     },
     "staticroutes": {
@@ -71,7 +71,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
       sections: [
         {
           fields: [
-            { key: "name", label: "Name", as: "TextBox", },
+            { key: "name", label: "Name", as: "TextBox" },
             { key: "interface", label: "Interface", as: "TextBox" },
             { key: "gateway", label: "Gateway", as: "TextBox" },
             { key: "destination", label: "Destination", as: "TextBox" },

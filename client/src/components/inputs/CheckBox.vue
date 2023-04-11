@@ -1,10 +1,17 @@
 <script setup lang="ts">
+const props = withDefaults(defineProps<{
+  modelValue: boolean
+}>(), {
+  modelValue: false,
+});
 
-const props = defineModel<{
-  modelValue: boolean,
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: boolean): void,
 }>();
-let { modelValue } = $(props);
 
+let modelValue = $ref(false);
+watch(() => props.modelValue, (val) => { if (val !== modelValue) modelValue = val; });
+watch($$(modelValue), (val) => emit('update:modelValue', val));
 </script>
 
 <template>

@@ -20,6 +20,11 @@ button, .button {
   min-height: 1.5rem;
 }
 
+input {
+  height: 1.5rem;
+  padding: 0.25rem;
+}
+
 form {
   display: grid;
   grid-template-columns: auto 1fr;

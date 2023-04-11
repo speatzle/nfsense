@@ -47,7 +47,7 @@ th:hover {
 }
 th, td {
   padding: 0.5rem;
-  border: 0.125rem solid var(--cl-fg);
+  border: 0.125rem solid var(--cl-bg-el);
 }
 th > *{
   justify-content: center;
@@ -75,6 +75,11 @@ button, .button {
 .button:hover, button:hover,
 .button:focus, button:focus {
   background-color: var(--cl-bg-hl);
+}
+
+.button:disabled, button:disabled, .disabled {
+  background-color: var(--cl-bg-hl);
+  pointer-events: none;
 }
 
 input, textarea {

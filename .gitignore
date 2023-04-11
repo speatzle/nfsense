@@ -1,5 +1,9 @@
 config.json
+pending.json
 nftables.conf
+interfaces.conf
 go.work
 nfsense
 nfsense.exe
+out/*
+out

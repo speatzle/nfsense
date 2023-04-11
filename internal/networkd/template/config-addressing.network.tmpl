@@ -1,0 +1,26 @@
+[Match]
+{{- if eq .Type 0 }}
+Name={{ .HardwareDevice }}
+{{- else }}
+Name={{ .Name }}
+{{- end }}
+
+[Network]
+LLMNR=no
+{{- if eq .AddressingMode 1 }}
+Address={{ .Address }}
+{{- else if eq .AddressingMode 2 }}
+DHCP=yes
+{{- end }}
+{{- range .Vlans }}
+VLAN={{ . }}
+{{- end}}
+
+{{- range .StaticRoutes }}
+[Route]
+Destination={{ .Destination }}
+Gateway={{ .Gateway }}
+{{- if ne .Metric 0 }}
+Metric={{ .Metric }}
+{{- end }}
+{{end}}

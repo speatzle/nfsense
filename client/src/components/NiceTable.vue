@@ -15,15 +15,20 @@ const props = defineModel<{
   sortSelf?: boolean,
   sortBy?: string,
   sortDesc?: boolean,
+  selection?: number[],
+  draggable?: boolean,
 }>();
-let { columns, data, sort, sortSelf, sortBy, sortDesc } = $(props);
+let { columns, data, sort, sortSelf, sortBy, sortDesc, selection, draggable } = $(props);
 
 const emit = defineEmits<{
   (event: 'rowAction', index: number): void,
   (event: 'selectionChanged'): void
+  (event: 'draggedRow', draggedRow: number, draggedOverRow: number): void,
 }>();
 
-let selection = $ref([] as number[]);
+if (selection == undefined) {
+  selection = [];
+}
 
 const displayData = $computed(() => (sortSelf && sortBy !== '')
   ? data?.sort((a, b) => {
@@ -97,7 +102,9 @@ function dragDropRow() {
     data.splice(draggedRow, 1);
     data.splice(draggedOverRow, 0, row);
     data = data;
+    emit("draggedRow", draggedRow, draggedOverRow);
   }
+
   // Reset drag data
   draggedRow = 0;
   draggedOverRow = 0;
@@ -123,7 +130,7 @@ function dragDropRow() {
     </thead>
     <tbody>
       <tr v-for="(row, index) in displayData" :key="index"
-          draggable="true"
+          :draggable="draggable"
           @click="() => rowSelection(index)"
           @dblclick="() => emit('rowAction', index)"
           @dragstart="() => draggedRow = index"

@@ -8,12 +8,12 @@ import (
 )
 
 type Address struct {
-	Type     AddressType     `json:"type" validate:"min=0,max=3"`
-	Comment  string          `json:"comment,omitempty"`
-	Host     *netip.Addr     `json:"host,omitempty" validate:"excluded_unless=Type 0"`
-	Range    *netipx.IPRange `json:"range,omitempty" validate:"excluded_unless=Type 1"`
-	Network  *IPNet          `json:"network,omitempty" validate:"excluded_unless=Type 2"`
-	Children *[]string       `json:"children,omitempty"`
+	Type           AddressType     `json:"type" validate:"min=0,max=3"`
+	Comment        string          `json:"comment,omitempty"`
+	Host           *netip.Addr     `json:"host,omitempty" validate:"excluded_unless=Type 0"`
+	Range          *netipx.IPRange `json:"range,omitempty" validate:"excluded_unless=Type 1"`
+	NetworkAddress *IPNet          `json:"network,omitempty" validate:"excluded_unless=Type 2"`
+	Children       *[]string       `json:"children,omitempty"`
 }
 
 type AddressType int
@@ -21,7 +21,7 @@ type AddressType int
 const (
 	Host AddressType = iota
 	Range
-	Network
+	NetworkAddress
 	AddressGroup
 )
 
@@ -33,7 +33,7 @@ func (t *AddressType) FromString(input string) AddressType {
 	return map[string]AddressType{
 		"host":    Host,
 		"range":   Range,
-		"network": Network,
+		"network": NetworkAddress,
 		"group":   AddressGroup,
 	}[input]
 }

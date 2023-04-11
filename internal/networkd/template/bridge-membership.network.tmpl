@@ -1,0 +1,9 @@
+[Match]
+{{- if eq .Type 0 }}
+Name={{ .HardwareDevice }}
+{{- else }}
+Name={{ .Name }}
+{{- end }}
+
+[Network]
+Bridge={{ .BridgeName }}

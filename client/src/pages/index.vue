@@ -1,39 +1,39 @@
 <script setup lang="ts">
 import { apiCall } from "../api";
 
-async function doShit(){
-  apiCall("Firewall.GetForwardRules", {});
+let links = $ref([]);
+let loading = $ref(false);
+
+async function load(){
+  loading = true
+  let res = await apiCall("Network.GetLinks", {});
+  if (res.Error === null) {
+    console.debug("links", res.Data.Links);
+    links = res.Data.Links;
+  } else {
+    console.debug("error", res);
+  }
+  loading = false
 }
 
-let name = $ref("");
-let comment = $ref("");
-let counter = $ref(false);
-let options = $ref([{name: 'Accept'}, {name: 'Drop'}, {name: 'Continue'}]);
+onMounted(async() => {
+  load();
+});
 
 </script>
 
 <template>
   <div style="overflow-y: auto;">
     <PageHeader title="Dashboard">
-      <button @click="doShit">Example Buttons</button>
     </PageHeader>
-    <form @submit="$event => $event.preventDefault()" class="cl-secondary">
-      <h3>Create Rule</h3>
-      <label for="name" v-text="'Name'"/>
-      <input name="name" v-model="name"/>
-      <label for="counter" v-text="'Counter'"/>
-      <input name="counter" type="checkbox" v-model="counter"/>
-      <label for="comment" v-text="'Comment'"/>
-      <textarea name="comment" v-model="comment"></textarea>
-      <label for="verdict" v-text="'Verdict'"/>
-      <pillbar :options="options" name="verdict" ></pillbar>
-      <button>Submit</button>
-    </form>
-    <Multiselect/>
-    asd
+    <div v-if="!loading" v-for="(link, index) in links" :key="index">
+      <p>{{ link.name }} {{ link.carrier_state }} {{ link.operational_state }}</p>
+    </div>
+    <div v-else>
+      Loading...
+    </div>
   </div>
 </template>
 
 <style scoped>
-
 </style>

@@ -2,20 +2,22 @@ package main
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"flag"
-	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/godbus/dbus/v5"
 	"golang.org/x/exp/slog"
+	configAPI "nfsense.net/nfsense/internal/api/config"
 	"nfsense.net/nfsense/internal/api/firewall"
+	"nfsense.net/nfsense/internal/api/network"
 	"nfsense.net/nfsense/internal/api/object"
-	"nfsense.net/nfsense/internal/definitions"
+	"nfsense.net/nfsense/internal/config"
 	"nfsense.net/nfsense/internal/jsonrpc"
-	"nfsense.net/nfsense/internal/nftables"
+	"nfsense.net/nfsense/internal/networkd"
 	"nfsense.net/nfsense/internal/server"
 )
 
@@ -25,27 +27,41 @@ func main() {
 
 	slog.Info("Starting...")
 
-	conf, err := LoadConfiguration("config.json")
+	dbusConn, err := dbus.ConnectSystemBus()
 	if err != nil {
-		slog.Error("Loading Config", err)
+		slog.Error("Connecting to DBus", err)
+		// os.Exit(1)
+	}
+	defer dbusConn.Close()
+
+	configManager := config.CreateConfigManager()
+	configManager.RegisterApplyFunction(networkd.ApplyNetworkdConfiguration)
+
+	err = configManager.LoadCurrentConfigFromDisk()
+	if err != nil {
+		slog.Error("Loading Current Config", err)
 		os.Exit(1)
 	}
 
-	slog.Info("Config Loaded", "config", conf)
+	slog.Info("Config Loaded")
 
-	err = definitions.ValidateConfig(conf)
+	err = configManager.LoadPendingConfigFromDisk()
 	if err != nil {
-		slog.Error("Validating Config", err)
-		os.Exit(1)
+		if !errors.Is(err, os.ErrNotExist) {
+			slog.Error("Loading Pending Config", err)
+		}
+		err = configManager.DiscardPendingConfig()
+		if err != nil {
+			slog.Error("Discarding Pending Config", err)
+			os.Exit(1)
+		}
 	}
-
-	slog.Info("Validating Config...")
 
 	if *applyPtr {
 		slog.Info("Applying Config...")
-		err := apply(conf)
+		err := configManager.ApplyPendingChanges()
 		if err != nil {
-			slog.Error("Applying Config", err)
+			slog.Error("Applying Pending Config", err)
 			os.Exit(1)
 		}
 		slog.Info("Config Applied, Exiting...")
@@ -54,10 +70,10 @@ func main() {
 
 	slog.Info("Setup API...")
 	apiHandler := jsonrpc.NewHandler(100 << 20)
-	RegisterAPIMethods(apiHandler, conf)
+	RegisterAPIMethods(apiHandler, configManager, dbusConn)
 
 	slog.Info("Starting Webserver...")
-	server.StartWebserver(conf, apiHandler)
+	server.StartWebserver(configManager, apiHandler)
 
 	slog.Info("Ready.")
 
@@ -75,38 +91,9 @@ func main() {
 	slog.Info("Done")
 }
 
-func LoadConfiguration(file string) (*definitions.Config, error) {
-	var config definitions.Config
-	configFile, err := os.Open(file)
-	if err != nil {
-		return nil, fmt.Errorf("opening Config File %w", err)
-	}
-	defer configFile.Close()
-
-	jsonParser := json.NewDecoder(configFile)
-	jsonParser.DisallowUnknownFields()
-	err = jsonParser.Decode(&config)
-	if err != nil {
-		return nil, fmt.Errorf("decoding Config File %w", err)
-	}
-	return &config, nil
-}
-
-func RegisterAPIMethods(apiHandler *jsonrpc.Handler, conf *definitions.Config) {
-	apiHandler.Register("Firewall", &firewall.Firewall{Conf: conf})
-	apiHandler.Register("Object", &object.Object{Conf: conf})
-}
-
-func apply(conf *definitions.Config) error {
-	fileContent, err := nftables.GenerateNfTablesFile(*conf)
-	if err != nil {
-		return fmt.Errorf("Generating nftables file %w", err)
-	}
-
-	err = nftables.ApplyNfTablesFile(fileContent)
-	if err != nil {
-		return fmt.Errorf("Applying nftables %w", err)
-	}
-	slog.Info("Wrote nftables File!")
-	return nil
+func RegisterAPIMethods(apiHandler *jsonrpc.Handler, configManager *config.ConfigManager, dbusConn *dbus.Conn) {
+	apiHandler.Register("Config", &configAPI.Config{ConfigManager: configManager})
+	apiHandler.Register("Firewall", &firewall.Firewall{ConfigManager: configManager})
+	apiHandler.Register("Network", &network.Network{ConfigManager: configManager, DbusConn: dbusConn})
+	apiHandler.Register("Object", &object.Object{ConfigManager: configManager})
 }

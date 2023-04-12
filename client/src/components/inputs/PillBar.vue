@@ -20,14 +20,6 @@ let modelValue: MaybeIndex = $ref(null);
 watch(() => props.modelValue, (val) => { if (val !== modelValue) modelValue = val; });
 watch($$(modelValue), (val) => emit('update:modelValue', val));
 
-onMounted(async() => {
-  if (isNullish(modelValue)) {
-    const entries = Object.entries(options);
-    modelValue = entries.length > 0
-      ? entries[0][0]
-      : null;
-  }
-});
 </script>
 <template>
   <div>

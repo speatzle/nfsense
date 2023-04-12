@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { apiCall } from "../../api";
+import getPlugins from '../../plugins';
+const p = getPlugins();
 
 let interfaces = $ref({});
 let loading = $ref(false);
@@ -50,6 +52,10 @@ async function deleteInterface(){
   load();
 }
 
+async function editInterface() {
+  p.router.push("/network/interfaces/edit/" + displayData[selection[0]].name)
+}
+
 onMounted(async() => {
   load();
 });
@@ -60,7 +66,7 @@ onMounted(async() => {
   <TableView title="Interfaces" :columns="columns" :loading="loading" v-model:selection="selection" v-model:data="displayData" :table-props="{sort:true, sortSelf: true}">
     <button @click="load">Refresh</button>
     <router-link class="button" to="/network/interfaces/edit">Create</router-link>
-    <router-link class="button" :class="{ disabled: selection.length != 1 }" :to="'/network/interfaces/edit/' + selection[0]">Edit</router-link>
+    <button @click="editInterface" :disabled="selection.length != 1">Edit</button>
     <button @click="deleteInterface" :disabled="selection.length != 1">Delete</button>
   </TableView>
 </template>

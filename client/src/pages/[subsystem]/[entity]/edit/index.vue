@@ -7,8 +7,6 @@ const p = getPlugins();
 const props = $defineProps<{subsystem: string, entity: string}>();
 const { subsystem, entity } = $(props);
 
-let data = $ref({});
-
 async function create(value: any) {
   console.debug("value", value);
   let res = await apiCall(editTypes[subsystem].name +".Create"+ editTypes[subsystem][entity].name, value);
@@ -25,7 +23,7 @@ async function create(value: any) {
   <div v-if="editTypes[subsystem][entity]">
     <PageHeader :title="'Create ' + editTypes[subsystem][entity].name">
     </PageHeader>
-    <NiceForm class="scroll cl-secondary" :submit="create" :discard="() => $router.go(-1)" :sections="editTypes[subsystem][entity].sections" v-model="data"/>
+    <NiceForm class="scroll cl-secondary" :submit="create" :discard="() => $router.go(-1)" :sections="editTypes[subsystem][entity].sections"/>
   </div>
   <div v-else>
     <PageHeader title="Error"/>

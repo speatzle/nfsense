@@ -1,29 +1,55 @@
 <script setup lang="ts">
-
 import { editTypes } from "../../../../definitions";
+import { apiCall } from "../../../../api";
 import getPlugins from '../../../../plugins';
 const p = getPlugins();
 
 const props = $defineProps<{subsystem: string, entity: string, id: string}>();
 const { subsystem, entity, id } = $(props);
 
-let data = $ref({} as {});
+let initialValues = $ref({} as {});
+let loading = $ref(true);
 
-async function update() {
-
+async function load(){
+  loading = true
+  let res = await apiCall(editTypes[subsystem].name +".Get"+ editTypes[subsystem][entity].name, {id: id});
+  if (res.Error === null) {
+    console.debug("update data", res.Data);
+    initialValues = res.Data;
+  } else {
+    console.debug("error", res);
+  }
+  loading = false
 }
+
+async function update(value: any) {
+  console.debug("value", value);
+  let res = await apiCall(editTypes[subsystem].name +".Update"+ editTypes[subsystem][entity].name, value);
+  if (res.Error === null) {
+    p.toast.success("Updated " + editTypes[subsystem][entity].name);
+    p.router.go(-1);
+  } else {
+    console.debug("error", res);
+  }
+}
+
+onMounted(async() => {
+  if (editTypes[subsystem][entity]) {
+    load();
+  }
+});
 
 </script>
 <template>
   <div v-if="editTypes[subsystem][entity]">
-    <PageHeader :title="'Edit ' + editTypes[subsystem][entity].name">
-      <button @click="update">Update</button>
-      <button @click="$router.go(-1)">Discard</button>
+    <PageHeader :title="'Update ' + editTypes[subsystem][entity].name">
     </PageHeader>
-    <NiceForm class="scroll cl-secondary" :sections="editTypes[subsystem][entity].sections" v-model="data"/>
+    <NiceForm v-if="!loading" class="scroll cl-secondary" :submit="update" :discard="() => $router.go(-1)" :sections="editTypes[subsystem][entity].sections" :initialValues="initialValues"/>
+    <p v-else>Loading...</p>
   </div>
   <div v-else>
     <PageHeader title="Error"/>
     No editType for this Entity
   </div>
 </template>
+

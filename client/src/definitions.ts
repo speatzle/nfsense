@@ -1,5 +1,18 @@
 import { toFormValidator } from '@vee-validate/zod';
 import * as zod from 'zod';
+import { SearchProvider, Options } from '~/components/inputs/DropdownInput.vue';
+import { apiCall } from './api';
+
+const GetHardwareInterfaces: SearchProvider = async (o) => {
+  let res = await apiCall("Network.GetLinks", {});
+  if (res.Error === null) {
+    console.debug("links", res.Data.Links);
+    return Object.fromEntries(res.Data.Links.map(r => [r.name, { display: r.name }]))
+  } else {
+    console.debug("error", res);
+    return {} as Options;
+  }
+};
 
 export const editTypes: { [key: string]: { [key: string]: any } } = {
   "firewall": {
@@ -44,11 +57,11 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
           fields: [
             { key: "name", label: "Name", as: "TextBox", default: "placeholder" },
             { key: "type", label: "Type", as: "PillBar", props: { options: { hardware: { display: 'Hardware' }, vlan: { display: 'VLAN' }, bond: { display: 'Bond' }, bridge: { display: 'Bridge' } } } },
-            { key: "hardware_device", label: "Hardware Device", as: "TextBox", enabled: (values: any) => (values["type"] == 'hardware') },
-            { key: "vlan_parent", label: "VLAN Parent", as: "TextBox", enabled: (values: any) => (values["type"] == 'vlan') },
+            { key: "hardware_device", label: "Hardware Device", as: "SingleSelect", enabled: (values: any) => (values["type"] == 'hardware'), props: { searchProvider: GetHardwareInterfaces } },
+            { key: "vlan_parent", label: "VLAN Parent", as: "SingleSelect", enabled: (values: any) => (values["type"] == 'vlan'), props: { searchProvider: GetHardwareInterfaces } },
             { key: "vlan_id", label: "VLAN ID", as: "NumberBox", props: { min: 1, max: 4094 }, enabled: (values: any) => (values["type"] == 'vlan') },
-            { key: "bond_members", label: "Bond Members", as: "TextBox", enabled: (values: any) => (values["type"] == 'bond') },
-            { key: "bridge_members", label: "Bridge Members", as: "TextBox", enabled: (values: any) => (values["type"] == 'bridge') },
+            { key: "bond_members", label: "Bond Members", as: "MultiSelect", enabled: (values: any) => (values["type"] == 'bond'), props: { searchProvider: GetHardwareInterfaces } },
+            { key: "bridge_members", label: "Bridge Members", as: "MultiSelect", enabled: (values: any) => (values["type"] == 'bridge'), props: { searchProvider: GetHardwareInterfaces } },
           ],
         },
         {

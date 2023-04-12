@@ -22,6 +22,27 @@ func (f *Network) GetLinks(ctx context.Context, params struct{}) (GetLinksResult
 	}, nil
 }
 
+type GetInterfaceParameters struct {
+	ID string
+}
+
+type GetInterfaceResult struct {
+	Name string `json:"name"`
+	definitions.Interface
+}
+
+func (f *Network) GetInterface(ctx context.Context, params GetInterfaceParameters) (GetInterfaceResult, error) {
+	_, ok := f.ConfigManager.GetPendingConfig().Network.Interfaces[params.ID]
+	if !ok {
+		return GetInterfaceResult{}, fmt.Errorf("Interface does not Exist")
+	}
+
+	return GetInterfaceResult{
+		Name:      params.ID,
+		Interface: f.ConfigManager.GetPendingConfig().Network.Interfaces[params.ID],
+	}, nil
+}
+
 type GetInterfacesResult struct {
 	Interfaces map[string]definitions.Interface
 }
@@ -33,7 +54,7 @@ func (f *Network) GetInterfaces(ctx context.Context, params struct{}) (GetInterf
 }
 
 type CreateInterfaceParameters struct {
-	Name string
+	Name string `json:"name"`
 	definitions.Interface
 }
 

@@ -10,7 +10,7 @@ import TextBox from "./components/inputs/TextBox.vue";
 import NumberBox from "./components/inputs/NumberBox.vue";
 import MultilineTextBox from "./components/inputs/MultilineTextBox.vue";
 import CheckBox from "./components/inputs/CheckBox.vue";
-import SingleSelect from './components/inputs/MultiSelect.vue';
+import SingleSelect from './components/inputs/SingleSelect.vue';
 import MultiSelect from './components/inputs/MultiSelect.vue';
 
 import { Form, Field, ErrorMessage  } from 'vee-validate';

@@ -95,6 +95,10 @@ export default defineConfig({
         'vue/macros',
         '@vueuse/core',
         '@vueuse/head',
+        {
+          from: "vue-toast-notification",
+          imports: ["useToast"],
+        },
       ],
       dts: 'src/generated/auto-imports.d.ts',
       dirs: ['src/composables'],

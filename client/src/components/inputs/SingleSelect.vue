@@ -1,37 +1,42 @@
 <!-- Wrapper component that sets "multiple" on DropdownInput to false and declares its type to be an Index -->
 <script setup lang="ts">
-import { equals, Index, MaybeIndex } from "../../util";
+import { equals, MaybeIndex } from "../../util";
+import { Options, MaybeSearchProvider } from "./DropdownInput.vue";
 const props = withDefaults(defineProps<{
   // Two-Way Bindings (v-model)
   modelValue?: MaybeIndex,
   search?: string,
+  options?: Options,
 
   // One-Way Bindings
-  options?: Record<Index, {
-    [key: Index]: any, // Allow additional properties for customization
-    display?: string,
-  }>,
+  searchProvider?: MaybeSearchProvider,
+  placeholder?: string,
 }>(), {
   modelValue: null,
   search: "",
   options: () => ({}),
+  searchProvider: null,
+  placeholder: "Search...",
 });
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: any): void,
   (e: 'update:search', value: string): void,
+  (e: 'update:options', value: Options): void,
 }>();
 
 // Hook up two-way bindings
-let modelValue: Index[] | null = $ref(null);
-watch(() => props.modelValue, (val: any) => { if (!equals(val, modelValue)) modelValue = val; }, { deep: true });
-watch($$(modelValue), (val: any) => { if(!equals(val, props.modelValue)) emit('update:modelValue', modelValue); }, { deep: true });
+let modelValue: MaybeIndex = $ref(null);
+watch(() => props.modelValue, (val) => { if (!equals(val, modelValue)) modelValue = val; }, { deep: true });
+watch($$(modelValue), (val) => { if(!equals(val, props.modelValue)) emit('update:modelValue', modelValue); }, { deep: true });
 let search = $ref(props.search);
-watch(() => props.search, (val: string) => { if (!equals(val, search)) search = val; }, { deep: true });
+watch(() => props.search, (val) => { if (!equals(val, search)) search = val; }, { deep: true });
 watch($$(search), (val) => { if(!equals(val, props.search)) emit('update:search', search); }, { deep: true });
+let options = $ref(props.options);
+watch(() => props.options, (val) => { if (!equals(val, options)) options = val; }, { deep: true });
+watch($$(options), (val) => { if(!equals(val, props.options)) emit('update:options', options); }, { deep: true });
 
-let { options } = $(props);
 </script>
 <template>
-  <DropdownInput :multiple="false" :options="options" v-model="modelValue"/>
+  <DropdownInput :multiple="false" :options="options" :search-provider="searchProvider" v-model="modelValue"/>
 </template>

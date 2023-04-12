@@ -1,4 +1,19 @@
 <!-- Base component that implements selecting single and multiple values from a list in a type-unsafe manner -->
+<script lang="ts">
+// Types
+export type Options = Record<Index, Option>;
+export type Option = {
+  [key: Index]: any, // Allow additional properties for customization
+  display?: string,
+};
+export type SearchProvider = (opts: SearchOptions) => Promise<Options>;
+export type MaybeSearchProvider = SearchProvider | null;
+export type SearchOptions = {
+  search: string,
+  unknownKeys?: Index[],
+  // parentData?: any,
+};
+</script>
 <script setup lang="ts">
 import { equals, isNullish, Index } from '../../util';
 // --- Prop setup ---
@@ -6,33 +21,65 @@ const props = withDefaults(defineProps<{
   // Two-Way Bindings (v-model)
   modelValue?: any,
   search?: string,
+  options?: Options,
 
   // One-Way Bindings
   multiple?: boolean,
-  options?: Record<Index, {
-    [key: Index]: any, // Allow additional properties for customization
-    display?: string,
-  }>,
+  searchProvider?: MaybeSearchProvider,
+  placeholder?: string,
 }>(), {
   modelValue: null,
   search: "",
-  multiple: false,
   options: () => ({}),
+  multiple: false,
+  searchProvider: null,
+  placeholder: "Search...",
 });
-let { multiple, options } = $(props);
+let { multiple, searchProvider, placeholder } = $(props);
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: any): void,
   (e: 'update:search', value: string): void,
+  (e: 'update:options', value: Options): void,
 }>();
 
 // Hook up two-way bindings
 let modelValue = $ref(multiple ? props.modelValue ?? [] : props.modelValue);
-watch(() => props.modelValue, (val: any) => { if (!equals(val, modelValue)) modelValue = val; }, { deep: true });
-watch($$(modelValue), (val: any) => emit('update:modelValue', modelValue), { deep: true });
+watch(() => props.modelValue, async (val) => {
+  if (equals(val, modelValue)) return;
+  if (isNullish(val)) return modelValue = val; // Cant be unknown
+
+  // Run search provider if key unknown, log and reject if still so
+  let knownKeys = Object.keys(options);
+  if (multiple) {
+    let unknownKeys = (val as Index[]).filter(key => !knownKeys.includes(key.toString()));
+    if (!unknownKeys.length) return modelValue = val;
+
+    await performSearch(unknownKeys);
+    knownKeys = Object.keys(options);
+    unknownKeys = (val as Index[]).filter(key => !knownKeys.includes(key.toString()));
+    for (let key of unknownKeys) console.warn(`Unknown key in DropdownInput:`, key/*, options*/);
+    return modelValue = (val as Index[]).filter(key => knownKeys.includes(key.toString()));
+  }
+  if (!knownKeys.includes(val.toString())) {
+    await performSearch([val]);
+    knownKeys = Object.keys(options);
+    if (!knownKeys.includes(val.toString()))
+      return console.warn(`Unknown key in DropdownInput:`, val/*, options*/);
+  }
+  modelValue = val;
+}, { deep: true });
+watch($$(modelValue), () => emit('update:modelValue', modelValue), { deep: true });
 let search = $ref(props.search);
-watch(() => props.search, (val: string) => { if (!equals(val, search)) search = val; }, { deep: true });
-watch($$(search), (val) => emit('update:search', search), { deep: true });
+watch(() => props.search, (val) => { if (!equals(val, search)) search = val; }, { deep: true });
+watch($$(search), () => {
+  emit('update:search', search);
+  expand();
+}, { deep: true });
+let options = $ref(props.options);
+watch(() => props.options, (val) => { if (!equals(val, options)) options = val; }, { deep: true });
+watch($$(options), () => emit('update:options', options), { deep: true });
+watch($$(multiple), () => modelValue = multiple ? [] : null );
 
 // --- Everything Else  ---
 let expanded = $ref(false);
@@ -43,9 +90,19 @@ let valueButton: HTMLElement | null = $ref(null);
 
 const selCount = $computed(() => modelValue?.length || 0);
 
-watch($$(multiple), () => modelValue = multiple ? [] : null );
+// Run search provider whenever the search changes, if supplied
+watch($$(search), async (val, oldVal) => {
+  if (val === oldVal) return;
+  await performSearch();
+});
 
-function expand() {
+async function performSearch(unknownKeys?: Index[]) {
+  if (searchProvider !== null)
+    options = await searchProvider({search, unknownKeys});
+}
+
+async function expand() {
+  performSearch();
   expanded = true;
   navigated = 0;
   focus();
@@ -67,7 +124,6 @@ function toggle(key: any) {
     const mv = modelValue as Index[];
     if (mv?.includes(key)) mv?.splice(mv?.indexOf(key), 1);
     else mv?.push(key);
-    focus();
     return;
   }
 
@@ -78,8 +134,13 @@ function toggle(key: any) {
     expanded = false;
   }
   else modelValue = null;
+
   skipFocusIn = true;
-  setTimeout(focus, 0); // nextTick causes double fire on keydown.Enter, so defer to next event loop instance
+  // nextTick causes double fire on keydown.Enter, so defer to next event loop instance
+  setTimeout(() => {
+    focus();
+    expanded = modelValue === null;
+  }, 0);
 }
 
 function handleKeydown(e: KeyboardEvent) {
@@ -107,9 +168,7 @@ function handleKeydown(e: KeyboardEvent) {
     break;
   case "Enter":
     if (!expanded) expand();
-    else if (navigated > 0) {
-      toggle(Object.entries(options)[navigated-1][0]);
-    }
+    else if (navigated > 0) toggle(Object.entries(options)[navigated-1][0]);
     break;
   case "Escape":
     if (navigated !== 0) navigated = 0;
@@ -125,7 +184,7 @@ function handleKeydown(e: KeyboardEvent) {
        @focusin="$event => { if (!inputDiv?.contains($event.relatedTarget as HTMLElement)) focusIn(); }"
        @focusout="$event => expanded = inputDiv?.contains($event.relatedTarget as HTMLElement) ?? false">
     <div class="head">
-      <div class="selection" v-if="multiple" tabindex="-1">
+      <div class="selection" v-if="multiple">
         <div v-for="(key, index) of modelValue as Index[]" :key="key" v-text="options[key].display" :class="{navigated: selCount + navigated === index}"
              @click="() => toggle(key)"/>
       </div>
@@ -133,14 +192,15 @@ function handleKeydown(e: KeyboardEvent) {
         <div class="expand button" :tabindex="expanded ? undefined : -1">
           <i-material-symbols-expand-circle-down-outline width="1em" height="1em"/>
         </div>
-        <input v-if="multiple || modelValue === null" placeholder="Search..." v-model="search" ref="input"/>
+        <input v-if="multiple || modelValue === null" @click="expand" :placeholder="placeholder" v-model="search" ref="input"/>
         <button v-else v-text="options[modelValue]?.display" ref="valueButton"
                 @click="() => toggle(modelValue)"/>
       </div>
     </div>
     <Transition name="fade-fast">
       <div tabindex="-1" class="dropdown" v-if="expanded">
-        <div v-for="([key, option], index) in Object.entries(options)" :key="key" :class="{selected: modelValue?.includes(key), navigated: navigated === index + 1}"
+        <div v-for="([key, option], index) in Object.entries(options)" :key="key"
+             :class="{selected: multiple ? modelValue?.includes(key) : key === modelValue, navigated: navigated === index + 1}"
              @click="() => toggle(key)">
           <template v-if="multiple">
             <i-material-symbols-check-box-outline v-if="modelValue?.includes(key)" width="1em" height="1em"/>

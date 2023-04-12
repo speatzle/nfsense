@@ -68,7 +68,7 @@ watch(() => props.modelValue, async (val) => {
       return console.warn(`Unknown key in DropdownInput:`, val/*, options*/);
   }
   modelValue = val;
-}, { deep: true });
+}, { deep: true, immediate: true });
 watch($$(modelValue), () => emit('update:modelValue', modelValue), { deep: true });
 let search = $ref(props.search);
 watch(() => props.search, (val) => { if (!equals(val, search)) search = val; }, { deep: true });

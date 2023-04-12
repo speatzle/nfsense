@@ -35,7 +35,8 @@ const onSubmit = handleSubmit(values => {
 // idk why this is needed
 Object.assign(values, initialValues);
 onMounted(async() => {
-  setValues(initialValues);
+  if (initialValues != undefined)
+    	setValues(initialValues);
 });
 
 </script>

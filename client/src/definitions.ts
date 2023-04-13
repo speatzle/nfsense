@@ -128,6 +128,29 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
       ],
     },
   },
+  "object": {
+    name: "Object",
+    "addresses": {
+      name: "Address",
+      validationSchema: toFormValidator(
+        zod.object({
+        }),
+      ),
+      sections: [
+        {
+          fields: [
+            { key: "name", label: "Name", as: "TextBox", default: "placeholder" },
+            { key: "type", label: "Type", as: "PillBar", props: { options: { host: { display: 'Host' }, range: { display: 'Range' }, network: { display: 'Network' }, group: { display: 'Group' } } } },
+            { key: "host", label: "Host", as: "TextBox", default: "placeholder", enabled: (values: any) => (values["type"] == 'host') },
+            { key: "range", label: "Range", as: "TextBox", default: "placeholder", enabled: (values: any) => (values["type"] == 'range') },
+            { key: "network", label: "Network", as: "TextBox", default: "placeholder", enabled: (values: any) => (values["type"] == 'network') },
+            { key: "children", label: "Children", as: "MultiSelect", enabled: (values: any) => (values["type"] == 'group'), props: { searchProvider: GetAddresses } },
+            { key: "comment", label: "Comment", as: "MultilineTextBox" },
+          ],
+        },
+      ],
+    },
+  },
   "service": {
     name: "Service",
     "dhcpv4servers": {

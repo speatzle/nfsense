@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"nfsense.net/nfsense/internal/definitions"
+	"nfsense.net/nfsense/internal/definitions/firewall"
 )
 
 type GetSourceNATRulesResult struct {
-	SourceNATRules []definitions.SourceNATRule `json:"source_nat_rules"`
+	SourceNATRules []firewall.SourceNATRule `json:"source_nat_rules"`
 }
 
 func (f *Firewall) GetSourceNATRules(ctx context.Context, params struct{}) (GetSourceNATRulesResult, error) {
@@ -18,7 +18,7 @@ func (f *Firewall) GetSourceNATRules(ctx context.Context, params struct{}) (GetS
 }
 
 type CreateSourceNATRuleParameters struct {
-	SourceNATRule definitions.SourceNATRule `json:"source_nat_rule"`
+	SourceNATRule firewall.SourceNATRule `json:"source_nat_rule"`
 }
 
 func (f *Firewall) CreateSourceNATRule(ctx context.Context, params CreateSourceNATRuleParameters) (struct{}, error) {
@@ -30,8 +30,8 @@ func (f *Firewall) CreateSourceNATRule(ctx context.Context, params CreateSourceN
 }
 
 type UpdateSourceNATRuleParameters struct {
-	Index         uint64                    `json:"index"`
-	SourceNATRule definitions.SourceNATRule `json:"source_nat_rule"`
+	Index         uint64                 `json:"index"`
+	SourceNATRule firewall.SourceNATRule `json:"source_nat_rule"`
 }
 
 func (f *Firewall) UpdateSourceNATRule(ctx context.Context, params UpdateSourceNATRuleParameters) (struct{}, error) {
@@ -61,7 +61,7 @@ func (f *Firewall) MoveSourceNATRule(ctx context.Context, params MoveSourceNATRu
 
 	rule := conf.Firewall.SourceNATRules[params.Index]
 	sliceWithoutRule := append(conf.Firewall.SourceNATRules[:params.Index], conf.Firewall.SourceNATRules[params.Index+1:]...)
-	newSlice := make([]definitions.SourceNATRule, params.ToIndex+1)
+	newSlice := make([]firewall.SourceNATRule, params.ToIndex+1)
 	copy(newSlice, sliceWithoutRule[:params.ToIndex])
 	newSlice[params.ToIndex] = rule
 	conf.Firewall.SourceNATRules = append(newSlice, sliceWithoutRule[params.ToIndex:]...)

@@ -4,17 +4,17 @@ import (
 	"fmt"
 	"sync"
 
-	"nfsense.net/nfsense/internal/definitions"
+	"nfsense.net/nfsense/internal/definitions/config"
 )
 
 type ConfigTransaction struct {
 	finished      bool
 	mutex         sync.Mutex
 	configManager *ConfigManager
-	changes       *definitions.Config
+	changes       *config.Config
 }
 
-func (m *ConfigManager) StartTransaction() (*ConfigTransaction, *definitions.Config) {
+func (m *ConfigManager) StartTransaction() (*ConfigTransaction, *config.Config) {
 	m.transactionMutex.Lock()
 	confCopy := m.pendingConfig.Clone()
 	return &ConfigTransaction{
@@ -34,7 +34,7 @@ func (t *ConfigTransaction) Commit() error {
 	t.finished = true
 	defer t.configManager.transactionMutex.Unlock()
 
-	err := definitions.ValidateConfig(t.changes)
+	err := config.ValidateConfig(t.changes)
 	if err != nil {
 		return fmt.Errorf("validating Config before Apply: %w", err)
 	}

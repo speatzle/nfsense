@@ -1,4 +1,4 @@
-package definitions
+package firewall
 
 type DestinationNATRule struct {
 	Rule

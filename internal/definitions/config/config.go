@@ -1,4 +1,4 @@
-package definitions
+package config
 
 import (
 	"encoding/json"
@@ -6,13 +6,16 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"golang.org/x/exp/slog"
+	"nfsense.net/nfsense/internal/definitions/firewall"
+	"nfsense.net/nfsense/internal/definitions/network"
+	"nfsense.net/nfsense/internal/definitions/object"
 )
 
 type Config struct {
-	ConfigVersion uint64   `json:"config_version" validate:"required,eq=1"`
-	Firewall      Firewall `json:"firewall" validate:"required,dive"`
-	Object        Object   `json:"object" validate:"required,dive"`
-	Network       Network  `json:"network" validate:"required,dive"`
+	ConfigVersion uint64            `json:"config_version" validate:"required,eq=1"`
+	Firewall      firewall.Firewall `json:"firewall" validate:"required,dive"`
+	Object        object.Object     `json:"object" validate:"required,dive"`
+	Network       network.Network   `json:"network" validate:"required,dive"`
 }
 
 // Clone TODO find a better way to deep copy

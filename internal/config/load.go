@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"os"
 
-	"nfsense.net/nfsense/internal/definitions"
+	"nfsense.net/nfsense/internal/definitions/config"
 )
 
 func (m *ConfigManager) LoadCurrentConfigFromDisk() error {
-	var config definitions.Config
+	var conf config.Config
 	configFile, err := os.Open(m.currentConfigFilePath)
 	if err != nil {
 		return fmt.Errorf("opening Config File %w", err)
@@ -18,22 +18,22 @@ func (m *ConfigManager) LoadCurrentConfigFromDisk() error {
 
 	jsonParser := json.NewDecoder(configFile)
 	jsonParser.DisallowUnknownFields()
-	err = jsonParser.Decode(&config)
+	err = jsonParser.Decode(&conf)
 	if err != nil {
 		return fmt.Errorf("decoding Config File %w", err)
 	}
 
-	err = definitions.ValidateConfig(&config)
+	err = config.ValidateConfig(&conf)
 	if err != nil {
 		return fmt.Errorf("validating Config: %w", err)
 	}
 
-	m.currentConfig = &config
+	m.currentConfig = &conf
 	return nil
 }
 
 func (m *ConfigManager) LoadPendingConfigFromDisk() error {
-	var config definitions.Config
+	var conf config.Config
 	configFile, err := os.Open(m.pendingConfigFilePath)
 	if err != nil {
 		return fmt.Errorf("opening Config File %w", err)
@@ -42,16 +42,16 @@ func (m *ConfigManager) LoadPendingConfigFromDisk() error {
 
 	jsonParser := json.NewDecoder(configFile)
 	jsonParser.DisallowUnknownFields()
-	err = jsonParser.Decode(&config)
+	err = jsonParser.Decode(&conf)
 	if err != nil {
 		return fmt.Errorf("decoding Config File %w", err)
 	}
 
-	err = definitions.ValidateConfig(&config)
+	err = config.ValidateConfig(&conf)
 	if err != nil {
 		return fmt.Errorf("validating Config: %w", err)
 	}
 
-	m.pendingConfig = &config
+	m.pendingConfig = &conf
 	return nil
 }

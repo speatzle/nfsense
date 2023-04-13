@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"nfsense.net/nfsense/internal/definitions"
+	"nfsense.net/nfsense/internal/definitions/object"
 )
 
 type GetAddressesResult struct {
-	Addresses map[string]definitions.Address
+	Addresses map[string]object.Address
 }
 
 func (f *Object) GetAddresses(ctx context.Context, params struct{}) (GetAddressesResult, error) {
@@ -19,7 +19,7 @@ func (f *Object) GetAddresses(ctx context.Context, params struct{}) (GetAddresse
 
 type CreateAddressParameters struct {
 	Name    string
-	Address definitions.Address
+	Address object.Address
 }
 
 func (f *Object) CreateAddress(ctx context.Context, params CreateAddressParameters) (struct{}, error) {
@@ -37,7 +37,7 @@ func (f *Object) CreateAddress(ctx context.Context, params CreateAddressParamete
 
 type UpdateAddressParameters struct {
 	Name    string
-	Address definitions.Address
+	Address object.Address
 }
 
 func (f *Object) UpdateAddress(ctx context.Context, params UpdateAddressParameters) (struct{}, error) {

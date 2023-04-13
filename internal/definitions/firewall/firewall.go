@@ -1,4 +1,4 @@
-package definitions
+package firewall
 
 type Firewall struct {
 	ForwardRules        []ForwardRule        `json:"forward_rules" validate:"required,dive"`

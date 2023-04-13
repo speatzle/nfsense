@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"nfsense.net/nfsense/internal/definitions"
+	"nfsense.net/nfsense/internal/definitions/object"
 )
 
 type GetServicesResult struct {
-	Services map[string]definitions.Service
+	Services map[string]object.Service
 }
 
 func (f *Object) GetServices(ctx context.Context, params struct{}) (GetServicesResult, error) {
@@ -19,7 +19,7 @@ func (f *Object) GetServices(ctx context.Context, params struct{}) (GetServicesR
 
 type CreateServiceParameters struct {
 	Name    string
-	Service definitions.Service
+	Service object.Service
 }
 
 func (f *Object) CreateService(ctx context.Context, params CreateServiceParameters) (struct{}, error) {
@@ -37,7 +37,7 @@ func (f *Object) CreateService(ctx context.Context, params CreateServiceParamete
 
 type UpdateServiceParameters struct {
 	Name    string
-	Service definitions.Service
+	Service object.Service
 }
 
 func (f *Object) UpdateService(ctx context.Context, params UpdateServiceParameters) (struct{}, error) {

@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"golang.org/x/exp/slog"
-	"nfsense.net/nfsense/internal/definitions"
+	"nfsense.net/nfsense/internal/definitions/config"
 )
 
 // ApplyPendingChanges Takes all pending Changes and Tries to Apply them using the Registered Apply Functions.
@@ -47,6 +47,6 @@ func revertToCurrent(m *ConfigManager) error {
 	return nil
 }
 
-func (m *ConfigManager) RegisterApplyFunction(fn func(currentConfig definitions.Config, pendingConfig definitions.Config) error) {
+func (m *ConfigManager) RegisterApplyFunction(fn func(currentConfig config.Config, pendingConfig config.Config) error) {
 	m.applyFunctions = append(m.applyFunctions, fn)
 }

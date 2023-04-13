@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"nfsense.net/nfsense/internal/definitions"
+	"nfsense.net/nfsense/internal/definitions/firewall"
 )
 
 type GetForwardRulesResult struct {
-	ForwardRules []definitions.ForwardRule `json:"forward_rules"`
+	ForwardRules []firewall.ForwardRule `json:"forward_rules"`
 }
 
 func (f *Firewall) GetForwardRules(ctx context.Context, params struct{}) (GetForwardRulesResult, error) {
@@ -18,7 +18,7 @@ func (f *Firewall) GetForwardRules(ctx context.Context, params struct{}) (GetFor
 }
 
 type CreateForwardRuleParameters struct {
-	ForwardRule definitions.ForwardRule `json:"forward_rule"`
+	ForwardRule firewall.ForwardRule `json:"forward_rule"`
 }
 
 func (f *Firewall) CreateForwardRule(ctx context.Context, params CreateForwardRuleParameters) (struct{}, error) {
@@ -30,8 +30,8 @@ func (f *Firewall) CreateForwardRule(ctx context.Context, params CreateForwardRu
 }
 
 type UpdateForwardRuleParameters struct {
-	Index       uint64                  `json:"index"`
-	ForwardRule definitions.ForwardRule `json:"forward_rule"`
+	Index       uint64               `json:"index"`
+	ForwardRule firewall.ForwardRule `json:"forward_rule"`
 }
 
 func (f *Firewall) UpdateForwardRule(ctx context.Context, params UpdateForwardRuleParameters) (struct{}, error) {
@@ -61,7 +61,7 @@ func (f *Firewall) MoveForwardRule(ctx context.Context, params MoveForwardRulePa
 
 	rule := conf.Firewall.ForwardRules[params.Index]
 	sliceWithoutRule := append(conf.Firewall.ForwardRules[:params.Index], conf.Firewall.ForwardRules[params.Index+1:]...)
-	newSlice := make([]definitions.ForwardRule, params.ToIndex+1)
+	newSlice := make([]firewall.ForwardRule, params.ToIndex+1)
 	copy(newSlice, sliceWithoutRule[:params.ToIndex])
 	newSlice[params.ToIndex] = rule
 	conf.Firewall.ForwardRules = append(newSlice, sliceWithoutRule[params.ToIndex:]...)

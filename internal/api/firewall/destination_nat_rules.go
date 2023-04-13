@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"nfsense.net/nfsense/internal/definitions"
+	"nfsense.net/nfsense/internal/definitions/firewall"
 )
 
 type GetDestinationNATRulesResult struct {
-	DestinationNATRules []definitions.DestinationNATRule `json:"destination_nat_rules"`
+	DestinationNATRules []firewall.DestinationNATRule `json:"destination_nat_rules"`
 }
 
 func (f *Firewall) GetDestinationNATRules(ctx context.Context, params struct{}) (GetDestinationNATRulesResult, error) {
@@ -18,7 +18,7 @@ func (f *Firewall) GetDestinationNATRules(ctx context.Context, params struct{}) 
 }
 
 type CreateDestinationNATRuleParameters struct {
-	DestinationNATRule definitions.DestinationNATRule `json:"destination_nat_rule"`
+	DestinationNATRule firewall.DestinationNATRule `json:"destination_nat_rule"`
 }
 
 func (f *Firewall) CreateDestinationNATRule(ctx context.Context, params CreateDestinationNATRuleParameters) (struct{}, error) {
@@ -30,8 +30,8 @@ func (f *Firewall) CreateDestinationNATRule(ctx context.Context, params CreateDe
 }
 
 type UpdateDestinationNATRuleParameters struct {
-	Index              uint64                         `json:"index"`
-	DestinationNATRule definitions.DestinationNATRule `json:"destination_nat_rule"`
+	Index              uint64                      `json:"index"`
+	DestinationNATRule firewall.DestinationNATRule `json:"destination_nat_rule"`
 }
 
 func (f *Firewall) UpdateDestinationNATRule(ctx context.Context, params UpdateDestinationNATRuleParameters) (struct{}, error) {
@@ -61,7 +61,7 @@ func (f *Firewall) MoveDestinationNATRule(ctx context.Context, params MoveDestin
 
 	rule := conf.Firewall.DestinationNATRules[params.Index]
 	sliceWithoutRule := append(conf.Firewall.DestinationNATRules[:params.Index], conf.Firewall.DestinationNATRules[params.Index+1:]...)
-	newSlice := make([]definitions.DestinationNATRule, params.ToIndex+1)
+	newSlice := make([]firewall.DestinationNATRule, params.ToIndex+1)
 	copy(newSlice, sliceWithoutRule[:params.ToIndex])
 	newSlice[params.ToIndex] = rule
 	conf.Firewall.DestinationNATRules = append(newSlice, sliceWithoutRule[params.ToIndex:]...)

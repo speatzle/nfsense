@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"nfsense.net/nfsense/internal/definitions"
+	"nfsense.net/nfsense/internal/definitions/network"
 )
 
 type GetStaticRoutesResult struct {
-	StaticRoutes []definitions.StaticRoute
+	StaticRoutes []network.StaticRoute
 }
 
 func (f *Network) GetStaticRoutes(ctx context.Context, params struct{}) (GetStaticRoutesResult, error) {
@@ -17,7 +17,7 @@ func (f *Network) GetStaticRoutes(ctx context.Context, params struct{}) (GetStat
 	}, nil
 }
 
-func (f *Network) CreateStaticRoute(ctx context.Context, params definitions.StaticRoute) (struct{}, error) {
+func (f *Network) CreateStaticRoute(ctx context.Context, params network.StaticRoute) (struct{}, error) {
 	t, conf := f.ConfigManager.StartTransaction()
 	defer t.Discard()
 
@@ -27,7 +27,7 @@ func (f *Network) CreateStaticRoute(ctx context.Context, params definitions.Stat
 
 type UpdateStaticRouteParameters struct {
 	Index uint
-	definitions.StaticRoute
+	network.StaticRoute
 }
 
 func (f *Network) UpdateStaticRoute(ctx context.Context, params UpdateStaticRouteParameters) (struct{}, error) {

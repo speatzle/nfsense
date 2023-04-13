@@ -8,12 +8,12 @@ import (
 	"path/filepath"
 
 	"golang.org/x/exp/slog"
-	"nfsense.net/nfsense/internal/definitions"
+	"nfsense.net/nfsense/internal/definitions/config"
 )
 
 const basepath = "/etc/systemd/network"
 
-func ApplyNetworkdConfiguration(currentConfig definitions.Config, pendingConfig definitions.Config) error {
+func ApplyNetworkdConfiguration(currentConfig config.Config, pendingConfig config.Config) error {
 	files, err := GenerateNetworkdConfiguration(pendingConfig)
 	if err != nil {
 		return fmt.Errorf("Generating Networkd Configuration: %w", err)
@@ -41,6 +41,7 @@ func ApplyNetworkdConfiguration(currentConfig definitions.Config, pendingConfig 
 		}
 	}
 
+	// TODO Use dbus instead
 	cmd := exec.Command("systemctl", "restart", "systemd-networkd")
 
 	var out bytes.Buffer

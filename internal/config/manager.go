@@ -3,27 +3,27 @@ package config
 import (
 	"sync"
 
-	"nfsense.net/nfsense/internal/definitions"
+	"nfsense.net/nfsense/internal/definitions/config"
 )
 
 type ConfigManager struct {
 	currentConfigFilePath string
 	pendingConfigFilePath string
 
-	currentConfig *definitions.Config
-	pendingConfig *definitions.Config
+	currentConfig *config.Config
+	pendingConfig *config.Config
 
 	transactionMutex sync.Mutex
 
-	applyFunctions []func(currentConfig definitions.Config, pendingConfig definitions.Config) error
+	applyFunctions []func(currentConfig config.Config, pendingConfig config.Config) error
 }
 
 func CreateConfigManager() *ConfigManager {
 	manager := ConfigManager{
 		currentConfigFilePath: "config.json",
 		pendingConfigFilePath: "pending.json",
-		currentConfig:         &definitions.Config{},
-		pendingConfig:         &definitions.Config{},
+		currentConfig:         &config.Config{},
+		pendingConfig:         &config.Config{},
 	}
 	return &manager
 }

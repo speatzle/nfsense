@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"os"
 
-	"nfsense.net/nfsense/internal/definitions"
+	"nfsense.net/nfsense/internal/definitions/config"
 )
 
-func (m *ConfigManager) saveConfig(path string, conf *definitions.Config) error {
+func (m *ConfigManager) saveConfig(path string, conf *config.Config) error {
 	data, err := json.MarshalIndent(conf, "", "	")
 	if err != nil {
 		return fmt.Errorf("Marshal Config: %w", err)

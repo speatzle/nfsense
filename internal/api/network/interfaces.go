@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"nfsense.net/nfsense/internal/definitions"
+	"nfsense.net/nfsense/internal/definitions/network"
 	"nfsense.net/nfsense/internal/networkd/dbus"
 )
 
@@ -28,7 +28,7 @@ type GetInterfaceParameters struct {
 
 type GetInterfaceResult struct {
 	Name string `json:"name"`
-	definitions.Interface
+	network.Interface
 }
 
 func (f *Network) GetInterface(ctx context.Context, params GetInterfaceParameters) (GetInterfaceResult, error) {
@@ -44,7 +44,7 @@ func (f *Network) GetInterface(ctx context.Context, params GetInterfaceParameter
 }
 
 type GetInterfacesResult struct {
-	Interfaces map[string]definitions.Interface
+	Interfaces map[string]network.Interface
 }
 
 func (f *Network) GetInterfaces(ctx context.Context, params struct{}) (GetInterfacesResult, error) {
@@ -55,7 +55,7 @@ func (f *Network) GetInterfaces(ctx context.Context, params struct{}) (GetInterf
 
 type CreateInterfaceParameters struct {
 	Name string `json:"name"`
-	definitions.Interface
+	network.Interface
 }
 
 func (f *Network) CreateInterface(ctx context.Context, params CreateInterfaceParameters) (struct{}, error) {
@@ -73,7 +73,7 @@ func (f *Network) CreateInterface(ctx context.Context, params CreateInterfacePar
 
 type UpdateInterfaceParameters struct {
 	Name string
-	definitions.Interface
+	network.Interface
 }
 
 func (f *Network) UpdateInterface(ctx context.Context, params UpdateInterfaceParameters) (struct{}, error) {

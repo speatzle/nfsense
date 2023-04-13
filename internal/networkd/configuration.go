@@ -5,7 +5,8 @@ import (
 	"fmt"
 
 	"golang.org/x/exp/slog"
-	"nfsense.net/nfsense/internal/definitions"
+	"nfsense.net/nfsense/internal/definitions/config"
+	"nfsense.net/nfsense/internal/definitions/network"
 )
 
 type NetworkdConfigFile struct {
@@ -15,9 +16,9 @@ type NetworkdConfigFile struct {
 
 type InterfaceWithName struct {
 	Name string
-	definitions.Interface
+	network.Interface
 	Vlans        []string
-	StaticRoutes []definitions.StaticRoute
+	StaticRoutes []network.StaticRoute
 }
 
 type BondMembership struct {
@@ -30,12 +31,12 @@ type BridgeMembership struct {
 	BridgeName string
 }
 
-func GenerateNetworkdConfiguration(conf definitions.Config) ([]NetworkdConfigFile, error) {
+func GenerateNetworkdConfiguration(conf config.Config) ([]NetworkdConfigFile, error) {
 	files := []NetworkdConfigFile{}
 
 	// Step 1 Generate vlan netdev files
 	for name, inter := range conf.Network.Interfaces {
-		if inter.Type == definitions.Vlan {
+		if inter.Type == network.Vlan {
 			buf := new(bytes.Buffer)
 			err := templates.ExecuteTemplate(buf, "create-vlan.netdev.tmpl", InterfaceWithName{
 				Name:      name,
@@ -53,7 +54,7 @@ func GenerateNetworkdConfiguration(conf definitions.Config) ([]NetworkdConfigFil
 
 	// Step 2 Generate bond netdev files
 	for name, inter := range conf.Network.Interfaces {
-		if inter.Type == definitions.Bond {
+		if inter.Type == network.Bond {
 			buf := new(bytes.Buffer)
 			err := templates.ExecuteTemplate(buf, "create-bond.netdev.tmpl", InterfaceWithName{
 				Name:      name,
@@ -71,7 +72,7 @@ func GenerateNetworkdConfiguration(conf definitions.Config) ([]NetworkdConfigFil
 
 	// Step 3 Generate bridge netdev files
 	for name, inter := range conf.Network.Interfaces {
-		if inter.Type == definitions.Bridge {
+		if inter.Type == network.Bridge {
 			buf := new(bytes.Buffer)
 			err := templates.ExecuteTemplate(buf, "create-bridge.netdev.tmpl", InterfaceWithName{
 				Name:      name,
@@ -89,7 +90,7 @@ func GenerateNetworkdConfiguration(conf definitions.Config) ([]NetworkdConfigFil
 
 	// Step 4 Generate Bond Members
 	for name, inter := range conf.Network.Interfaces {
-		if inter.Type == definitions.Bond && inter.BondMembers != nil {
+		if inter.Type == network.Bond && inter.BondMembers != nil {
 			for _, member := range *inter.BondMembers {
 				buf := new(bytes.Buffer)
 				err := templates.ExecuteTemplate(buf, "bond-membership.network.tmpl", BondMembership{
@@ -109,7 +110,7 @@ func GenerateNetworkdConfiguration(conf definitions.Config) ([]NetworkdConfigFil
 
 	// Step 5 Generate Bridge Members
 	for name, inter := range conf.Network.Interfaces {
-		if inter.Type == definitions.Bridge && inter.BridgeMembers != nil {
+		if inter.Type == network.Bridge && inter.BridgeMembers != nil {
 			for _, member := range *inter.BridgeMembers {
 				buf := new(bytes.Buffer)
 				err := templates.ExecuteTemplate(buf, "bridge-membership.network.tmpl", BridgeMembership{
@@ -131,10 +132,10 @@ func GenerateNetworkdConfiguration(conf definitions.Config) ([]NetworkdConfigFil
 	for name, inter := range conf.Network.Interfaces {
 		// Vlans
 		vlans := []string{}
-		if inter.Type != definitions.Vlan {
+		if inter.Type != network.Vlan {
 			vlans := []string{}
 			for vlanName, vlanInter := range conf.Network.Interfaces {
-				if vlanInter.Type == definitions.Vlan {
+				if vlanInter.Type == network.Vlan {
 					if *vlanInter.VlanParent == name {
 						vlans = append(vlans, vlanName)
 					}
@@ -144,7 +145,7 @@ func GenerateNetworkdConfiguration(conf definitions.Config) ([]NetworkdConfigFil
 		}
 
 		// Static Routes
-		staticRoutes := []definitions.StaticRoute{}
+		staticRoutes := []network.StaticRoute{}
 		for _, route := range conf.Network.StaticRoutes {
 			if route.Interface == name {
 				staticRoutes = append(staticRoutes, route)

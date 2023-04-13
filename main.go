@@ -15,6 +15,7 @@ import (
 	"nfsense.net/nfsense/internal/api/firewall"
 	"nfsense.net/nfsense/internal/api/network"
 	"nfsense.net/nfsense/internal/api/object"
+	"nfsense.net/nfsense/internal/api/service"
 	"nfsense.net/nfsense/internal/config"
 	"nfsense.net/nfsense/internal/jsonrpc"
 	"nfsense.net/nfsense/internal/networkd"
@@ -96,4 +97,5 @@ func RegisterAPIMethods(apiHandler *jsonrpc.Handler, configManager *config.Confi
 	apiHandler.Register("Firewall", &firewall.Firewall{ConfigManager: configManager})
 	apiHandler.Register("Network", &network.Network{ConfigManager: configManager, DbusConn: dbusConn})
 	apiHandler.Register("Object", &object.Object{ConfigManager: configManager})
+	apiHandler.Register("Service", &service.Service{ConfigManager: configManager, DbusConn: dbusConn})
 }

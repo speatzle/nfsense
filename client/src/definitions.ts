@@ -128,4 +128,31 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
       ],
     },
   },
+  "service": {
+    name: "Service",
+    "dhcpv4servers": {
+      name: "DHCPv4Server",
+      validationSchema: toFormValidator(
+        zod.object({
+        }),
+      ),
+      sections: [
+        {
+          fields: [
+            { key: "interface", label: "Interface", as: "SingleSelect", props: { searchProvider: GetInterfaces } },
+            { key: "pool", label: "Pool", as: "MultiSelect", props: { searchProvider: GetAddresses } },
+            { key: "gateway_mode", label: "Gateway Mode", as: "PillBar", props: { options: { none: { display: 'None' }, interface: { display: 'Interface' }, specify: { display: 'Specify' }} } },
+            { key: "gateway", label: "Gateway", as: "SingleSelect", enabled: (values: any) => (values["gateway_mode"] == 'specify'), props: { searchProvider: GetAddresses } },
+            { key: "dns_server_mode", label: "DNS Server Mode", as: "PillBar", props: { options: { none: { display: 'None' }, interface: { display: 'Interface' }, specify: { display: 'Specify' }} } },
+            { key: "dns_servers", label: "DNS Servers", as: "MultiSelect", enabled: (values: any) => (values["dns_server_mode"] == 'specify'), props: { searchProvider: GetAddresses } },
+            { key: "ntp_server_mode", label: "NTP Server Mode", as: "PillBar", props: { options: { none: { display: 'None' }, interface: { display: 'Interface' }, specify: { display: 'Specify' }} } },
+            { key: "ntp_servers", label: "NTP Servers", as: "MultiSelect", enabled: (values: any) => (values["ntp_server_mode"] == 'specify'), props: { searchProvider: GetAddresses } },
+            { key: "default_lease_time", label: "Default Lease Time", as: "NumberBox" },
+            { key: "max_lease_time", label: "Max Lease Time", as: "NumberBox" },
+            { key: "comment", label: "Comment", as: "MultilineTextBox" },
+          ],
+        },
+      ],
+    },
+  },
 };

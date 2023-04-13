@@ -7,6 +7,27 @@ import (
 	"nfsense.net/nfsense/internal/definitions/object"
 )
 
+type GetAddressParameters struct {
+	ID string
+}
+
+type GetAddressResult struct {
+	Name string `json:"name"`
+	object.Address
+}
+
+func (f *Object) GetAddress(ctx context.Context, params GetAddressParameters) (GetAddressResult, error) {
+	_, ok := f.ConfigManager.GetPendingConfig().Object.Addresses[params.ID]
+	if !ok {
+		return GetAddressResult{}, fmt.Errorf("Address does not Exist")
+	}
+
+	return GetAddressResult{
+		Name:    params.ID,
+		Address: f.ConfigManager.GetPendingConfig().Object.Addresses[params.ID],
+	}, nil
+}
+
 type GetAddressesResult struct {
 	Addresses map[string]object.Address
 }
@@ -18,8 +39,8 @@ func (f *Object) GetAddresses(ctx context.Context, params struct{}) (GetAddresse
 }
 
 type CreateAddressParameters struct {
-	Name    string
-	Address object.Address
+	Name string
+	object.Address
 }
 
 func (f *Object) CreateAddress(ctx context.Context, params CreateAddressParameters) (struct{}, error) {
@@ -36,8 +57,8 @@ func (f *Object) CreateAddress(ctx context.Context, params CreateAddressParamete
 }
 
 type UpdateAddressParameters struct {
-	Name    string
-	Address object.Address
+	Name string
+	object.Address
 }
 
 func (f *Object) UpdateAddress(ctx context.Context, params UpdateAddressParameters) (struct{}, error) {
@@ -60,7 +81,7 @@ type DeleteAddressParameters struct {
 func (f *Object) DeleteAddress(ctx context.Context, params DeleteAddressParameters) (struct{}, error) {
 	_, ok := f.ConfigManager.GetPendingConfig().Object.Addresses[params.Name]
 	if !ok {
-		return struct{}{}, fmt.Errorf("Interface does not Exist")
+		return struct{}{}, fmt.Errorf("Address does not Exist")
 	}
 
 	t, conf := f.ConfigManager.StartTransaction()

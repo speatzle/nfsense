@@ -92,7 +92,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
             { key: "name", label: "Name", as: "TextBox", default: "placeholder" },
             { key: "type", label: "Type", as: "PillBar", props: { options: { hardware: { display: 'Hardware' }, vlan: { display: 'VLAN' }, bond: { display: 'Bond' }, bridge: { display: 'Bridge' } } } },
             { key: "hardware_device", label: "Hardware Device", as: "SingleSelect", enabled: (values: any) => (values["type"] == 'hardware'), props: { searchProvider: GetHardwareInterfaces } },
-            { key: "vlan_parent", label: "VLAN Parent", as: "SingleSelect", enabled: (values: any) => (values["type"] == 'vlan'), props: { searchProvider: GetHardwareInterfaces } },
+            { key: "vlan_parent", label: "VLAN Parent", as: "SingleSelect", enabled: (values: any) => (values["type"] == 'vlan'), props: { searchProvider: GetInterfaces } },
             { key: "vlan_id", label: "VLAN ID", as: "NumberBox", props: { min: 1, max: 4094 }, enabled: (values: any) => (values["type"] == 'vlan') },
             { key: "bond_members", label: "Bond Members", as: "MultiSelect", enabled: (values: any) => (values["type"] == 'bond'), props: { searchProvider: GetHardwareInterfaces } },
             { key: "bridge_members", label: "Bridge Members", as: "MultiSelect", enabled: (values: any) => (values["type"] == 'bridge'), props: { searchProvider: GetHardwareInterfaces } },

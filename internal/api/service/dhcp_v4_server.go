@@ -8,7 +8,7 @@ import (
 )
 
 type GetDHCPv4ServerParameters struct {
-	Index uint
+	ID uint
 }
 
 type GetDHCPv4ServerResult struct {
@@ -16,12 +16,12 @@ type GetDHCPv4ServerResult struct {
 }
 
 func (f *Service) GetDHCPv4Server(ctx context.Context, params GetDHCPv4ServerParameters) (GetDHCPv4ServerResult, error) {
-	if int(params.Index) >= len(f.ConfigManager.GetPendingConfig().Service.DHCPv4Servers) {
+	if int(params.ID) >= len(f.ConfigManager.GetPendingConfig().Service.DHCPv4Servers) {
 		return GetDHCPv4ServerResult{}, fmt.Errorf("DHCPv4Server does not Exist")
 	}
 
 	return GetDHCPv4ServerResult{
-		DHCPv4Server: f.ConfigManager.GetPendingConfig().Service.DHCPv4Servers[params.Index],
+		DHCPv4Server: f.ConfigManager.GetPendingConfig().Service.DHCPv4Servers[params.ID],
 	}, nil
 }
 
@@ -36,7 +36,7 @@ func (f *Service) GetDHCPv4Servers(ctx context.Context, params struct{}) (GetDHC
 }
 
 type CreateDHCPv4ServerParameters struct {
-	DHCPv4Server service.DHCPv4Server `json:"dhcp_v4_server"`
+	service.DHCPv4Server
 }
 
 func (f *Service) CreateDHCPv4Server(ctx context.Context, params CreateDHCPv4ServerParameters) (struct{}, error) {

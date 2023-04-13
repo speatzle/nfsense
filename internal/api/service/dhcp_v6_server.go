@@ -8,7 +8,7 @@ import (
 )
 
 type GetDHCPv6ServerParameters struct {
-	Index uint
+	ID uint
 }
 
 type GetDHCPv6ServerResult struct {
@@ -16,12 +16,12 @@ type GetDHCPv6ServerResult struct {
 }
 
 func (f *Service) GetDHCPv6Server(ctx context.Context, params GetDHCPv6ServerParameters) (GetDHCPv6ServerResult, error) {
-	if int(params.Index) >= len(f.ConfigManager.GetPendingConfig().Service.DHCPv6Servers) {
+	if int(params.ID) >= len(f.ConfigManager.GetPendingConfig().Service.DHCPv6Servers) {
 		return GetDHCPv6ServerResult{}, fmt.Errorf("DHCPv6Server does not Exist")
 	}
 
 	return GetDHCPv6ServerResult{
-		DHCPv6Server: f.ConfigManager.GetPendingConfig().Service.DHCPv6Servers[params.Index],
+		DHCPv6Server: f.ConfigManager.GetPendingConfig().Service.DHCPv6Servers[params.ID],
 	}, nil
 }
 
@@ -36,7 +36,7 @@ func (f *Service) GetDHCPv6Servers(ctx context.Context, params struct{}) (GetDHC
 }
 
 type CreateDHCPv6ServerParameters struct {
-	DHCPv6Server service.DHCPv6Server `json:"dhcp_v6_server"`
+	service.DHCPv6Server
 }
 
 func (f *Service) CreateDHCPv6Server(ctx context.Context, params CreateDHCPv6ServerParameters) (struct{}, error) {

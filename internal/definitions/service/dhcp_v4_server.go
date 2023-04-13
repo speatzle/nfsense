@@ -1,8 +1,10 @@
 package service
 
-import "time"
+import (
+	"time"
+)
 
-type DHCPv6 struct {
+type DHCPv4Server struct {
 	Interface        string
 	Pool             []string
 	DefaultLeaseTime time.Duration

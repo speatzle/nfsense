@@ -1,6 +1,6 @@
 package service
 
 type Service struct {
-	DHCPv4 []DHCPv4 `json:"dhcp_v4" validate:"required,dive"`
-	DHCPv6 []DHCPv6 `json:"dhcp_v6" validate:"required,dive"`
+	DHCPv4Servers []DHCPv4Server `json:"dhcp_v4_servers" validate:"required,dive"`
+	DHCPv6Servers []DHCPv6Server `json:"dhcp_v6_servers" validate:"required,dive"`
 }

@@ -7,7 +7,41 @@ const GetHardwareInterfaces: SearchProvider = async (o) => {
   let res = await apiCall("Network.GetLinks", {});
   if (res.Error === null) {
     console.debug("links", res.Data.Links);
-    return Object.fromEntries(res.Data.Links.map(r => [r.name, { display: r.name }]))
+    return Object.fromEntries(res.Data.Links.map(r => [r.name, { display: r.name }]));
+  } else {
+    console.debug("error", res);
+    return {} as Options;
+  }
+};
+
+const GetInterfaces: SearchProvider = async (o) => {
+  let res = await apiCall("Network.GetInterfaces", {});
+  if (res.Error === null) {
+    console.debug("interfaces", res.Data.Interfaces);
+    let obj = {} as Options;
+    Object.keys(res.Data.Interfaces).forEach(function(key, index){
+      obj[key] = {
+        display: key,
+      };
+    });
+    return obj;
+  } else {
+    console.debug("error", res);
+    return {} as Options;
+  }
+};
+
+const GetAddresses: SearchProvider = async (o) => {
+  let res = await apiCall("Object.GetAddresses", {});
+  if (res.Error === null) {
+    console.debug("addresses", res.Data.Addresses);
+    let obj = {} as Options;
+    Object.keys(res.Data.Addresses).forEach(function(key, index){
+      obj[key] = {
+        display: key,
+      };
+    });
+    return obj;
   } else {
     console.debug("error", res);
     return {} as Options;

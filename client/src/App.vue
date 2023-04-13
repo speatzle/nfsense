@@ -24,6 +24,7 @@ const navRoutes = {
   "/network/staticroutes": { icon: IStaticRoutes, caption: "Static Routes" },
   "/object/addresses": { icon: IAddress, caption: "Addresses" },
   "/object/services": { icon: IService, caption: "Services" },
+  "/service/dhcpv4servers": { icon: IService, caption: "DHCP v4" },
   "/config/config": { icon: IConfig, caption: "Config" },
 };
 

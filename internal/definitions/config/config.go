@@ -9,6 +9,7 @@ import (
 	"nfsense.net/nfsense/internal/definitions/firewall"
 	"nfsense.net/nfsense/internal/definitions/network"
 	"nfsense.net/nfsense/internal/definitions/object"
+	"nfsense.net/nfsense/internal/definitions/service"
 )
 
 type Config struct {
@@ -16,6 +17,7 @@ type Config struct {
 	Firewall      firewall.Firewall `json:"firewall" validate:"required,dive"`
 	Object        object.Object     `json:"object" validate:"required,dive"`
 	Network       network.Network   `json:"network" validate:"required,dive"`
+	Service       service.Service   `json:"service" validate:"required,dive"`
 }
 
 // Clone TODO find a better way to deep copy

@@ -119,7 +119,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
         {
           fields: [
             { key: "name", label: "Name", as: "TextBox" },
-            { key: "interface", label: "Interface", as: "TextBox" },
+            { key: "interface", label: "Interface", as: "SingleSelect", props: { searchProvider: GetInterfaces } },
             { key: "gateway", label: "Gateway", as: "TextBox" },
             { key: "destination", label: "Destination", as: "TextBox" },
             { key: "metric", label: "Metric", as: "NumberBox" },

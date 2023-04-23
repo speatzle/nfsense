@@ -133,7 +133,6 @@ func GenerateNetworkdConfiguration(conf config.Config) ([]NetworkdConfigFile, er
 		// Vlans
 		vlans := []string{}
 		if inter.Type != network.Vlan {
-			vlans := []string{}
 			for vlanName, vlanInter := range conf.Network.Interfaces {
 				if vlanInter.Type == network.Vlan {
 					if *vlanInter.VlanParent == name {

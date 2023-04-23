@@ -1,0 +1,46 @@
+# Global Options
+authoritative;
+deny bootp;
+deny declines;
+one-lease-per-client on;
+
+# Servers
+{{- range $i, $server := .Service.DHCPv4Servers }}
+subnet {{ getInterfaceNetworkAddress $ $server.Interface }} netmask {{ getInterfaceNetworkMask $ $server.Interface }} {
+  # Pool
+  {{- range $j, $p := $server.Pool }}
+  range {{ getAddressObjectAsPoolRange $ $p }};
+  {{- end}}
+
+  # Settings
+  default-lease-time {{ getTimeInSecond $server.DefaultLeaseTime }};
+  max-lease-time {{ getTimeInSecond $server.MaxLeaseTime }};
+
+  # Options
+  option subnet-mask {{ getInterfaceNetworkMask $ $server.Interface }};
+  option broadcast-address {{ getInterfaceBroadcastAddress $ $server.Interface }};
+  {{- if eq $server.GatewayMode 1 }}
+  option routers {{ getInterfaceAddress $ $server.Interface }};
+  {{- else if eq $server.GatewayMode 2 }}
+  option routers {{ $server.Gateway }};
+  {{- end }}
+  {{- if eq $server.DNSServerMode 1 }}
+  option domain-name-servers {{ getInterfaceAddress $ $server.Interface }};
+  {{- else if eq $server.DNSServerMode 2 }}
+  option domain-name-servers {{ getAddressObjectsAsCommaList $ $server.DNSServers }};
+  {{- end }}
+  {{- if eq $server.NTPServerMode 1 }}
+  option time-servers {{ getInterfaceAddress $ $server.Interface }};
+  {{- else if eq $server.NTPServerMode 2 }}
+  option time-servers {{ getAddressObjectsAsCommaList $ $server.NTPServers }};
+  {{- end }}
+
+  # Hosts
+  {{- range $j, $reservation := $server.Reservations }}
+  host {{ $j }} {
+    hardware ethernet $reservation.HardwareAddress;
+    fixed-address $reservation.IPAddress;
+  }
+  {{end}}
+}
+{{end}}

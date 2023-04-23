@@ -17,6 +17,7 @@ import (
 	"nfsense.net/nfsense/internal/api/object"
 	"nfsense.net/nfsense/internal/api/service"
 	"nfsense.net/nfsense/internal/config"
+	dhcp "nfsense.net/nfsense/internal/dhcp_server"
 	"nfsense.net/nfsense/internal/jsonrpc"
 	"nfsense.net/nfsense/internal/networkd"
 	"nfsense.net/nfsense/internal/server"
@@ -36,7 +37,7 @@ func main() {
 	defer dbusConn.Close()
 
 	configManager := config.CreateConfigManager()
-	configManager.RegisterApplyFunction(networkd.ApplyNetworkdConfiguration)
+	RegisterApplyFunctions(configManager)
 
 	err = configManager.LoadCurrentConfigFromDisk()
 	if err != nil {
@@ -98,4 +99,9 @@ func RegisterAPIMethods(apiHandler *jsonrpc.Handler, configManager *config.Confi
 	apiHandler.Register("Network", &network.Network{ConfigManager: configManager, DbusConn: dbusConn})
 	apiHandler.Register("Object", &object.Object{ConfigManager: configManager})
 	apiHandler.Register("Service", &service.Service{ConfigManager: configManager, DbusConn: dbusConn})
+}
+
+func RegisterApplyFunctions(configManager *config.ConfigManager) {
+	configManager.RegisterApplyFunction(networkd.ApplyNetworkdConfiguration)
+	configManager.RegisterApplyFunction(dhcp.ApplyDHCPServerConfiguration)
 }

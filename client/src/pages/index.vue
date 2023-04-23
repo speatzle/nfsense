@@ -5,7 +5,7 @@ let links = $ref([]);
 let loading = $ref(false);
 
 async function load(){
-  loading = true
+  loading = true;
   let res = await apiCall("Network.GetLinks", {});
   if (res.Error === null) {
     console.debug("links", res.Data.Links);
@@ -13,7 +13,7 @@ async function load(){
   } else {
     console.debug("error", res);
   }
-  loading = false
+  loading = false;
 }
 
 onMounted(async() => {

@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"os"
 
-	"nfsense.net/nfsense/internal/definitions"
+	"nfsense.net/nfsense/internal/definitions/config"
 )
 
-func GenerateNfTablesFile(conf definitions.Config) (string, error) {
+func GenerateNfTablesFile(conf config.Config) (string, error) {
 	buf := new(bytes.Buffer)
 	err := templates.ExecuteTemplate(buf, "nftables.tmpl", conf)
 	if err != nil {

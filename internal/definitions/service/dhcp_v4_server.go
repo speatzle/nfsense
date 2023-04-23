@@ -17,7 +17,7 @@ type DHCPv4Server struct {
 	NTPServerMode Mode      `json:"ntp_server_mode"`
 	NTPServers    *[]string `json:"ntp_servers,omitempty"`
 
-	Reservations []Reservation `json:"reservations,omitempty"`
+	Reservations map[string]Reservation `json:"reservations"`
 
 	Comment string `json:"comment,omitempty"`
 }

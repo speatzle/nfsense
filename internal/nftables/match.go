@@ -3,15 +3,16 @@ package nftables
 import (
 	"fmt"
 
-	"nfsense.net/nfsense/internal/definitions"
+	"nfsense.net/nfsense/internal/definitions/firewall"
+	"nfsense.net/nfsense/internal/definitions/object"
 	"nfsense.net/nfsense/internal/util"
 )
 
-func GenerateMatcher(services map[string]definitions.Service, addresses map[string]definitions.Address, match definitions.Match) (string, error) {
+func GenerateMatcher(services map[string]object.Service, addresses map[string]object.Address, match firewall.Match) (string, error) {
 	return GenerateAddressMatcher(addresses, match) + " " + GenerateServiceMatcher(services, match), nil
 }
 
-func GenerateServiceMatcher(allServices map[string]definitions.Service, match definitions.Match) string {
+func GenerateServiceMatcher(allServices map[string]object.Service, match firewall.Match) string {
 	serviceList := util.ResolveBaseServices(allServices, match.Services)
 
 	tcpSPorts := []string{}
@@ -22,21 +23,21 @@ func GenerateServiceMatcher(allServices map[string]definitions.Service, match de
 
 	for _, service := range serviceList {
 		switch service.Type {
-		case definitions.TCP:
+		case object.TCP:
 			if service.GetSPort() != "" {
 				tcpSPorts = append(tcpSPorts, service.GetSPort())
 			}
 			if service.GetDPort() != "" {
 				tcpDPorts = append(tcpDPorts, service.GetDPort())
 			}
-		case definitions.UDP:
+		case object.UDP:
 			if service.GetSPort() != "" {
 				udpSPorts = append(udpSPorts, service.GetSPort())
 			}
 			if service.GetDPort() != "" {
 				udpDPorts = append(udpDPorts, service.GetDPort())
 			}
-		case definitions.ICMP:
+		case object.ICMP:
 			icmpCodes = append(icmpCodes, fmt.Sprint(service.ICMPCode))
 		default:
 			panic("invalid service type")
@@ -64,7 +65,7 @@ func GenerateServiceMatcher(allServices map[string]definitions.Service, match de
 	return res
 }
 
-func GenerateAddressMatcher(allAddresses map[string]definitions.Address, match definitions.Match) string {
+func GenerateAddressMatcher(allAddresses map[string]object.Address, match firewall.Match) string {
 	sourceAddressList := util.ResolveBaseAddresses(allAddresses, match.SourceAddresses)
 	destinationAddressList := util.ResolveBaseAddresses(allAddresses, match.DestinationAddresses)
 
@@ -73,11 +74,11 @@ func GenerateAddressMatcher(allAddresses map[string]definitions.Address, match d
 
 	for _, address := range sourceAddressList {
 		switch address.Type {
-		case definitions.Host:
+		case object.Host:
 			sourceAddresses = append(sourceAddresses, address.Host.String())
-		case definitions.Range:
+		case object.Range:
 			sourceAddresses = append(sourceAddresses, address.Range.String())
-		case definitions.NetworkAddress:
+		case object.NetworkAddress:
 			sourceAddresses = append(sourceAddresses, address.NetworkAddress.String())
 		default:
 			panic("invalid address type")
@@ -86,11 +87,11 @@ func GenerateAddressMatcher(allAddresses map[string]definitions.Address, match d
 
 	for _, address := range destinationAddressList {
 		switch address.Type {
-		case definitions.Host:
+		case object.Host:
 			destinationAddresses = append(destinationAddresses, address.Host.String())
-		case definitions.Range:
+		case object.Range:
 			destinationAddresses = append(destinationAddresses, address.Range.String())
-		case definitions.NetworkAddress:
+		case object.NetworkAddress:
 			destinationAddresses = append(destinationAddresses, address.NetworkAddress.String())
 		default:
 			panic("invalid address type")

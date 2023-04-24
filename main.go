@@ -21,6 +21,7 @@ import (
 	dhcp "nfsense.net/nfsense/internal/dhcp_server"
 	"nfsense.net/nfsense/internal/jsonrpc"
 	"nfsense.net/nfsense/internal/networkd"
+	"nfsense.net/nfsense/internal/nftables"
 	"nfsense.net/nfsense/internal/server"
 	"nfsense.net/nfsense/internal/unbound"
 )
@@ -108,4 +109,5 @@ func RegisterApplyFunctions(configManager *config.ConfigManager) {
 	configManager.RegisterApplyFunction(dhcp.ApplyDHCPServerConfiguration)
 	configManager.RegisterApplyFunction(chrony.ApplyNTPConfiguration)
 	configManager.RegisterApplyFunction(unbound.ApplyDNSServerConfiguration)
+	configManager.RegisterApplyFunction(nftables.ApplyNFTablesConfiguration)
 }

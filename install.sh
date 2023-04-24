@@ -103,6 +103,12 @@ systemctl stop NetworkManager
 systemctl enable systemd-networkd
 systemctl start systemd-networkd
 
+echo "Setup nftables"
+echo 'include "/etc/nftables/nfsense.conf"' >> /etc/sysconfig/nftables.conf
+touch /etc/nftables/nfsense.conf
+systemctl enable nftables
+systemctl start nftables
+
 echo "Default nfsense config"
 ./nfsense -default
 

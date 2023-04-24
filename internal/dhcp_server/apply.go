@@ -3,10 +3,10 @@ package dhcp
 import (
 	"context"
 	"fmt"
-	"os"
 
 	systemctl "github.com/coreos/go-systemd/v22/dbus"
 	"nfsense.net/nfsense/internal/definitions/config"
+	"nfsense.net/nfsense/internal/util"
 )
 
 const dhcpv4File = "/etc/dhcp/dhcpd.conf"
@@ -24,12 +24,12 @@ func ApplyDHCPServerConfiguration(currentConfig config.Config, pendingConfig con
 		return fmt.Errorf("Generating DHCPServerV6 Configuration: %w", err)
 	}
 
-	err = OverwriteFile(dhcpv4File, v4Conf)
+	err = util.OverwriteFile(dhcpv4File, v4Conf)
 	if err != nil {
 		return fmt.Errorf("Writing v4 Configuration: %w", err)
 	}
 
-	err = OverwriteFile(dhcpv6File, v6Conf)
+	err = util.OverwriteFile(dhcpv6File, v6Conf)
 	if err != nil {
 		return fmt.Errorf("Writing v6 Configuration: %w", err)
 	}
@@ -60,34 +60,6 @@ func ApplyDHCPServerConfiguration(currentConfig config.Config, pendingConfig con
 		if err != nil {
 			return fmt.Errorf("enableing dhcpd.service: %w", err)
 		}
-	}
-	return nil
-}
-
-func OverwriteFile(path, content string) error {
-	f, err := os.OpenFile(path, os.O_RDWR, 0644)
-	if err != nil {
-		return fmt.Errorf("opening File: %w", err)
-	}
-
-	err = f.Truncate(0)
-	if err != nil {
-		return fmt.Errorf("truncate File: %w", err)
-	}
-
-	_, err = f.Seek(0, 0)
-	if err != nil {
-		return fmt.Errorf("seek File: %w", err)
-	}
-
-	_, err = f.WriteString(content + "\n")
-	if err != nil {
-		return fmt.Errorf("writing File: %w", err)
-	}
-
-	err = f.Sync()
-	if err != nil {
-		return fmt.Errorf("syncing File: %w", err)
 	}
 	return nil
 }

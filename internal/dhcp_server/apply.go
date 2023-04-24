@@ -9,15 +9,10 @@ import (
 	"nfsense.net/nfsense/internal/definitions/config"
 )
 
-const defaultsFile = "/etc/default/isc-dhcp-server"
 const dhcpv4File = "/etc/dhcp/dhcpd.conf"
 const dhcpv6File = "/etc/dhcp/dhcpd6.conf"
 
 func ApplyDHCPServerConfiguration(currentConfig config.Config, pendingConfig config.Config) error {
-	defaultsConfig, err := GenerateDHCPServerDefaultsConfiguration(pendingConfig)
-	if err != nil {
-		return fmt.Errorf("Generating DHCPServer Defaults Configuration: %w", err)
-	}
 
 	v4Conf, err := GenerateDHCPServerV4Configuration(pendingConfig)
 	if err != nil {
@@ -27,11 +22,6 @@ func ApplyDHCPServerConfiguration(currentConfig config.Config, pendingConfig con
 	v6Conf, err := GenerateDHCPServerV6Configuration(pendingConfig)
 	if err != nil {
 		return fmt.Errorf("Generating DHCPServerV6 Configuration: %w", err)
-	}
-
-	err = OverwriteFile(defaultsFile, defaultsConfig)
-	if err != nil {
-		return fmt.Errorf("Writing defaults Configuration: %w", err)
 	}
 
 	err = OverwriteFile(dhcpv4File, v4Conf)
@@ -51,24 +41,24 @@ func ApplyDHCPServerConfiguration(currentConfig config.Config, pendingConfig con
 
 	if len(pendingConfig.Service.DHCPv4Servers) == 0 && len(pendingConfig.Service.DHCPv6Servers) == 0 {
 		// if there are no servers stop the service instead
-		_, err := conn.StopUnitContext(context.Background(), "isc-dhcp-server.service", "replace", nil)
+		_, err := conn.StopUnitContext(context.Background(), "dhcpd.service", "replace", nil)
 		if err != nil {
-			return fmt.Errorf("stopping isc-dhcp-server.service: %w", err)
+			return fmt.Errorf("stopping dhcpd.service: %w", err)
 		}
 
-		_, err = conn.DisableUnitFilesContext(context.Background(), []string{"isc-dhcp-server.service"}, false)
+		_, err = conn.DisableUnitFilesContext(context.Background(), []string{"dhcpd.service"}, false)
 		if err != nil {
-			return fmt.Errorf("disableing isc-dhcp-server.service: %w", err)
+			return fmt.Errorf("disableing dhcpd.service: %w", err)
 		}
 	} else {
-		_, err := conn.ReloadOrRestartUnitContext(context.Background(), "isc-dhcp-server.service", "replace", nil)
+		_, err := conn.ReloadOrRestartUnitContext(context.Background(), "dhcpd.service", "replace", nil)
 		if err != nil {
-			return fmt.Errorf("restarting isc-dhcp-server.service: %w", err)
+			return fmt.Errorf("restarting dhcpd.service: %w", err)
 		}
 
-		_, _, err = conn.EnableUnitFilesContext(context.Background(), []string{"isc-dhcp-server.service"}, false, true)
+		_, _, err = conn.EnableUnitFilesContext(context.Background(), []string{"dhcpd.service"}, false, true)
 		if err != nil {
-			return fmt.Errorf("enableing isc-dhcp-server.service: %w", err)
+			return fmt.Errorf("enableing dhcpd.service: %w", err)
 		}
 	}
 	return nil

@@ -1,0 +1,15 @@
+server:
+
+# Listen Interfaces
+{{- range $i, $server := .Service.NTPServers }}
+    interface: {{ getInterfaceName $ $server.Interface }}
+{{- end }}
+
+# Allowed Networks
+{{- range $i, $server := .Service.NTPServers }}
+    access-control: {{ getInterfaceNetworkAddressCIDR $ $server.Interface }} allow
+{{- end }}
+
+
+remote-control:
+    control-enable: yes

@@ -192,5 +192,20 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
         },
       ],
     },
+    "dnsservers": {
+      name: "DNSServer",
+      validationSchema: toFormValidator(
+        zod.object({
+        }),
+      ),
+      sections: [
+        {
+          fields: [
+            { key: "interface", label: "Interface", as: "SingleSelect", props: { searchProvider: GetInterfaces } },
+            { key: "comment", label: "Comment", as: "MultilineTextBox" },
+          ],
+        },
+      ],
+    },
   },
 };

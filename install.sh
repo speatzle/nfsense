@@ -9,6 +9,10 @@ echo "Disable SE Linux"
 setenforce 0
 sed -i s/^SELINUX=.*$/SELINUX=permissive/ /etc/selinux/config
 
+echo "Allow Routing"
+echo 'net.ipv4.ip_forward=1' >> /etc/sysctl.conf
+sysctl -p
+
 echo "Setup Repos"
 dnf install epel-release
 /usr/bin/crb enable

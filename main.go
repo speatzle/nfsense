@@ -16,6 +16,7 @@ import (
 	"nfsense.net/nfsense/internal/api/network"
 	"nfsense.net/nfsense/internal/api/object"
 	"nfsense.net/nfsense/internal/api/service"
+	"nfsense.net/nfsense/internal/chrony"
 	"nfsense.net/nfsense/internal/config"
 	dhcp "nfsense.net/nfsense/internal/dhcp_server"
 	"nfsense.net/nfsense/internal/jsonrpc"
@@ -104,4 +105,5 @@ func RegisterAPIMethods(apiHandler *jsonrpc.Handler, configManager *config.Confi
 func RegisterApplyFunctions(configManager *config.ConfigManager) {
 	configManager.RegisterApplyFunction(networkd.ApplyNetworkdConfiguration)
 	configManager.RegisterApplyFunction(dhcp.ApplyDHCPServerConfiguration)
+	configManager.RegisterApplyFunction(chrony.ApplyNTPConfiguration)
 }

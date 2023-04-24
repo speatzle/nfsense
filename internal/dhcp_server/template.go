@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
-	"time"
 
+	"nfsense.net/nfsense/internal/definitions/common"
 	"nfsense.net/nfsense/internal/definitions/config"
 	"nfsense.net/nfsense/internal/util"
 )
@@ -66,7 +66,7 @@ func getAddressObjectAsPoolRange(conf config.Config, name string) string {
 	return strings.ReplaceAll(conf.Object.Addresses[name].Range.String(), "-", " ")
 }
 
-func getTimeInSecond(dur time.Duration) string {
+func getTimeInSecond(dur common.Duration) string {
 	return fmt.Sprintf("%d", int(dur.Seconds()))
 }
 

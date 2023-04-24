@@ -19,7 +19,7 @@ dnf install epel-release
 dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
 
 echo "Installing Required Packages from Repos"
-dnf install wget git systemd-networkd gh tcpdump nodejs dhcp-server
+dnf install wget git systemd-networkd gh tcpdump nodejs dhcp-server unbound
 
 echo "Installing pnpm"
 curl -fsSL https://get.pnpm.io/install.sh | sh -

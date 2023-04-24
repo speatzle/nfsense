@@ -11,6 +11,7 @@ import ISNAT from '~icons/mdi/arrow-expand-right';
 import IDNAT from '~icons/mdi/arrow-collapse-right';
 import IConfig from '~icons/grommet-icons/document-config';
 import IStaticRoutes from '~icons/material-symbols/drive-folder-upload-outline-sharp';
+import ITimeServer from '~icons/carbon/server-time';
 
 enum NavState { Open, Reduced, Collapsed };
 const NavStateCount = 3;
@@ -25,6 +26,7 @@ const navRoutes = {
   "/object/addresses": { icon: IAddress, caption: "Addresses" },
   "/object/services": { icon: IService, caption: "Services" },
   "/service/dhcpv4servers": { icon: IService, caption: "DHCP v4" },
+  "/service/ntpservers": { icon: ITimeServer, caption: "NTP Server" },
   "/config/config": { icon: IConfig, caption: "Config" },
 };
 

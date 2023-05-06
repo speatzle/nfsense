@@ -16,6 +16,7 @@ import (
 	"nfsense.net/nfsense/internal/api/network"
 	"nfsense.net/nfsense/internal/api/object"
 	"nfsense.net/nfsense/internal/api/service"
+	"nfsense.net/nfsense/internal/api/vpn"
 	"nfsense.net/nfsense/internal/chrony"
 	"nfsense.net/nfsense/internal/config"
 	dhcp "nfsense.net/nfsense/internal/dhcp_server"
@@ -102,6 +103,7 @@ func RegisterAPIMethods(apiHandler *jsonrpc.Handler, configManager *config.Confi
 	apiHandler.Register("Network", &network.Network{ConfigManager: configManager, DbusConn: dbusConn})
 	apiHandler.Register("Object", &object.Object{ConfigManager: configManager})
 	apiHandler.Register("Service", &service.Service{ConfigManager: configManager, DbusConn: dbusConn})
+	apiHandler.Register("VPN", &vpn.VPN{ConfigManager: configManager, DbusConn: dbusConn})
 }
 
 func RegisterApplyFunctions(configManager *config.ConfigManager) {

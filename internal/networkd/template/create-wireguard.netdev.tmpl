@@ -1,0 +1,24 @@
+[NetDev]
+Name={{ $.Name }}
+Kind=wireguard
+
+{{- $intertface := index $.Config.VPN.Wireguard.Interfaces .Name  }}
+
+[WireGuard]
+ListenPort={{ $intertface.ListenPort }}
+PrivateKey={{ $intertface.PrivateKey }}
+
+{{ range $i, $peerName := $intertface.Peers }}
+{{- $peer := index $.Config.VPN.Wireguard.Peers $peerName  }}
+[WireGuardPeer]
+PublicKey={{ $peer.PublicKey }}
+{{- if ne $peer.PresharedKey nil }}
+PresharedKey={{ $peer.PresharedKey }}
+{{- end }}
+{{range  $i, $allowedIpName := $peer.AllowedIPs }}
+AllowedIPs={{ getAddressObjectsAsCidr $.Config $allowedIpName}}
+{{- end }}
+{{- if ne $peer.Endpoint nil }}
+Endpoint={{ $peer.Endpoint }}
+{{- end }}
+{{- end }}

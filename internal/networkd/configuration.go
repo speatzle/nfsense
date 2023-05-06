@@ -31,6 +31,11 @@ type BridgeMembership struct {
 	BridgeName string
 }
 
+type NameAndConfig struct {
+	Name   string
+	Config config.Config
+}
+
 func GenerateNetworkdConfiguration(conf config.Config) ([]NetworkdConfigFile, error) {
 	files := []NetworkdConfigFile{}
 
@@ -88,7 +93,23 @@ func GenerateNetworkdConfiguration(conf config.Config) ([]NetworkdConfigFile, er
 		}
 	}
 
-	// Step 4 Generate Bond Members
+	// Step 4 Generate wireguard netdev files
+	for name := range conf.VPN.Wireguard.Interfaces {
+		buf := new(bytes.Buffer)
+		err := templates.ExecuteTemplate(buf, "create-wireguard.netdev.tmpl", NameAndConfig{
+			Name:   name,
+			Config: conf,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("executing create-wireguard.netdev.tmpl template: %w", err)
+		}
+		files = append(files, NetworkdConfigFile{
+			Name:    fmt.Sprintf("40-create-wireguard-%v.netdev", name),
+			Content: buf.String(),
+		})
+	}
+
+	// Step 5 Generate Bond Members
 	for name, inter := range conf.Network.Interfaces {
 		if inter.Type == network.Bond && inter.BondMembers != nil {
 			for _, member := range *inter.BondMembers {
@@ -101,14 +122,14 @@ func GenerateNetworkdConfiguration(conf config.Config) ([]NetworkdConfigFile, er
 					return nil, fmt.Errorf("executing bond-membership.network.tmpl template: %w", err)
 				}
 				files = append(files, NetworkdConfigFile{
-					Name:    fmt.Sprintf("40-bond-membership-%v.network", name),
+					Name:    fmt.Sprintf("50-bond-membership-%v.network", name),
 					Content: buf.String(),
 				})
 			}
 		}
 	}
 
-	// Step 5 Generate Bridge Members
+	// Step 6 Generate Bridge Members
 	for name, inter := range conf.Network.Interfaces {
 		if inter.Type == network.Bridge && inter.BridgeMembers != nil {
 			for _, member := range *inter.BridgeMembers {
@@ -121,14 +142,14 @@ func GenerateNetworkdConfiguration(conf config.Config) ([]NetworkdConfigFile, er
 					return nil, fmt.Errorf("executing bridge-membership.network.tmpl template: %w", err)
 				}
 				files = append(files, NetworkdConfigFile{
-					Name:    fmt.Sprintf("50-bridge-membership-%v.network", name),
+					Name:    fmt.Sprintf("60-bridge-membership-%v.network", name),
 					Content: buf.String(),
 				})
 			}
 		}
 	}
 
-	// Step 6 Generate addressing network files
+	// Step 7 Generate addressing network files
 	for name, inter := range conf.Network.Interfaces {
 		// Vlans
 		vlans := []string{}
@@ -162,7 +183,7 @@ func GenerateNetworkdConfiguration(conf config.Config) ([]NetworkdConfigFile, er
 			return nil, fmt.Errorf("executing config-addressing.network.tmpl template: %w", err)
 		}
 		files = append(files, NetworkdConfigFile{
-			Name:    fmt.Sprintf("60-config-addressing-%v.network", name),
+			Name:    fmt.Sprintf("70-config-addressing-%v.network", name),
 			Content: buf.String(),
 		})
 	}

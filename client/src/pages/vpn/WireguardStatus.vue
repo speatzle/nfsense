@@ -1,0 +1,38 @@
+<script setup lang="ts">
+import { apiCall } from "../../api";
+
+let status = $ref("");
+let loading = $ref(false);
+
+async function load() {
+  loading = true;
+  let res = await apiCall("VPN.GetWireguardStatus", {});
+  if (res.Error === null) {
+    console.debug("status", res.Data.Status);
+    status = res.Data.Status;
+  } else {
+    console.debug("error", res);
+  }
+  loading = false;
+}
+
+onMounted(async () => {
+  load();
+});
+
+</script>
+
+<template>
+  <div style="overflow-y: auto;">
+    <PageHeader title="Wireguard Status">
+    </PageHeader>
+    <div v-if="!loading" v-for="(line, index) in status.split('\n')" :key="index">
+      <p>{{ line }}</p>
+    </div>
+    <div v-else>
+      Loading...
+    </div>
+  </div>
+</template>
+
+<style scoped></style>

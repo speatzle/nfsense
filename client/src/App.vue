@@ -13,6 +13,7 @@ import IConfig from '~icons/grommet-icons/document-config';
 import IStaticRoutes from '~icons/material-symbols/drive-folder-upload-outline-sharp';
 import IDNSServer from '~icons/carbon/server-dns';
 import ITimeServer from '~icons/carbon/server-time';
+import IWireguard from '~icons/simple-icons/wireguard';
 import IDHCPServer from '~icons/material-symbols/book-rounded';
 
 enum NavState { Open, Reduced, Collapsed };
@@ -30,6 +31,9 @@ const navRoutes = {
   "/service/dhcpv4servers": { icon: IDHCPServer, caption: "DHCP v4" },
   "/service/dnsservers": { icon: IDNSServer, caption: "DNS Server" },
   "/service/ntpservers": { icon: ITimeServer, caption: "NTP Server" },
+  "/vpn/wireguardstatus": { icon: IWireguard, caption: "Wireguard Status" },
+  "/vpn/wireguardinterfaces": { icon: IWireguard, caption: "Wireguard Interfaces" },
+  "/vpn/wireguardpeers": { icon: IWireguard, caption: "Wireguard Peers" },
   "/config/config": { icon: IConfig, caption: "Config" },
 };
 

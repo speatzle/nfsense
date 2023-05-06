@@ -19,7 +19,7 @@ const GetInterfaces: SearchProvider = async (o) => {
   if (res.Error === null) {
     console.debug("interfaces", res.Data.Interfaces);
     let obj = {} as Options;
-    Object.keys(res.Data.Interfaces).forEach(function(key, index){
+    Object.keys(res.Data.Interfaces).forEach(function (key, index) {
       obj[key] = {
         display: key,
       };
@@ -36,7 +36,24 @@ const GetAddresses: SearchProvider = async (o) => {
   if (res.Error === null) {
     console.debug("addresses", res.Data.Addresses);
     let obj = {} as Options;
-    Object.keys(res.Data.Addresses).forEach(function(key, index){
+    Object.keys(res.Data.Addresses).forEach(function (key, index) {
+      obj[key] = {
+        display: key,
+      };
+    });
+    return obj;
+  } else {
+    console.debug("error", res);
+    return {} as Options;
+  }
+};
+
+const GetPeers: SearchProvider = async (o) => {
+  let res = await apiCall("VPN.GetWireguardPeers", {});
+  if (res.Error === null) {
+    console.debug("peers", res.Data.WireguardPeers);
+    let obj = {} as Options;
+    Object.keys(res.Data.WireguardPeers).forEach(function (key, index) {
       obj[key] = {
         display: key,
       };
@@ -164,11 +181,11 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
           fields: [
             { key: "interface", label: "Interface", as: "SingleSelect", props: { searchProvider: GetInterfaces } },
             { key: "pool", label: "Pool", as: "MultiSelect", props: { searchProvider: GetAddresses } },
-            { key: "gateway_mode", label: "Gateway Mode", as: "PillBar", props: { options: { none: { display: 'None' }, interface: { display: 'Interface' }, specify: { display: 'Specify' }} } },
+            { key: "gateway_mode", label: "Gateway Mode", as: "PillBar", props: { options: { none: { display: 'None' }, interface: { display: 'Interface' }, specify: { display: 'Specify' } } } },
             { key: "gateway", label: "Gateway", as: "SingleSelect", enabled: (values: any) => (values["gateway_mode"] == 'specify'), props: { searchProvider: GetAddresses } },
-            { key: "dns_server_mode", label: "DNS Server Mode", as: "PillBar", props: { options: { none: { display: 'None' }, interface: { display: 'Interface' }, specify: { display: 'Specify' }} } },
+            { key: "dns_server_mode", label: "DNS Server Mode", as: "PillBar", props: { options: { none: { display: 'None' }, interface: { display: 'Interface' }, specify: { display: 'Specify' } } } },
             { key: "dns_servers", label: "DNS Servers", as: "MultiSelect", enabled: (values: any) => (values["dns_server_mode"] == 'specify'), props: { searchProvider: GetAddresses } },
-            { key: "ntp_server_mode", label: "NTP Server Mode", as: "PillBar", props: { options: { none: { display: 'None' }, interface: { display: 'Interface' }, specify: { display: 'Specify' }} } },
+            { key: "ntp_server_mode", label: "NTP Server Mode", as: "PillBar", props: { options: { none: { display: 'None' }, interface: { display: 'Interface' }, specify: { display: 'Specify' } } } },
             { key: "ntp_servers", label: "NTP Servers", as: "MultiSelect", enabled: (values: any) => (values["ntp_server_mode"] == 'specify'), props: { searchProvider: GetAddresses } },
             { key: "default_lease_time", label: "Default Lease Time", as: "NumberBox" },
             { key: "max_lease_time", label: "Max Lease Time", as: "NumberBox" },
@@ -202,6 +219,48 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
         {
           fields: [
             { key: "interface", label: "Interface", as: "SingleSelect", props: { searchProvider: GetInterfaces } },
+            { key: "comment", label: "Comment", as: "MultilineTextBox" },
+          ],
+        },
+      ],
+    },
+  },
+  "vpn": {
+    name: "VPN",
+    "wireguardinterfaces": {
+      name: "WireguardInterface",
+      validationSchema: toFormValidator(
+        zod.object({
+        }),
+      ),
+      sections: [
+        {
+          fields: [
+            { key: "name", label: "Name", as: "TextBox", default: "placeholder" },
+            { key: "public_key", label: "Public Key", as: "TextBox", default: "placeholder" },
+            { key: "private_key", label: "Private Key", as: "TextBox", default: "placeholder" },
+            { key: "listen_port", label: "Listen Port", as: "NumberBox" },
+            { key: "peers", label: "Peers", as: "MultiSelect", props: { searchProvider: GetPeers } },
+            { key: "comment", label: "Comment", as: "MultilineTextBox" },
+          ],
+        },
+      ],
+    },
+    "wireguardpeers": {
+      name: "WireguardPeer",
+      validationSchema: toFormValidator(
+        zod.object({
+        }),
+      ),
+      sections: [
+        {
+          fields: [
+            { key: "name", label: "Name", as: "TextBox", default: "placeholder" },
+            { key: "public_key", label: "Public Key", as: "TextBox", default: "placeholder" },
+            { key: "preshared_key", label: "Preshared Key", as: "TextBox", default: "placeholder" },
+            { key: "allowed_ips", label: "Allowed IPs", as: "MultiSelect", props: { searchProvider: GetAddresses } },
+            { key: "endpoint", label: "Endpoint", as: "TextBox", default: "placeholder" },
+            { key: "persistent_keepalive", label: "Persistent Keepalive", as: "NumberBox" },
             { key: "comment", label: "Comment", as: "MultilineTextBox" },
           ],
         },

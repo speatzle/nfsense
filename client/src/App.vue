@@ -13,6 +13,7 @@ import IConfig from '~icons/grommet-icons/document-config';
 import IStaticRoutes from '~icons/material-symbols/drive-folder-upload-outline-sharp';
 import IDNSServer from '~icons/carbon/server-dns';
 import ITimeServer from '~icons/carbon/server-time';
+import IDHCPServer from '~icons/material-symbols/book-rounded';
 
 enum NavState { Open, Reduced, Collapsed };
 const NavStateCount = 3;
@@ -26,7 +27,7 @@ const navRoutes = {
   "/network/staticroutes": { icon: IStaticRoutes, caption: "Static Routes" },
   "/object/addresses": { icon: IAddress, caption: "Addresses" },
   "/object/services": { icon: IService, caption: "Services" },
-  "/service/dhcpv4servers": { icon: IService, caption: "DHCP v4" },
+  "/service/dhcpv4servers": { icon: IDHCPServer, caption: "DHCP v4" },
   "/service/dnsservers": { icon: IDNSServer, caption: "DNS Server" },
   "/service/ntpservers": { icon: ITimeServer, caption: "NTP Server" },
   "/config/config": { icon: IConfig, caption: "Config" },

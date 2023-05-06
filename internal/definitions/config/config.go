@@ -10,6 +10,7 @@ import (
 	"nfsense.net/nfsense/internal/definitions/network"
 	"nfsense.net/nfsense/internal/definitions/object"
 	"nfsense.net/nfsense/internal/definitions/service"
+	"nfsense.net/nfsense/internal/definitions/vpn"
 )
 
 type Config struct {
@@ -18,6 +19,7 @@ type Config struct {
 	Object        object.Object     `json:"object" validate:"required,dive"`
 	Network       network.Network   `json:"network" validate:"required,dive"`
 	Service       service.Service   `json:"service" validate:"required,dive"`
+	VPN           vpn.VPN           `json:"vpn" validate:"required,dive"`
 }
 
 // Clone TODO find a better way to deep copy

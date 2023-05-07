@@ -1,2 +1,0 @@
-{{ range $rule := .Firewall.SourceNATRules }}
-        {{ matcher $.Object.Services $.Object.Addresses $rule.Match }}{{ if $rule.Counter }} counter{{ end }}{{ if ne $rule.Comment "" }} comment "{{ $rule.Comment }}"{{ end }}{{ end }}

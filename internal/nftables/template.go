@@ -3,6 +3,8 @@ package nftables
 import (
 	"embed"
 	"text/template"
+
+	"nfsense.net/nfsense/internal/util"
 )
 
 //go:embed template
@@ -12,8 +14,11 @@ var templates *template.Template
 func init() {
 
 	funcMap := template.FuncMap{
-		// The name "title" is what the function will be called in the template text.
-		"matcher": GenerateMatcher,
+		"addressMatcher":       GenerateAddressMatcher,
+		"serviceMatcher":       GenerateServiceMatcher,
+		"destinationNatAction": GenerateDestinationNatAction,
+		"sourceNatAction":      GenerateSourceNatAction,
+		"getBaseServices":      util.ResolveBaseServices,
 	}
 
 	var err error

@@ -1,2 +1,0 @@
-{{range $rule := .Firewall.ForwardRules}}
-        {{ matcher $.Object.Services $.Object.Addresses $rule.Match }}{{ if $rule.Counter }} counter{{ end }} {{ $rule.Verdict.String }}{{ if ne $rule.Comment "" }} comment "{{ $rule.Comment }}"{{ end }}{{ end }}

@@ -8,58 +8,28 @@ import (
 	"nfsense.net/nfsense/internal/util"
 )
 
-func GenerateMatcher(services map[string]object.Service, addresses map[string]object.Address, match firewall.Match) (string, error) {
-	return GenerateAddressMatcher(addresses, match) + " " + GenerateServiceMatcher(services, match), nil
-}
-
-func GenerateServiceMatcher(allServices map[string]object.Service, match firewall.Match) string {
-	serviceList := util.ResolveBaseServices(allServices, match.Services)
-
-	tcpSPorts := []string{}
-	tcpDPorts := []string{}
-	udpSPorts := []string{}
-	udpDPorts := []string{}
-	icmpCodes := []string{}
-
-	for _, service := range serviceList {
-		switch service.Type {
-		case object.TCP:
-			if service.GetSPort() != "" {
-				tcpSPorts = append(tcpSPorts, service.GetSPort())
-			}
-			if service.GetDPort() != "" {
-				tcpDPorts = append(tcpDPorts, service.GetDPort())
-			}
-		case object.UDP:
-			if service.GetSPort() != "" {
-				udpSPorts = append(udpSPorts, service.GetSPort())
-			}
-			if service.GetDPort() != "" {
-				udpDPorts = append(udpDPorts, service.GetDPort())
-			}
-		case object.ICMP:
-			icmpCodes = append(icmpCodes, fmt.Sprint(service.ICMPCode))
-		default:
-			panic("invalid service type")
-		}
-	}
-
+func GenerateServiceMatcher(service object.Service) string {
 	res := ""
 
-	if len(tcpSPorts) != 0 {
-		res += "tcp sport " + util.ConvertSliceToSetString(tcpSPorts) + " "
-	}
-	if len(tcpDPorts) != 0 {
-		res += "tcp dport " + util.ConvertSliceToSetString(tcpDPorts) + " "
-	}
-	if len(udpSPorts) != 0 {
-		res += "udp sport " + util.ConvertSliceToSetString(udpSPorts) + " "
-	}
-	if len(udpDPorts) != 0 {
-		res += "udp dport " + util.ConvertSliceToSetString(udpDPorts) + " "
-	}
-	if len(icmpCodes) != 0 {
-		res += "icmp codes " + util.ConvertSliceToSetString(icmpCodes) + " "
+	switch service.Type {
+	case object.TCP:
+		if service.GetSPort() != "" {
+			res = "tcp sport " + service.GetSPort()
+		}
+		if service.GetDPort() != "" {
+			res = res + "tcp dport " + service.GetDPort()
+		}
+	case object.UDP:
+		if service.GetSPort() != "" {
+			res = "udp sport " + service.GetSPort()
+		}
+		if service.GetDPort() != "" {
+			res = res + "udp dport " + service.GetDPort()
+		}
+	case object.ICMP:
+		res = "icmp codes " + fmt.Sprint(service.ICMPCode)
+	default:
+		panic("invalid service type")
 	}
 
 	return res

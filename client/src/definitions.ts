@@ -87,6 +87,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
     name: "Firewall",
     "forwardrules": {
       name: "ForwardRule",
+      idType: "Number",
       validationSchema: toFormValidator(
         zod.object({
           name: zod.string(),
@@ -111,6 +112,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
     },
     "destinationnatrules": {
       name: "DestinationNATRule",
+      idType: "Number",
       validationSchema: toFormValidator(
         zod.object({
           name: zod.string(),
@@ -141,6 +143,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
     },
     "sourcenatrules": {
       name: "SourceNATRule",
+      idType: "Number",
       validationSchema: toFormValidator(
         zod.object({
           name: zod.string(),
@@ -208,6 +211,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
     },
     "staticroutes": {
       name: "StaticRoute",
+      idType: "Number",
       validationSchema: toFormValidator(
         zod.object({
           name: zod.string(),
@@ -275,6 +279,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
     name: "Service",
     "dhcpv4servers": {
       name: "DHCPv4Server",
+      idType: "Number",
       validationSchema: toFormValidator(
         zod.object({
         }),
@@ -299,6 +304,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
     },
     "ntpservers": {
       name: "NTPServer",
+      idType: "Number",
       validationSchema: toFormValidator(
         zod.object({
         }),
@@ -314,6 +320,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
     },
     "dnsservers": {
       name: "DNSServer",
+      idType: "Number",
       validationSchema: toFormValidator(
         zod.object({
         }),

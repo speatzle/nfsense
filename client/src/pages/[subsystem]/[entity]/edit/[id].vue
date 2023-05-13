@@ -4,22 +4,28 @@ import { apiCall } from "../../../../api";
 import getPlugins from '../../../../plugins';
 const p = getPlugins();
 
-const props = $defineProps<{subsystem: string, entity: string, id: string}>();
+const props = $defineProps<{subsystem: string, entity: string, id: string | number}>();
 const { subsystem, entity, id } = $(props);
 
 let initialValues = $ref({} as {});
 let loading = $ref(true);
 
 async function load(){
-  loading = true
-  let res = await apiCall(editTypes[subsystem].name +".Get"+ editTypes[subsystem][entity].name, {id: id});
+  loading = true;
+  let res: any;
+  if (editTypes[subsystem][entity].idType == "Number") {
+    res = await apiCall(editTypes[subsystem].name +".Get"+ editTypes[subsystem][entity].name, {id: id as number - 0});
+  } else {
+    res = await apiCall(editTypes[subsystem].name +".Get"+ editTypes[subsystem][entity].name, {id: id});
+  }
+
   if (res.Error === null) {
     console.debug("update data", res.Data);
     initialValues = res.Data;
   } else {
     console.debug("error", res);
   }
-  loading = false
+  loading = false;
 }
 
 async function update(value: any) {
@@ -44,7 +50,7 @@ onMounted(async() => {
   <div v-if="editTypes[subsystem][entity]">
     <PageHeader :title="'Update ' + editTypes[subsystem][entity].name">
     </PageHeader>
-    <NiceForm v-if="!loading" class="scroll cl-secondary" :submit="update" :discard="() => $router.go(-1)" :sections="editTypes[subsystem][entity].sections" :initialValues="initialValues"/>
+    <NiceForm v-if="!loading" class="scroll cl-secondary" :submit="update" :discard="() => $router.go(-1)" :sections="editTypes[subsystem][entity].sections" :initial-values="initialValues"/>
     <p v-else>Loading...</p>
   </div>
   <div v-else>

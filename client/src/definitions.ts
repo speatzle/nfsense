@@ -48,6 +48,23 @@ const GetAddresses: SearchProvider = async (o) => {
   }
 };
 
+const GetServices: SearchProvider = async (o) => {
+  let res = await apiCall("Object.GetServices", {});
+  if (res.Error === null) {
+    console.debug("services", res.Data.Services);
+    let obj = {} as Options;
+    Object.keys(res.Data.Services).forEach(function (key, index) {
+      obj[key] = {
+        display: key,
+      };
+    });
+    return obj;
+  } else {
+    console.debug("error", res);
+    return {} as Options;
+  }
+};
+
 const GetPeers: SearchProvider = async (o) => {
   let res = await apiCall("VPN.GetWireguardPeers", {});
   if (res.Error === null) {

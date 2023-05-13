@@ -184,6 +184,28 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
         },
       ],
     },
+    "services": {
+      name: "Service",
+      validationSchema: toFormValidator(
+        zod.object({
+        }),
+      ),
+      sections: [
+        {
+          fields: [
+            { key: "name", label: "Name", as: "TextBox", default: "placeholder" },
+            { key: "type", label: "Type", as: "PillBar", props: { options: { tcp: { display: 'TCP' }, udp: { display: 'UDP' }, icmp: { display: 'ICMP' }, group: { display: 'Group' } } } },
+            { key: "sport_start", label: "Source Port Start", as: "NumberBox", enabled: (values: any) => (values["type"] == 'tcp' || values["type"] == 'udp') },
+            { key: "sport_end", label: "Source Port End", as: "NumberBox", enabled: (values: any) => (values["type"] == 'tcp' || values["type"] == 'udp') },
+            { key: "dport_start", label: "Destination Port Start", as: "NumberBox", enabled: (values: any) => (values["type"] == 'tcp' || values["type"] == 'udp') },
+            { key: "dport_end", label: "Destination Port End", as: "NumberBox", enabled: (values: any) => (values["type"] == 'tcp' || values["type"] == 'udp') },
+            { key: "icmp_code", label: "ICMP Code", as: "NumberBox", enabled: (values: any) => (values["type"] == 'icmp') },
+            { key: "children", label: "Children", as: "MultiSelect", enabled: (values: any) => (values["type"] == 'group'), props: { searchProvider: GetServices } },
+            { key: "comment", label: "Comment", as: "MultilineTextBox" },
+          ],
+        },
+      ],
+    },
   },
   "service": {
     name: "Service",

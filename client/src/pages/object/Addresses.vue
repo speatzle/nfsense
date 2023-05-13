@@ -71,7 +71,7 @@ async function deleteAddress(){
   load();
 }
 
-async function editInterface() {
+async function editAddress() {
   p.router.push("/object/addresses/edit/" + displayData[selection[0]].name);
 }
 
@@ -85,7 +85,7 @@ onMounted(async() => {
   <TableView title="Addresses" :columns="columns" :loading="loading" v-model:selection="selection" v-model:data="displayData" :table-props="{sort:true, sortSelf: true}">
     <button @click="load">Refresh</button>
     <router-link class="button" to="/object/addresses/edit">Create</router-link>
-    <button @click="editInterface" :disabled="selection.length != 1">Edit</button>
+    <button @click="editAddress" :disabled="selection.length != 1">Edit</button>
     <button @click="deleteAddress" :disabled="selection.length != 1">Delete</button>
   </TableView>
 </template>

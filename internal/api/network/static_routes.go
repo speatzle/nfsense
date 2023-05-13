@@ -7,6 +7,24 @@ import (
 	"nfsense.net/nfsense/internal/definitions/network"
 )
 
+type GetStaticRouteParameters struct {
+	ID uint
+}
+
+type GetStaticRouteResult struct {
+	network.StaticRoute
+}
+
+func (f *Network) GetStaticRoute(ctx context.Context, params GetStaticRouteParameters) (GetStaticRouteResult, error) {
+	if int(params.ID) >= len(f.ConfigManager.GetPendingConfig().Network.StaticRoutes) {
+		return GetStaticRouteResult{}, fmt.Errorf("StaticRoute does not Exist")
+	}
+
+	return GetStaticRouteResult{
+		StaticRoute: f.ConfigManager.GetPendingConfig().Network.StaticRoutes[params.ID],
+	}, nil
+}
+
 type GetStaticRoutesResult struct {
 	StaticRoutes []network.StaticRoute
 }

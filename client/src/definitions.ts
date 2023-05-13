@@ -99,6 +99,9 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
         {
           fields: [
             { key: "name", label: "Name", as: "TextBox" },
+            { key: "match.source_addresses", label: "Source", as: "MultiSelect", props: { searchProvider: GetAddresses } },
+            { key: "match.destination_addresses", label: "Destination", as: "MultiSelect", props: { searchProvider: GetAddresses } },
+            { key: "match.services", label: "Services", as: "MultiSelect", props: { searchProvider: GetServices } },
             { key: "verdict", label: "Verdict", as: "PillBar", props: { options: { accept: { display: 'Accept' }, drop: { display: 'Drop' }, continue: { display: 'Continue' } } } },
             { key: "counter", label: "Counter", as: "CheckBox" },
             { key: "comment", label: "Comment", as: "MultilineTextBox" },

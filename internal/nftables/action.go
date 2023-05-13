@@ -28,12 +28,17 @@ func GenerateDestinationNatAction(conf config.Config, rule firewall.DestinationN
 			panic("invalid service type")
 		}
 	}
+	// TODO if the destination is ip v6 use ip6 instead of ip here
+	if rule.Address != nil {
+		return "dnat ip to " + destination
+	}
+	// ip or ip6 are not needed if the addresses is not changed
 	return "dnat to " + destination
 }
 
 func GenerateSourceNatAction(conf config.Config, rule firewall.SourceNATRule) string {
 	if rule.Type == firewall.Masquerade {
-		return "masqerade"
+		return "masquerade"
 	}
 
 	source := ""
@@ -60,5 +65,10 @@ func GenerateSourceNatAction(conf config.Config, rule firewall.SourceNATRule) st
 		}
 	}
 
+	// TODO if the destination is ip v6 use ip6 instead of ip here
+	if rule.Address != nil {
+		return "snat ip to " + source
+	}
+	// ip or ip6 are not needed if the addresses is not changed
 	return "snat to " + source
 }

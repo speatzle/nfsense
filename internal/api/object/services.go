@@ -39,8 +39,8 @@ func (f *Object) GetServices(ctx context.Context, params struct{}) (GetServicesR
 }
 
 type CreateServiceParameters struct {
-	Name    string
-	Service object.Service
+	Name string
+	object.Service
 }
 
 func (f *Object) CreateService(ctx context.Context, params CreateServiceParameters) (struct{}, error) {
@@ -57,8 +57,8 @@ func (f *Object) CreateService(ctx context.Context, params CreateServiceParamete
 }
 
 type UpdateServiceParameters struct {
-	Name    string
-	Service object.Service
+	Name string
+	object.Service
 }
 
 func (f *Object) UpdateService(ctx context.Context, params UpdateServiceParameters) (struct{}, error) {

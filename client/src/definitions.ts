@@ -109,6 +109,67 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
         },
       ],
     },
+    "destinationnatrules": {
+      name: "DestinationNATRule",
+      validationSchema: toFormValidator(
+        zod.object({
+          name: zod.string(),
+          verdict: zod.string(),
+          counter: zod.boolean(),
+          comment: zod.string().optional(),
+        }),
+      ),
+      sections: [
+        {
+          fields: [
+            { key: "name", label: "Name", as: "TextBox" },
+            { key: "match.source_addresses", label: "Source", as: "MultiSelect", props: { searchProvider: GetAddresses } },
+            { key: "match.destination_addresses", label: "Destination", as: "MultiSelect", props: { searchProvider: GetAddresses } },
+            { key: "match.services", label: "Services", as: "MultiSelect", props: { searchProvider: GetServices } },
+          ],
+        },
+        {
+          title: "DNAT",
+          fields: [
+            { key: "address", label: "Destination", as: "SingleSelect", props: { searchProvider: GetAddresses } },
+            { key: "service", label: "Service", as: "SingleSelect", props: { searchProvider: GetServices } },
+            { key: "counter", label: "Counter", as: "CheckBox" },
+            { key: "comment", label: "Comment", as: "MultilineTextBox" },
+          ],
+        },
+      ],
+    },
+    "sourcenatrules": {
+      name: "SourceNATRule",
+      validationSchema: toFormValidator(
+        zod.object({
+          name: zod.string(),
+          verdict: zod.string(),
+          counter: zod.boolean(),
+          comment: zod.string().optional(),
+        }),
+      ),
+      sections: [
+        {
+          fields: [
+            { key: "name", label: "Name", as: "TextBox" },
+            { key: "match.source_addresses", label: "Source", as: "MultiSelect", props: { searchProvider: GetAddresses } },
+            { key: "match.destination_addresses", label: "Destination", as: "MultiSelect", props: { searchProvider: GetAddresses } },
+            { key: "match.services", label: "Services", as: "MultiSelect", props: { searchProvider: GetServices } },
+          ],
+        },
+        {
+          title: "SNAT",
+          fields: [
+            { key: "type", label: "Type", as: "PillBar", props: { options: { snat: { display: 'SNAT' }, masquerade: { display: 'Masquerade' } } } },
+            { key: "address", label: "Source", as: "SingleSelect", enabled: (values: any) => (values["type"] == 'snat'), props: { searchProvider: GetAddresses } },
+            { key: "service", label: "Service", as: "SingleSelect", enabled: (values: any) => (values["type"] == 'snat'), props: { searchProvider: GetServices } },
+            { key: "counter", label: "Counter", as: "CheckBox" },
+            { key: "comment", label: "Comment", as: "MultilineTextBox" },
+          ],
+        },
+      ],
+    },
   },
   "network": {
     name: "Network",

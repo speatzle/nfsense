@@ -7,6 +7,24 @@ import (
 	"nfsense.net/nfsense/internal/definitions/firewall"
 )
 
+type GetSourceNATRuleParameters struct {
+	ID uint
+}
+
+type GetSourceNATRuleResult struct {
+	firewall.SourceNATRule
+}
+
+func (f *Firewall) GetSourceNATRule(ctx context.Context, params GetSourceNATRuleParameters) (GetSourceNATRuleResult, error) {
+	if int(params.ID) >= len(f.ConfigManager.GetPendingConfig().Firewall.SourceNATRules) {
+		return GetSourceNATRuleResult{}, fmt.Errorf("SourceNATRule does not Exist")
+	}
+
+	return GetSourceNATRuleResult{
+		SourceNATRule: f.ConfigManager.GetPendingConfig().Firewall.SourceNATRules[params.ID],
+	}, nil
+}
+
 type GetSourceNATRulesResult struct {
 	SourceNATRules []firewall.SourceNATRule `json:"source_nat_rules"`
 }
@@ -18,7 +36,7 @@ func (f *Firewall) GetSourceNATRules(ctx context.Context, params struct{}) (GetS
 }
 
 type CreateSourceNATRuleParameters struct {
-	SourceNATRule firewall.SourceNATRule `json:"source_nat_rule"`
+	firewall.SourceNATRule
 }
 
 func (f *Firewall) CreateSourceNATRule(ctx context.Context, params CreateSourceNATRuleParameters) (struct{}, error) {
@@ -30,8 +48,8 @@ func (f *Firewall) CreateSourceNATRule(ctx context.Context, params CreateSourceN
 }
 
 type UpdateSourceNATRuleParameters struct {
-	Index         uint64                 `json:"index"`
-	SourceNATRule firewall.SourceNATRule `json:"source_nat_rule"`
+	Index uint64 `json:"index"`
+	firewall.SourceNATRule
 }
 
 func (f *Firewall) UpdateSourceNATRule(ctx context.Context, params UpdateSourceNATRuleParameters) (struct{}, error) {

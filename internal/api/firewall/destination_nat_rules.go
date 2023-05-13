@@ -7,6 +7,24 @@ import (
 	"nfsense.net/nfsense/internal/definitions/firewall"
 )
 
+type GetDestinationNATRuleParameters struct {
+	ID uint
+}
+
+type GetDestinationNATRuleResult struct {
+	firewall.DestinationNATRule
+}
+
+func (f *Firewall) GetDestinationNATRule(ctx context.Context, params GetDestinationNATRuleParameters) (GetDestinationNATRuleResult, error) {
+	if int(params.ID) >= len(f.ConfigManager.GetPendingConfig().Firewall.DestinationNATRules) {
+		return GetDestinationNATRuleResult{}, fmt.Errorf("DestinationNATRule does not Exist")
+	}
+
+	return GetDestinationNATRuleResult{
+		DestinationNATRule: f.ConfigManager.GetPendingConfig().Firewall.DestinationNATRules[params.ID],
+	}, nil
+}
+
 type GetDestinationNATRulesResult struct {
 	DestinationNATRules []firewall.DestinationNATRule `json:"destination_nat_rules"`
 }
@@ -18,7 +36,7 @@ func (f *Firewall) GetDestinationNATRules(ctx context.Context, params struct{}) 
 }
 
 type CreateDestinationNATRuleParameters struct {
-	DestinationNATRule firewall.DestinationNATRule `json:"destination_nat_rule"`
+	firewall.DestinationNATRule
 }
 
 func (f *Firewall) CreateDestinationNATRule(ctx context.Context, params CreateDestinationNATRuleParameters) (struct{}, error) {
@@ -30,8 +48,8 @@ func (f *Firewall) CreateDestinationNATRule(ctx context.Context, params CreateDe
 }
 
 type UpdateDestinationNATRuleParameters struct {
-	Index              uint64                      `json:"index"`
-	DestinationNATRule firewall.DestinationNATRule `json:"destination_nat_rule"`
+	Index uint64 `json:"index"`
+	firewall.DestinationNATRule
 }
 
 func (f *Firewall) UpdateDestinationNATRule(ctx context.Context, params UpdateDestinationNATRuleParameters) (struct{}, error) {

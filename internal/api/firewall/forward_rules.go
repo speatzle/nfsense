@@ -7,6 +7,24 @@ import (
 	"nfsense.net/nfsense/internal/definitions/firewall"
 )
 
+type GetForwardRuleParameters struct {
+	ID uint
+}
+
+type GetForwardRuleResult struct {
+	firewall.ForwardRule
+}
+
+func (f *Firewall) GetForwardRule(ctx context.Context, params GetForwardRuleParameters) (GetForwardRuleResult, error) {
+	if int(params.ID) >= len(f.ConfigManager.GetPendingConfig().Firewall.ForwardRules) {
+		return GetForwardRuleResult{}, fmt.Errorf("ForwardRule does not Exist")
+	}
+
+	return GetForwardRuleResult{
+		ForwardRule: f.ConfigManager.GetPendingConfig().Firewall.ForwardRules[params.ID],
+	}, nil
+}
+
 type GetForwardRulesResult struct {
 	ForwardRules []firewall.ForwardRule `json:"forward_rules"`
 }
@@ -18,7 +36,7 @@ func (f *Firewall) GetForwardRules(ctx context.Context, params struct{}) (GetFor
 }
 
 type CreateForwardRuleParameters struct {
-	ForwardRule firewall.ForwardRule `json:"forward_rule"`
+	firewall.ForwardRule
 }
 
 func (f *Firewall) CreateForwardRule(ctx context.Context, params CreateForwardRuleParameters) (struct{}, error) {
@@ -30,8 +48,8 @@ func (f *Firewall) CreateForwardRule(ctx context.Context, params CreateForwardRu
 }
 
 type UpdateForwardRuleParameters struct {
-	Index       uint64               `json:"index"`
-	ForwardRule firewall.ForwardRule `json:"forward_rule"`
+	Index uint64 `json:"index"`
+	firewall.ForwardRule
 }
 
 func (f *Firewall) UpdateForwardRule(ctx context.Context, params UpdateForwardRuleParameters) (struct{}, error) {

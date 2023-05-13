@@ -17,14 +17,20 @@ func GenerateServiceMatcher(service object.Service) string {
 			res = "tcp sport " + service.GetSPort()
 		}
 		if service.GetDPort() != "" {
-			res = res + "tcp dport " + service.GetDPort()
+			if len(res) != 0 {
+				res += " "
+			}
+			res += "tcp dport " + service.GetDPort()
 		}
 	case object.UDP:
 		if service.GetSPort() != "" {
 			res = "udp sport " + service.GetSPort()
 		}
 		if service.GetDPort() != "" {
-			res = res + "udp dport " + service.GetDPort()
+			if len(res) != 0 {
+				res += " "
+			}
+			res += "udp dport " + service.GetDPort()
 		}
 	case object.ICMP:
 		res = "icmp codes " + fmt.Sprint(service.ICMPCode)

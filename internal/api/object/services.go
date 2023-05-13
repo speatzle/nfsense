@@ -7,6 +7,27 @@ import (
 	"nfsense.net/nfsense/internal/definitions/object"
 )
 
+type GetServiceParameters struct {
+	ID string
+}
+
+type GetServiceResult struct {
+	Name string `json:"name"`
+	object.Service
+}
+
+func (f *Object) GetService(ctx context.Context, params GetServiceParameters) (GetServiceResult, error) {
+	_, ok := f.ConfigManager.GetPendingConfig().Object.Services[params.ID]
+	if !ok {
+		return GetServiceResult{}, fmt.Errorf("Service does not Exist")
+	}
+
+	return GetServiceResult{
+		Name:    params.ID,
+		Service: f.ConfigManager.GetPendingConfig().Object.Services[params.ID],
+	}, nil
+}
+
 type GetServicesResult struct {
 	Services map[string]object.Service
 }

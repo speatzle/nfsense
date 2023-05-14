@@ -377,4 +377,23 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
       ],
     },
   },
+  "system": {
+    name: "System",
+    "users": {
+      name: "User",
+      validationSchema: toFormValidator(
+        zod.object({
+        }),
+      ),
+      sections: [
+        {
+          fields: [
+            { key: "name", label: "Name", as: "TextBox" },
+            { key: "password", label: "Password", as: "TextBox", props: { type: "password" } },
+            { key: "comment", label: "Comment", as: "MultilineTextBox" },
+          ],
+        },
+      ],
+    },
+  },
 };

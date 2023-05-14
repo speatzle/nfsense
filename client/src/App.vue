@@ -15,6 +15,7 @@ import IDNSServer from '~icons/carbon/server-dns';
 import ITimeServer from '~icons/carbon/server-time';
 import IWireguard from '~icons/simple-icons/wireguard';
 import IDHCPServer from '~icons/material-symbols/book-rounded';
+import IUser from '~icons/mdi/user';
 
 enum NavState { Open, Reduced, Collapsed };
 const NavStateCount = 3;
@@ -34,6 +35,7 @@ const navRoutes = {
   "/vpn/wireguardstatus": { icon: IWireguard, caption: "Wireguard Status" },
   "/vpn/wireguardinterfaces": { icon: IWireguard, caption: "Wireguard Interfaces" },
   "/vpn/wireguardpeers": { icon: IWireguard, caption: "Wireguard Peers" },
+  "/system/users": { icon: IUser, caption: "Users" },
   "/config/config": { icon: IConfig, caption: "Config" },
 };
 

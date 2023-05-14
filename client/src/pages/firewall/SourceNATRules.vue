@@ -12,6 +12,8 @@ const columns = [
   {heading: 'Source', path: 'match.source_addresses'},
   {heading: 'Destination', path: 'match.destination_addresses'},
   {heading: 'Service', path: 'match.services'},
+  {heading: 'Translated Address', path: 'address'},
+  {heading: 'Translated Service', path: 'service'},
   {heading: 'Counter', path: 'counter'},
   {heading: 'Comment', path: 'comment'},
 ];
@@ -57,7 +59,7 @@ onMounted(async() => {
 
 <template>
   <div>
-      <TableView title="SNAT Rules" :columns="columns" :loading="loading" @draggedRow="draggedRow" v-model:selection="selection" v-model:data="rules" :table-props="{sort:true, sortSelf: true, draggable: true}">
+    <TableView title="SNAT Rules" :columns="columns" :loading="loading" @draggedRow="draggedRow" v-model:selection="selection" v-model:data="rules" :table-props="{sort:true, sortSelf: true, draggable: true}">
       <button @click="load">Refresh</button>
       <router-link class="button" to="/firewall/sourcenatrules/edit">Create</router-link>
       <router-link class="button" :class="{ disabled: selection.length != 1 }" :to="'/firewall/sourcenatrules/edit/' + selection[0]">Edit</router-link>

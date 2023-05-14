@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"golang.org/x/exp/slog"
+	"nfsense.net/nfsense/internal/auth"
 	"nfsense.net/nfsense/internal/session"
 )
 
@@ -27,13 +28,16 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		slog.Error("Unmarshal", err)
 		return
 	}
-	if req.Username == "admin" && req.Password == "12345" {
-		slog.Info("User Login Successfull")
-		session.GenerateSession(w, req.Username)
-		w.WriteHeader(http.StatusOK)
+	err = auth.AuthenticateUser(configManager.GetCurrentConfig(), req.Username, req.Password)
+	if err != nil {
+		slog.Error("User Login failed", "err", err, "username", req.Username)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-	w.WriteHeader(http.StatusUnauthorized)
+
+	slog.Info("User Login Successful", "username", req.Username)
+	session.GenerateSession(w, req.Username)
+	w.WriteHeader(http.StatusOK)
 }
 
 func HandleLogout(w http.ResponseWriter, r *http.Request) {

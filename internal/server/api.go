@@ -12,7 +12,6 @@ import (
 )
 
 func HandleAPI(w http.ResponseWriter, r *http.Request) {
-	slog.Info("Api Handler hit")
 	_, s := session.GetSession(r)
 	if s == nil {
 		// Fallthrough after so that jsonrpc can still deliver a valid jsonrpc error

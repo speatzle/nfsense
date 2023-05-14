@@ -17,11 +17,13 @@ var server http.Server
 var mux = http.NewServeMux()
 var apiHandler *jsonrpc.Handler
 var stopCleanup chan struct{}
+var configManager *config.ConfigManager
 
-func StartWebserver(configManager *config.ConfigManager, _apiHandler *jsonrpc.Handler) {
+func StartWebserver(_configManager *config.ConfigManager, _apiHandler *jsonrpc.Handler) {
 	server.Addr = ":8080"
 	server.Handler = mux
 	apiHandler = _apiHandler
+	configManager = _configManager
 
 	// Routing
 	mux.HandleFunc("/login", HandleLogin)

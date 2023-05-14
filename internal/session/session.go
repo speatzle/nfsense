@@ -18,7 +18,7 @@ const SessionLifeTime = time.Minute * 15
 type Session struct {
 	Username string
 	Expires  time.Time
-	// TODO Add []websocket.Conn pointer to close all active websockets, alternativly do this via context cancelation
+	// TODO Add []websocket.Conn pointer to close all active websockets, alternatively do this via context cancelation
 }
 
 type SessionResponse struct {

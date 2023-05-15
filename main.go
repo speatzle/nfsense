@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"flag"
 	"os"
 	"os/signal"
 	"syscall"
@@ -29,9 +28,6 @@ import (
 )
 
 func main() {
-	applyPtr := flag.Bool("apply", false, "apply config and stop")
-	flag.Parse()
-
 	slog.Info("Starting...")
 
 	dbusConn, err := dbus.ConnectSystemBus()
@@ -43,6 +39,19 @@ func main() {
 
 	configManager := config.CreateConfigManager()
 	RegisterApplyFunctions(configManager)
+
+	// Check for Subcommand
+
+	apply := false
+	if len(os.Args) > 1 {
+		switch os.Args[1] {
+		case "apply":
+			apply = true
+		case "setup":
+			setup(configManager, dbusConn)
+			return
+		}
+	}
 
 	err = configManager.LoadCurrentConfigFromDisk()
 	if err != nil {
@@ -64,7 +73,7 @@ func main() {
 		}
 	}
 
-	if *applyPtr {
+	if apply {
 		slog.Info("Applying Config...")
 		err := configManager.ApplyPendingChanges()
 		if err != nil {

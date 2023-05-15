@@ -21,3 +21,15 @@ func (m *ConfigManager) saveConfig(path string, conf *config.Config) error {
 
 	return nil
 }
+
+func (m *ConfigManager) SaveWithoutApplying() error {
+	m.currentConfig = m.pendingConfig.Clone()
+
+	err := m.saveConfig(m.currentConfigFilePath, m.pendingConfig)
+	if err != nil {
+		return fmt.Errorf("Save Current Config: %w", err)
+	}
+
+	os.Remove(m.pendingConfigFilePath)
+	return nil
+}

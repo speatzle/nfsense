@@ -109,9 +109,11 @@ echo "Setup nfsense Config"
 systemctl enable nftables
 systemctl enable systemd-networkd
 systemctl disable NetworkManager
+systemctl stop NetworkManager
 
 echo "Apply nfsense Config"
 ./nfsense apply
+
 
 echo "Starting nfsense"
 systemctl enable nfsense

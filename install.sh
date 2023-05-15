@@ -98,20 +98,20 @@ EOT
 echo "reload systemd"
 systemctl daemon-reload
 
-echo "Setup nfsense Config"
-./nfsense --setup
-
-echo "Setup networkd"
-systemctl disable NetworkManager
-systemctl stop NetworkManager
-systemctl enable systemd-networkd
-systemctl start systemd-networkd
-
 echo "Setup nftables"
 echo 'include "/etc/nftables/nfsense.conf"' >> /etc/sysconfig/nftables.conf
 touch /etc/nftables/nfsense.conf
+
+echo "Setup nfsense Config"
+./nfsense setup
+
+# Enable & Disable Network Services
 systemctl enable nftables
-systemctl start nftables
+systemctl enable systemd-networkd
+systemctl disable NetworkManager
+
+echo "Apply nfsense Config"
+./nfsense apply
 
 echo "Starting nfsense"
 systemctl enable nfsense

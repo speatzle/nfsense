@@ -15,10 +15,10 @@ func (m *ConfigManager) ApplyPendingChanges() error {
 	for _, fn := range m.applyFunctions {
 		err := fn(*m.currentConfig, *m.pendingConfig)
 		if err != nil {
-			slog.Error("Applying Pending Changes", err)
+			slog.Error("Applying Pending Changes", "err", err)
 			err2 := revertToCurrent(m)
 			if err2 != nil {
-				slog.Error("Reverting Error", err2)
+				slog.Error("Reverting Error", "err", err2)
 				return fmt.Errorf("Apply Error %w; Reverting Error %w", err, err2)
 			}
 			return err

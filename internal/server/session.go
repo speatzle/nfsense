@@ -25,7 +25,7 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 	var req LoginRequest
 	err = json.Unmarshal(buf, &req)
 	if err != nil {
-		slog.Error("Unmarshal", err)
+		slog.Error("Unmarshal", "err", err)
 		return
 	}
 	err = auth.AuthenticateUser(configManager.GetCurrentConfig(), req.Username, req.Password)

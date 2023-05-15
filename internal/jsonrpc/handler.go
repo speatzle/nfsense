@@ -29,7 +29,7 @@ func NewHandler(maxRequestSize int64) *Handler {
 func (h *Handler) HandleRequest(ctx context.Context, s *session.Session, r io.Reader, w io.Writer) error {
 	defer func() {
 		if r := recover(); r != nil {
-			slog.Error("Recovered Panic Handling JSONRPC Request", fmt.Errorf("%v", r), "stack", debug.Stack())
+			slog.Error("Recovered Panic Handling JSONRPC Request", "err", fmt.Errorf("%v", r), "stack", debug.Stack())
 		}
 	}()
 	var req request
@@ -81,7 +81,7 @@ func (h *Handler) HandleRequest(ctx context.Context, s *session.Session, r io.Re
 
 	defer func() {
 		if r := recover(); r != nil {
-			slog.Error("Recovered Panic Executing API Method", fmt.Errorf("%v", r), "method", req.Method, "params", fmt.Sprintf("%+v", params[2]), "id", req.ID, "stack", debug.Stack())
+			slog.Error("Recovered Panic Executing API Method", "err", fmt.Errorf("%v", r), "method", req.Method, "params", fmt.Sprintf("%+v", params[2]), "id", req.ID, "stack", debug.Stack())
 			respondError(w, req.ID, ErrInternalError, fmt.Errorf("%v", r))
 		}
 	}()
@@ -90,7 +90,7 @@ func (h *Handler) HandleRequest(ctx context.Context, s *session.Session, r io.Re
 
 	if !res[1].IsNil() {
 		reqerr := res[1].Interface().(error)
-		slog.Error("API Method", reqerr, "method", req.Method, "id", req.ID, "params", fmt.Sprintf("%+v", params[2]))
+		slog.Error("API Method", "err", reqerr, "method", req.Method, "id", req.ID, "params", fmt.Sprintf("%+v", params[2]))
 		respondError(w, req.ID, ErrInternalError, reqerr)
 		return nil
 	}

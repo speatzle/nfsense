@@ -20,7 +20,7 @@ func HandleAPI(w http.ResponseWriter, r *http.Request) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			slog.Error("Recovered Panic Handling HTTP API Request", fmt.Errorf("%v", r), "stack", debug.Stack())
+			slog.Error("Recovered Panic Handling HTTP API Request", "err", fmt.Errorf("%v", r), "stack", debug.Stack())
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
@@ -30,6 +30,6 @@ func HandleAPI(w http.ResponseWriter, r *http.Request) {
 
 	err := apiHandler.HandleRequest(ctx, s, r.Body, w)
 	if err != nil {
-		slog.Error("Handling HTTP API Request", err)
+		slog.Error("Handling HTTP API Request", "err", err)
 	}
 }

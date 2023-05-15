@@ -24,7 +24,7 @@ func HandleWebsocketAPI(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 	c, err := websocket.Accept(w, r, nil)
 	if err != nil {
-		slog.Error("Accepting Websocket Connection", err)
+		slog.Error("Accepting Websocket Connection", "err", err)
 		return
 	}
 	defer c.Close(websocket.StatusInternalError, "Unexpected Closing")
@@ -38,14 +38,14 @@ func HandleWebsocketAPI(w http.ResponseWriter, r *http.Request) {
 			cancel()
 			return
 		} else if err != nil {
-			slog.Error("API Websocket Closed Unexpectedly", err)
+			slog.Error("API Websocket Closed Unexpectedly", "err", err)
 			cancel()
 		}
 
 		go func() {
 			defer func() {
 				if r := recover(); r != nil {
-					slog.Error("Recovered Panic Handling Websocket API Request", fmt.Errorf("%v", r), "stack", debug.Stack())
+					slog.Error("Recovered Panic Handling Websocket API Request", "err", fmt.Errorf("%v", r), "stack", debug.Stack())
 					return
 				}
 			}()
@@ -54,7 +54,7 @@ func HandleWebsocketAPI(w http.ResponseWriter, r *http.Request) {
 
 			err := apiHandler.HandleRequest(ctx, s, bytes.NewReader(m), w)
 			if err != nil {
-				slog.Error("Handling Websocket API Request", err)
+				slog.Error("Handling Websocket API Request", "err", err)
 			}
 		}()
 	}

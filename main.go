@@ -32,7 +32,7 @@ func main() {
 
 	dbusConn, err := dbus.ConnectSystemBus()
 	if err != nil {
-		slog.Error("Connecting to DBus", err)
+		slog.Error("Connecting to DBus", "err", err)
 		// os.Exit(1)
 	}
 	defer dbusConn.Close()
@@ -55,7 +55,7 @@ func main() {
 
 	err = configManager.LoadCurrentConfigFromDisk()
 	if err != nil {
-		slog.Error("Loading Current Config", err)
+		slog.Error("Loading Current Config", "err", err)
 		os.Exit(1)
 	}
 
@@ -68,7 +68,7 @@ func main() {
 		}
 		err = configManager.DiscardPendingConfig()
 		if err != nil {
-			slog.Error("Discarding Pending Config", err)
+			slog.Error("Discarding Pending Config", "err", err)
 			os.Exit(1)
 		}
 	}
@@ -77,7 +77,7 @@ func main() {
 		slog.Info("Applying Config...")
 		err := configManager.ApplyPendingChanges()
 		if err != nil {
-			slog.Error("Applying Pending Config", err)
+			slog.Error("Applying Pending Config", "err", err)
 			os.Exit(1)
 		}
 		slog.Info("Config Applied, Exiting...")

@@ -39,7 +39,7 @@ func StartWebserver(_configManager *config.ConfigManager, _apiHandler *jsonrpc.H
 
 	go func() {
 		if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
-			slog.Error("Webserver error", err)
+			slog.Error("Webserver error", "err", err)
 		}
 		slog.Info("Webserver Stopped")
 	}()

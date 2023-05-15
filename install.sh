@@ -1,5 +1,6 @@
 #!/bin/bash
 echo "Installing nfsense dev env..."
+if [ "$(id -u)" -ne 0 ]; then echo "Please run as root." >&2; exit 1; fi
 cd /root
 
 echo "Disable firewalld"
@@ -14,15 +15,16 @@ echo 'net.ipv4.ip_forward=1' >> /etc/sysctl.conf
 sysctl -p
 
 echo "Setup Repos"
-dnf install epel-release
+dnf install epel-release -y
 /usr/bin/crb enable
 dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
 
 echo "Installing Required Packages from Repos"
-dnf install wget git systemd-networkd gh tcpdump nodejs dhcp-server unbound wireguard-tools
+dnf install wget git systemd-networkd gh tcpdump nodejs dhcp-server unbound wireguard-tools tar -y
 
 echo "Installing pnpm"
 curl -fsSL https://get.pnpm.io/install.sh | sh -
+source /root/.bashrc
 
 echo "Installing go"
 wget "https://go.dev/dl/go1.20.3.linux-amd64.tar.gz"
@@ -34,7 +36,7 @@ source /etc/profile
 
 echo "Installing code server"
 curl -fsSL https://code-server.dev/install.sh | sh
-mkdir /root/.config/code-server
+mkdir -p /root/.config/code-server
 cat <<EOT >> /root/.config/code-server/config.yaml
 bind-addr: 0.0.0.0:8081
 auth: password
@@ -96,6 +98,8 @@ EOT
 echo "reload systemd"
 systemctl daemon-reload
 
+echo "Setup nfsense Config"
+./nfsense --setup
 
 echo "Setup networkd"
 systemctl disable NetworkManager
@@ -108,9 +112,6 @@ echo 'include "/etc/nftables/nfsense.conf"' >> /etc/sysconfig/nftables.conf
 touch /etc/nftables/nfsense.conf
 systemctl enable nftables
 systemctl start nftables
-
-echo "Default nfsense config"
-./nfsense -default
 
 echo "Starting nfsense"
 systemctl enable nfsense

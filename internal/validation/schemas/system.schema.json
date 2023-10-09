@@ -1,0 +1,26 @@
+{
+    "$id": "https://nfsense.net/system.schema.json",
+    "title": "System",
+    "type": "object",
+    "properties": {
+        "users": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "object",
+                "properties": {
+                    "comment": {
+                        "type": "string"
+                    },
+                    "hash": {
+                        "type": "string"
+                    },
+                    "salt": {
+                        "type": "string"
+                    }
+                },
+            "required": ["hash", "salt"]
+            }
+        }
+    },
+    "required": ["users"]
+}

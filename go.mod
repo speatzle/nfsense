@@ -27,6 +27,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/pterm/pterm v0.12.61 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
+	github.com/santhosh-tekuri/jsonschema/v5 v5.3.0 // indirect
 	github.com/tredoe/osutil v1.3.6 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.3.5 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect

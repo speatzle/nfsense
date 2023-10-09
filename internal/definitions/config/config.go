@@ -12,6 +12,7 @@ import (
 	"nfsense.net/nfsense/internal/definitions/service"
 	"nfsense.net/nfsense/internal/definitions/system"
 	"nfsense.net/nfsense/internal/definitions/vpn"
+	"nfsense.net/nfsense/internal/validation"
 )
 
 type Config struct {
@@ -39,6 +40,10 @@ func (c *Config) Clone() *Config {
 }
 
 func ValidateConfig(conf *Config) error {
+	err := validation.ValidateConfig(*conf)
+	if err != nil {
+		return err
+	}
 	val := validator.New()
 	val.RegisterValidation("test", nilIfOtherNil)
 	return val.Struct(conf)

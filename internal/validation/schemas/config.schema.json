@@ -4,7 +4,8 @@
     "type": "object",
     "properties": {
         "config_version": {
-            "type": "number"
+            "type": "number",
+            "const": 1
         },
         "firewall": {
             "type": ["number","string","boolean","object","array", "null"]

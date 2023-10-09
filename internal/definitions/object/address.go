@@ -8,11 +8,11 @@ import (
 )
 
 type Address struct {
-	Type           AddressType     `json:"type" validate:"min=0,max=3"`
+	Type           AddressType     `json:"type"`
 	Comment        string          `json:"comment,omitempty"`
-	Host           *netip.Addr     `json:"host,omitempty" validate:"excluded_unless=Type 0"`
-	Range          *netipx.IPRange `json:"range,omitempty" validate:"excluded_unless=Type 1"`
-	NetworkAddress *netip.Prefix   `json:"network,omitempty" validate:"excluded_unless=Type 2"`
+	Host           *netip.Addr     `json:"host,omitempty"`
+	Range          *netipx.IPRange `json:"range,omitempty"`
+	NetworkAddress *netip.Prefix   `json:"network,omitempty"`
 	Children       *[]string       `json:"children,omitempty"`
 }
 

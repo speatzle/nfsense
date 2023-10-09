@@ -6,13 +6,13 @@ import (
 )
 
 type Service struct {
-	Type       ServiceType `json:"type" validate:"min=0,max=3"`
+	Type       ServiceType `json:"type"`
 	Comment    string      `json:"comment,omitempty"`
-	SPortStart *uint32     `json:"sport_start,omitempty" validate:"excluded_unless=Type 0|excluded_unless=Type 1"`
+	SPortStart *uint32     `json:"sport_start,omitempty"`
 	SPortEnd   *uint32     `json:"sport_end,omitempty"`
-	DPortStart *uint32     `json:"dport_start,omitempty" validate:"excluded_unless=Type 0|excluded_unless=Type 1"`
+	DPortStart *uint32     `json:"dport_start,omitempty"`
 	DPortEnd   *uint32     `json:"dport_end,omitempty"`
-	ICMPCode   *uint32     `json:"icmp_code,omitempty" validate:"excluded_unless=Type 2"`
+	ICMPCode   *uint32     `json:"icmp_code,omitempty"`
 	Children   *[]string   `json:"children,omitempty"`
 }
 

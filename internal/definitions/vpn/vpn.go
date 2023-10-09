@@ -1,5 +1,5 @@
 package vpn
 
 type VPN struct {
-	Wireguard Wireguard `json:"wireguard" validate:"required,dive"`
+	Wireguard Wireguard `json:"wireguard"`
 }

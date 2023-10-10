@@ -1,12 +1,12 @@
 package service
 
-import "time"
+import "nfsense.net/nfsense/internal/definitions/common"
 
 type DHCPv6Server struct {
-	Interface        string        `json:"interface"`
-	Pool             []string      `json:"pool"`
-	DefaultLeaseTime time.Duration `json:"default_lease_time"`
-	MaxLeaseTime     time.Duration `json:"max_lease_time"`
+	Interface        string          `json:"interface"`
+	Pool             []string        `json:"pool"`
+	DefaultLeaseTime common.Duration `json:"default_lease_time"`
+	MaxLeaseTime     common.Duration `json:"max_lease_time"`
 
 	GatewayMode   Mode      `json:"gateway_mode"`
 	Gateway       *string   `json:"gateway,omitempty"`
@@ -15,7 +15,7 @@ type DHCPv6Server struct {
 	NTPServerMode Mode      `json:"ntp_server_mode"`
 	NTPServers    *[]string `json:"ntp_servers,omitempty"`
 
-	Reservations []Reservation `json:"reservations,omitempty"`
+	Reservations map[string]Reservation `json:"reservations"`
 
 	Comment string `json:"comment,omitempty"`
 }

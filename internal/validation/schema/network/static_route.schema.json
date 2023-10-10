@@ -1,0 +1,23 @@
+{
+    "$id": "https://nfsense.net/schema/network/static_route.schema.json",
+    "title": "Static Route",
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string"
+        },
+        "interface": {
+            "type": "string"
+        },
+        "gateway": {
+            "type": "string"
+        },
+        "destination": {
+            "type": "string"
+        },
+        "metric": {
+            "type": "number"
+        }
+    },
+    "required": ["name", "interface", "gateway", "destination"]
+}

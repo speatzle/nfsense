@@ -1,0 +1,26 @@
+{
+    "$id": "https://nfsense.net/schema/vpn/wireguard_interface.schema.json",
+    "title": "Wireguard Interface",
+    "type": "object",
+    "properties": {
+        "public_key": {
+            "type": "string"
+        },
+        "private_key": {
+            "type": "string"
+        },
+        "listen_port": {
+            "type": "number"
+        },
+        "peers": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "comment": {
+            "type": "string"
+        }
+    },
+    "required": ["public_key", "private_key", "listen_port", "peers"]
+}

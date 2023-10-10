@@ -1,0 +1,20 @@
+{
+    "$id": "https://nfsense.net/schema/network/network.schema.json",
+    "title": "Network",
+    "type": "object",
+    "properties": {
+        "interfaces": {
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "https://nfsense.net/schema/network/interface.schema.json"
+            }
+        },
+        "static_routes": {
+            "type": "array",
+            "items": {
+                "$ref": "https://nfsense.net/schema/network/static_route.schema.json"
+            }
+        }
+    },
+    "required": ["interfaces"]
+}

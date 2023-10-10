@@ -1,0 +1,11 @@
+{
+    "$id": "https://nfsense.net/schema/vpn/vpn.schema.json",
+    "title": "VPN",
+    "type": "object",
+    "properties": {
+        "wireguard": {
+            "$ref": "https://nfsense.net/schema/vpn/wireguard.schema.json"
+        }
+    },
+    "required": ["wireguard"]
+}

@@ -1,0 +1,14 @@
+{
+    "$id": "https://nfsense.net/schema/service/dns_server.schema.json",
+    "title": "DNS Server",
+    "type": "object",
+    "properties": {
+        "interface": {
+            "type": "string"
+        },
+        "comment": {
+            "type": "string"
+        }
+    },
+    "required": ["interface"]
+}

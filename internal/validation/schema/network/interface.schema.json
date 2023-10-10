@@ -1,0 +1,44 @@
+{
+    "$id": "https://nfsense.net/schema/network/interface.schema.json",
+    "title": "Interface",
+    "type": "object",
+    "properties": {
+        "alias": {
+            "type": "string"
+        },
+        "type": {
+            "type": "string"
+        },
+        "addressing_mode": {
+            "type": "string"
+        },
+        "address": {
+            "type": "string"
+        },
+        "hardware_device": {
+            "type": "string"
+        },
+        "vlan_id": {
+            "type": "number"
+        },
+        "vlan_parent": {
+            "type": "string"
+        },
+        "bond_members": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "bridge_members": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "comment": {
+            "type": "string"
+        }
+    },
+    "required": ["type", "addressing_mode"]
+}

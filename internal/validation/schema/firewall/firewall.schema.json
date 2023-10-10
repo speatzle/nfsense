@@ -1,0 +1,26 @@
+{
+    "$id": "https://nfsense.net/schema/firewall/firewall.schema.json",
+    "title": "Firewall",
+    "type": "object",
+    "properties": {
+        "forward_rules": {
+            "type": "array",
+            "items": {
+                "$ref": "https://nfsense.net/schema/firewall/forward_rule.schema.json"
+            }
+        },
+        "destination_nat_rules": {
+            "type": "array",
+            "items": {
+                "$ref": "https://nfsense.net/schema/firewall/destination_nat_rule.schema.json"
+            }
+        },
+        "source_nat_rules": {
+            "type": "array",
+            "items": {
+                "$ref": "https://nfsense.net/schema/firewall/source_nat_rule.schema.json"
+            }
+        }
+    },
+    "required": ["forward_rules", "destination_nat_rules", "source_nat_rules"]
+}

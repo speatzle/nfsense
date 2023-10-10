@@ -1,0 +1,22 @@
+{
+    "$id": "https://nfsense.net/schema/vpn/wireguard.schema.json",
+    "title": "Wireguard",
+    "type": "object",
+    "properties": {
+        "interfaces": {
+            "type": "object",
+            "additionalProperties": {
+                "description": "Wireguard Interface",
+                "$ref": "https://nfsense.net/schema/vpn/wireguard_interface.schema.json"
+            }
+        },
+        "peers": {
+            "type": "object",
+            "additionalProperties": {
+                "description": "Wireguard Peer",
+                "$ref": "https://nfsense.net/schema/vpn/wireguard_peer.schema.json"
+            }
+        }
+    },
+    "required": ["interfaces", "peers"]
+}

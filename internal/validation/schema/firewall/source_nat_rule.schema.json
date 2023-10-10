@@ -1,0 +1,17 @@
+{
+    "$id": "https://nfsense.net/schema/firewall/source_nat_rule.schema.json",
+    "title": "Source NAT Rule",
+    "$ref": "https://nfsense.net/schema/firewall/rule.schema.json",
+    "type": "object",
+    "properties": {
+        "type": {
+            "type": "string"
+        },
+        "address": {
+            "type": "string"
+        },
+        "service": {
+            "type": "string"
+        }
+    }
+}

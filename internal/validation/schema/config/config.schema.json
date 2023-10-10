@@ -1,0 +1,36 @@
+{
+    "$id": "https://nfsense.net/schema/config/config.schema.json",
+    "title": "Config",
+    "type": "object",
+    "properties": {
+        "config_version": {
+            "type": "number",
+            "const": 1
+        },
+        "firewall": {
+            "description": "System Settings",
+            "$ref": "https://nfsense.net/schema/firewall/firewall.schema.json"
+        },
+        "object": {
+            "description": "Object Settings",
+            "$ref": "https://nfsense.net/schema/object/object.schema.json"
+        },
+        "network": {
+            "description": "Network Settings",
+            "$ref": "https://nfsense.net/schema/network/network.schema.json"
+        },
+        "service": {
+            "description": "Service Settings",
+            "$ref": "https://nfsense.net/schema/service/service.schema.json"
+        },
+        "vpn": {
+            "description": "VPN Settings",
+            "$ref": "https://nfsense.net/schema/vpn/vpn.schema.json"
+        },
+        "system": {
+            "description": "System Settings",
+            "$ref": "https://nfsense.net/schema/system/system.schema.json"
+        }
+    },
+    "required": ["config_version", "firewall", "object", "network", "service", "vpn", "system"]
+}

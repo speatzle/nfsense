@@ -1,0 +1,57 @@
+{
+    "$id": "https://nfsense.net/schema/service/dhcp_v4_server.schema.json",
+    "title": "DHCP Server",
+    "type": "object",
+    "properties": {
+        "interface": {
+            "type": "string"
+        },
+        "pool": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "default_lease_time": {
+            "type": "number"
+        },
+        "max_lease_time": {
+            "type": "number"
+        },
+        "gateway_mode": {
+            "type": "string"
+        },
+        "gateway": {
+            "type": "string"
+        },
+        "dns_server_mode": {
+            "type": "string"
+        },
+        "dns_servers": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "ntp_server_mode": {
+            "type": "string"
+        },
+        "ntp_servers": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "reservations": {
+            "type": ["object", "null"],
+            "additionalProperties": {
+                "description": "DHCP Reservations",
+                "$ref": "https://nfsense.net/schema/service/dhcp_reservation.schema.json"
+            }
+        },
+        "comment": {
+            "type": "string"
+        }
+    },
+    "required": ["interface", "pool", "default_lease_time", "max_lease_time", "gateway_mode", "dns_server_mode", "ntp_server_mode"]
+}

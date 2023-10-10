@@ -1,0 +1,15 @@
+{
+    "$id": "https://nfsense.net/schema/system/system.schema.json",
+    "title": "System",
+    "type": "object",
+    "properties": {
+        "users": {
+            "type": "object",
+            "additionalProperties": {
+                "description": "System Settings",
+                "$ref": "https://nfsense.net/schema/system/user.schema.json"
+            }
+        }
+    },
+    "required": ["users"]
+}

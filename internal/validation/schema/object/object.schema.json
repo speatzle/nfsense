@@ -1,0 +1,20 @@
+{
+    "$id": "https://nfsense.net/schema/object/object.schema.json",
+    "title": "Object",
+    "type": "object",
+    "properties": {
+        "addresses": {
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "https://nfsense.net/schema/object/address.schema.json"
+            }
+        },
+        "services": {
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "https://nfsense.net/schema/object/service.schema.json"
+            }
+        }
+    },
+    "required": ["addresses", "services"]
+}

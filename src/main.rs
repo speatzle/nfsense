@@ -3,20 +3,21 @@
 use ipnet::IpNet;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, net::IpAddr};
+use validator::Validate;
 
-#[derive(Serialize, Deserialize, Default, Debug)]
+#[derive(Serialize, Deserialize, Validate, Default, Debug)]
 struct Config {
     config_version: u64,
     network: Network,
 }
 
-#[derive(Serialize, Deserialize, Default, Debug)]
+#[derive(Serialize, Deserialize, Validate, Default, Debug)]
 struct Network {
     interfaces: HashMap<String, NetworkInterface>,
     static_routes: Vec<StaticRoute>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Validate, Debug)]
 struct NetworkInterface {
     alias: String,
     comment: String,
@@ -41,7 +42,7 @@ enum AddressingMode {
     DHCP,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Validate, Debug)]
 struct StaticRoute {
     name: String,
     interface: String,
@@ -50,13 +51,13 @@ struct StaticRoute {
     metric: u64,
 }
 
-#[derive(Serialize, Deserialize, Default, Debug)]
+#[derive(Serialize, Deserialize, Validate, Default, Debug)]
 struct Object {
     addresses: HashMap<String, Address>,
     services: HashMap<String, Service>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Validate, Debug)]
 struct Address {
     address_type: AddressType,
     comment: String,
@@ -71,7 +72,7 @@ enum AddressType {
     Group { children: Vec<String> },
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Validate, Debug)]
 struct Service {
     service_type: ServiceType,
     comment: String,
@@ -81,13 +82,16 @@ struct Service {
 #[serde(rename_all = "snake_case")]
 enum ServiceType {
     TCP {
-        source_port_start: u64,
-        source_port_end: u64,
-        destination_port_start: u64,
-        destination_port_end: u64,
+        source_port: u64,
+        source_port_end: Option<u64>,
+        destination_port: u64,
+        destination_port_end: Option<u64>,
     },
     UDP {
-        range: IpAddr,
+        source_port: u64,
+        source_port_end: Option<u64>,
+        destination_port: u64,
+        destination_port_end: Option<u64>,
     },
     ICMP {
         code: u8,

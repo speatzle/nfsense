@@ -2,18 +2,18 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use validator::Validate;
 
-#[derive(Serialize, Deserialize, Validate, Default, Debug)]
+#[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
 pub struct VPN {
     pub wireguard: Wireguard,
 }
 
-#[derive(Serialize, Deserialize, Validate, Default, Debug)]
+#[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
 pub struct Wireguard {
     pub interfaces: HashMap<String, WireguardInterface>,
     pub peers: HashMap<String, WireguardPeer>,
 }
 
-#[derive(Serialize, Deserialize, Validate, Debug)]
+#[derive(Serialize, Deserialize, Clone, Validate, Debug)]
 pub struct WireguardInterface {
     pub public_key: String,
     pub private_key: String,
@@ -22,7 +22,7 @@ pub struct WireguardInterface {
     pub comment: String,
 }
 
-#[derive(Serialize, Deserialize, Validate, Debug)]
+#[derive(Serialize, Deserialize, Clone, Validate, Debug)]
 pub struct WireguardPeer {
     pub public_key: String,
     pub preshared_key: Option<String>,

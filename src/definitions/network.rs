@@ -3,13 +3,13 @@ use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, net::IpAddr};
 use validator::Validate;
 
-#[derive(Serialize, Deserialize, Validate, Default, Debug)]
+#[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
 pub struct Network {
     pub interfaces: HashMap<String, NetworkInterface>,
     pub static_routes: Vec<StaticRoute>,
 }
 
-#[derive(Serialize, Deserialize, Validate, Debug)]
+#[derive(Serialize, Deserialize, Clone, Validate, Debug)]
 pub struct NetworkInterface {
     pub alias: String,
     pub comment: String,
@@ -17,7 +17,7 @@ pub struct NetworkInterface {
     pub addressing_mode: AddressingMode,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum NetworkInterfaceType {
     Hardware { device: String },
@@ -26,7 +26,7 @@ pub enum NetworkInterfaceType {
     Bridge { members: Vec<String> },
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum AddressingMode {
     None,
@@ -34,7 +34,7 @@ pub enum AddressingMode {
     DHCP,
 }
 
-#[derive(Serialize, Deserialize, Validate, Debug)]
+#[derive(Serialize, Deserialize, Clone, Validate, Debug)]
 pub struct StaticRoute {
     pub name: String,
     pub interface: String,

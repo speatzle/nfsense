@@ -1,14 +1,14 @@
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
-#[derive(Serialize, Deserialize, Validate, Default, Debug)]
+#[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
 pub struct Firewall {
     forward_rules: Vec<ForwardRule>,
     destination_nat_rules: Vec<DestinationNATRule>,
     source_nat_rules: Vec<SourceNATRule>,
 }
 
-#[derive(Serialize, Deserialize, Validate, Debug)]
+#[derive(Serialize, Deserialize, Clone, Validate, Debug)]
 pub struct ForwardRule {
     pub name: String,
     pub services: Vec<String>,
@@ -19,7 +19,7 @@ pub struct ForwardRule {
     pub verdict: Verdict,
 }
 
-#[derive(Serialize, Deserialize, Validate, Debug)]
+#[derive(Serialize, Deserialize, Clone, Validate, Debug)]
 pub struct DestinationNATRule {
     pub name: String,
     pub services: Vec<String>,
@@ -31,7 +31,7 @@ pub struct DestinationNATRule {
     pub dnat_service: String,
 }
 
-#[derive(Serialize, Deserialize, Validate, Debug)]
+#[derive(Serialize, Deserialize, Clone, Validate, Debug)]
 pub struct SourceNATRule {
     pub name: String,
     pub services: Vec<String>,
@@ -42,7 +42,7 @@ pub struct SourceNATRule {
     pub snat_type: SNATType,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum Verdict {
     Accept,
@@ -50,7 +50,7 @@ pub enum Verdict {
     Continue,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum SNATType {
     SNAT {

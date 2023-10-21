@@ -4,14 +4,14 @@ use serde::{Deserialize, Serialize};
 use std::net::IpAddr;
 use validator::Validate;
 
-#[derive(Serialize, Deserialize, Validate, Default, Debug)]
+#[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
 pub struct Service {
     pub dhcp_servers: Vec<DHCPServer>,
     pub dns_servers: Vec<DNSServer>,
     pub ntp_servers: Vec<NTPServer>,
 }
 
-#[derive(Serialize, Deserialize, Validate, Debug)]
+#[derive(Serialize, Deserialize, Clone, Validate, Debug)]
 pub struct DHCPServer {
     pub interface: String,
     pub pool: Vec<String>,
@@ -23,19 +23,19 @@ pub struct DHCPServer {
     pub comment: String,
 }
 
-#[derive(Serialize, Deserialize, Validate, Debug)]
+#[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
 pub struct DNSServer {
     pub interface: String,
     pub comment: String,
 }
 
-#[derive(Serialize, Deserialize, Validate, Debug)]
+#[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
 pub struct NTPServer {
     pub interface: String,
     pub comment: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum GatewayMode {
     None,
@@ -43,7 +43,7 @@ pub enum GatewayMode {
     Specify { gateway: String },
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum DNSServerMode {
     None,
@@ -51,7 +51,7 @@ pub enum DNSServerMode {
     Specify { dns_servers: Vec<String> },
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum NTPServerMode {
     None,
@@ -59,7 +59,7 @@ pub enum NTPServerMode {
     Specify { ntp_servers: Vec<String> },
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Reservation {
     pub ip_address: IpAddr,
     pub hardware_address: MacAddr8,

@@ -1,16 +1,37 @@
 #![allow(dead_code)]
 
+mod config_manager;
 mod definitions;
 
-use definitions::Config;
+use definitions::config::Config;
 
 fn main() {
     println!("Hello, world!");
 
-    let mut config = Config::default();
-    config.config_version = 1;
+    let mut config_manager = config_manager::new_config_manager().unwrap();
 
-    config.network.interfaces.insert(
+    let mut tx = config_manager.start_transaction().unwrap();
+
+    tx.changes
+        .firewall
+        .forward_rules
+        .push(definitions::firewall::ForwardRule {
+            name: "name".to_string(),
+            comment: "test".to_string(),
+            counter: true,
+            verdict: definitions::firewall::Verdict::Accept,
+            services: Vec::new(),
+            destination_addresses: Vec::new(),
+            source_addresses: Vec::new(),
+        });
+
+    tx.commit().unwrap();
+
+    config_manager.apply_pending_changes().unwrap();
+
+    let mut tx2 = config_manager.start_transaction().unwrap();
+
+    tx2.changes.network.interfaces.insert(
         "inter1".to_string(),
         definitions::network::NetworkInterface {
             alias: "test".to_owned(),
@@ -22,7 +43,7 @@ fn main() {
         },
     );
 
-    config.network.interfaces.insert(
+    tx2.changes.network.interfaces.insert(
         "inter2".to_string(),
         definitions::network::NetworkInterface {
             alias: "test2".to_owned(),
@@ -36,7 +57,7 @@ fn main() {
         },
     );
 
-    config
+    tx2.changes
         .network
         .static_routes
         .push(definitions::network::StaticRoute {
@@ -47,9 +68,10 @@ fn main() {
             metric: 0,
         });
 
-    let serialized = serde_json::to_string_pretty(&config).unwrap();
-    println!("serialized = {}", serialized);
+    tx2.commit().unwrap();
 
-    let deserialized: Config = serde_json::from_str(&serialized).unwrap();
-    println!("deserialized = {:?}", deserialized);
+    config_manager.apply_pending_changes().unwrap();
+
+    let applied_config = config_manager.get_current_config();
+    println!("applied_config = {:#?}", applied_config);
 }

@@ -3,9 +3,9 @@ use validator::Validate;
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
 pub struct Firewall {
-    forward_rules: Vec<ForwardRule>,
-    destination_nat_rules: Vec<DestinationNATRule>,
-    source_nat_rules: Vec<SourceNATRule>,
+    pub forward_rules: Vec<ForwardRule>,
+    pub destination_nat_rules: Vec<DestinationNATRule>,
+    pub source_nat_rules: Vec<SourceNATRule>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]

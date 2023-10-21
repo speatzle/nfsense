@@ -1,14 +1,14 @@
-pub mod firewall;
-pub mod network;
-pub mod object;
-pub mod service;
-pub mod system;
-pub mod vpn;
-
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
-#[derive(Serialize, Deserialize, Validate, Default, Debug)]
+use super::firewall;
+use super::network;
+use super::object;
+use super::service;
+use super::system;
+use super::vpn;
+
+#[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
 pub struct Config {
     pub config_version: u64,
     pub network: network::Network,

@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import { SearchProvider, Options } from '~/components/inputs/DropdownInput.vue';
+import SingleSelect from '../components/inputs/SingleSelect.vue';
+import { SearchProvider, Options } from '../components/inputs/DropdownInput.vue';
+import MultiSelect from '../components/inputs/MultiSelect.vue';
+import NicerForm from '../components/inputs/NicerForm.vue';
 
 const testValues: Options = {
   1: { display: 'Option 1' },
@@ -8,7 +11,7 @@ const testValues: Options = {
   a: { display: 'Option a' },
   z: { display: 'Option z' },
 };
-let vm: any = $ref({});
+let vm: any = $ref({Multiple: [1]});
 
 function genSP(indexIsChar: boolean): SearchProvider {
   return async (o) => {
@@ -22,10 +25,12 @@ function genSP(indexIsChar: boolean): SearchProvider {
 <template>
   <div>
     <PageHeader title="Test Page"/>
-    <SingleSelect :search-provider="genSP(true)" v-model="vm['Single']"/>
-    <MultiSelect :search-provider="genSP(false)" v-model="vm['Multiple']"/>
+    <NicerForm :fields="{
+      Single: { is: SingleSelect, label: 'SingleSelect', props: { options: testValues, searchProvider: genSP(true) } },
+      Multiple: { is: MultiSelect, label: 'Multiselect', props: { options: testValues, searchProvider: genSP(false) } },
+    }" v-model="vm"/>
     {{ vm }}
-    <button @click="() => vm.Multiple = [1]">Click me</button>
-    <button @click="() => vm.Multiple = [42]">Click me but EEEEVIL</button>
+    <button @click="() => { vm.Multiple = [1]; }">Click me</button>
+    <button @click="() => { vm.Multiple = [42]; }">Click me but EEEEVIL</button>
   </div>
 </template>

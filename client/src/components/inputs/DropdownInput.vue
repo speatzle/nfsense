@@ -43,42 +43,47 @@ const emit = defineEmits<{
   (e: 'update:options', value: Options): void,
 }>();
 
-// Hook up two-way bindings
+// Local Variables for Two-Way bindings
 let modelValue = $ref(multiple ? props.modelValue ?? [] : props.modelValue);
-watch(() => props.modelValue, async (val) => {
-  if (equals(val, modelValue)) return;
-  if (isNullish(val)) return modelValue = val; // Cant be unknown
-
-  // Run search provider if key unknown, log and reject if still so
-  let knownKeys = Object.keys(options);
-  if (multiple) {
-    let unknownKeys = (val as Index[]).filter(key => !knownKeys.includes(key.toString()));
-    if (!unknownKeys.length) return modelValue = val;
-
-    await performSearch(unknownKeys);
-    knownKeys = Object.keys(options);
-    unknownKeys = (val as Index[]).filter(key => !knownKeys.includes(key.toString()));
-    for (let key of unknownKeys) console.warn(`Unknown key in DropdownInput:`, key/*, options*/);
-    return modelValue = (val as Index[]).filter(key => knownKeys.includes(key.toString()));
-  }
-  if (!knownKeys.includes(val.toString())) {
-    await performSearch([val]);
-    knownKeys = Object.keys(options);
-    if (!knownKeys.includes(val.toString()))
-      return console.warn(`Unknown key in DropdownInput:`, val/*, options*/);
-  }
-  modelValue = val;
-}, { deep: true, immediate: true });
-watch($$(modelValue), () => emit('update:modelValue', modelValue), { deep: true });
 let search = $ref(props.search);
-watch(() => props.search, (val) => { if (!equals(val, search)) search = val; }, { deep: true });
+let options = $ref(props.options);
+// Sync from v-model
+onMounted(() => {
+  watch(() => props.modelValue, async (val) => {
+    if (equals(val, modelValue)) return;
+    if (isNullish(val)) return modelValue = val; // Cant be unknown
+
+    // Run search provider if key unknown, log and reject if still so
+    let knownKeys = Object.keys(options);
+    if (multiple) {
+      let unknownKeys = (val as Index[]).filter(key => !knownKeys.includes(key.toString()));
+      if (!unknownKeys.length) return modelValue = val;
+
+      await performSearch(unknownKeys);
+      knownKeys = Object.keys(options);
+      unknownKeys = (val as Index[]).filter(key => !knownKeys.includes(key.toString()));
+      for (let key of unknownKeys) console.warn(`Unknown key in DropdownInput:`, key/*, options*/);
+      return modelValue = (val as Index[]).filter(key => knownKeys.includes(key.toString()));
+    }
+    if (!knownKeys.includes(val.toString())) {
+      await performSearch([val]);
+      knownKeys = Object.keys(options);
+      if (!knownKeys.includes(val.toString()))
+        return console.warn(`Unknown key in DropdownInput:`, val/*, options*/);
+    }
+    modelValue = val;
+  }, { deep: true, immediate: true });
+  watch(() => props.search, (val) => { if (!equals(val, search)) search = val; }, { deep: true });
+  watch(() => props.options, (val) => { if (!equals(val, options)) options = val; }, { deep: true });
+});
+// Sync to v-model
+watch($$(modelValue), () => emit('update:modelValue', modelValue), { deep: true });
 watch($$(search), () => {
   emit('update:search', search);
   expand();
 }, { deep: true });
-let options = $ref(props.options);
-watch(() => props.options, (val) => { if (!equals(val, options)) options = val; }, { deep: true });
 watch($$(options), () => emit('update:options', options), { deep: true });
+
 watch($$(multiple), () => modelValue = multiple ? [] : null );
 
 // --- Everything Else  ---
@@ -200,7 +205,7 @@ function handleKeydown(e: KeyboardEvent) {
     <Transition name="fade-fast">
       <div tabindex="-1" class="dropdown" v-if="expanded">
         <div v-for="([key, option], index) in Object.entries(options)" :key="key"
-             :class="{selected: multiple ? modelValue?.includes(key) : key === modelValue, navigated: navigated === index + 1}"
+             :class="{selected: multiple ? modelValue?.includes(key) : key == modelValue, navigated: navigated === index + 1}"
              @click="() => toggle(key)">
           <template v-if="multiple">
             <i-material-symbols-check-box-outline v-if="modelValue?.includes(key)" width="1em" height="1em"/>

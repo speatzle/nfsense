@@ -32,3 +32,8 @@ ul, ol {
   gap: 0.5rem;
   padding-left: 1rem;
 }
+
+/* Fix text getting cut off unpredictably */
+h1, h2, h3, h4, h5, h6, pre, p, label, legend {
+  overflow: visible;
+}

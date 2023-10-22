@@ -1,39 +1,28 @@
 #![allow(dead_code)]
 
+use tracing::info;
+use tracing_subscriber;
+
 mod config_manager;
 mod definitions;
-
-use axum::{
-    response::IntoResponse,
-    routing::{get, post},
-    Json, Router,
-};
-
-pub async fn health_checker_handler() -> impl IntoResponse {
-    const MESSAGE: &str = "Hello there";
-
-    let json_response = serde_json::json!({
-        "status": "success",
-        "message": MESSAGE
-    });
-
-    Json(json_response)
-}
+mod router;
 
 #[tokio::main]
 async fn main() {
-    println!("Starting...");
+    tracing_subscriber::fmt::init();
+    info!("Starting...");
 
-    let mut config_manager = config_manager::new_config_manager().unwrap();
+    // let mut config_manager = config_manager::new_config_manager().unwrap();
 
-    let app = Router::new().route("/health", get(health_checker_handler));
+    let app = router::get_router();
 
-    println!("Server started successfully");
-    axum::Server::bind(&"0.0.0.0:8000".parse().unwrap())
-        .serve(app.into_make_service())
+    info!("Server started successfully");
+    axum::Server::bind(&"[::]:8080".parse().unwrap())
+        .serve(app.await.into_make_service())
         .await
         .unwrap();
 
+    /*
     let mut tx = config_manager.start_transaction().unwrap();
 
     tx.changes
@@ -97,5 +86,6 @@ async fn main() {
     config_manager.apply_pending_changes().unwrap();
 
     let applied_config = config_manager.get_current_config();
-    println!("applied_config = {:#?}", applied_config);
+    info!("applied_config = {:#?}", applied_config);
+    */
 }

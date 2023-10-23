@@ -5,7 +5,7 @@ use tracing_subscriber;
 
 mod config_manager;
 mod definitions;
-mod router;
+mod web;
 
 #[tokio::main]
 async fn main() {
@@ -14,11 +14,11 @@ async fn main() {
 
     // let mut config_manager = config_manager::new_config_manager().unwrap();
 
-    let app = router::get_router();
+    let main_router = web::router::get_router();
 
     info!("Server started successfully");
     axum::Server::bind(&"[::]:8080".parse().unwrap())
-        .serve(app.await.into_make_service())
+        .serve(main_router.await.into_make_service())
         .await
         .unwrap();
 

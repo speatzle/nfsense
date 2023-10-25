@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::hash::Hash;
+use std::sync::{Arc, RwLock};
 
 use axum::routing::post;
 use axum::{Json, Router};
@@ -16,12 +17,12 @@ use axum::{
 const SESSION_COOKIE: &str = "session";
 
 #[derive(Clone, Debug)]
-struct SessionState {
-    sessions: HashMap<String, Session>,
+pub struct SessionState {
+    pub sessions: Arc<RwLock<HashMap<String, Session>>>,
 }
 
 #[derive(Clone, Debug)]
-struct Session {
+pub struct Session {
     username: String,
     //expires: time,
 }
@@ -32,11 +33,7 @@ struct LoginParameters {
     password: String,
 }
 
-pub fn routes() -> Router {
-    let state = SessionState {
-        sessions: HashMap::new(),
-    };
-
+pub fn routes() -> Router<super::super::AppState> {
     Router::new()
         .route("/session", post(session_handler))
         .route("/login", post(login_handler))

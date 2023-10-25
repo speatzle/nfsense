@@ -1,10 +1,21 @@
 #![allow(dead_code)]
 
+use std::{
+    collections::HashMap,
+    sync::{Arc, RwLock},
+};
+
+use axum::{middleware, Router};
+use config_manager::ConfigManager;
+use state::AppState;
+use tower_cookies::CookieManagerLayer;
 use tracing::info;
 use tracing_subscriber;
+use web::auth::SessionState;
 
 mod config_manager;
 mod definitions;
+mod state;
 mod web;
 
 #[tokio::main]
@@ -12,13 +23,29 @@ async fn main() {
     tracing_subscriber::fmt::init();
     info!("Starting...");
 
-    // let mut config_manager = config_manager::new_config_manager().unwrap();
+    // TODO Check Config Manager Setup Error
+    let config_manager = ConfigManager::new().unwrap();
 
-    let main_router = web::router::get_router();
+    let session_state = SessionState {
+        sessions: Arc::new(RwLock::new(HashMap::new())),
+    };
+
+    let app_state = AppState {
+        config_manager,
+        session_state,
+    };
+
+    let main_router = Router::new()
+        .merge(web::auth::routes())
+        .merge(web::rpc::routes())
+        .with_state(app_state)
+        .layer(middleware::from_fn_with_state((), web::auth::mw_auth))
+        .layer(CookieManagerLayer::new());
+    // .fallback_service(service)
 
     info!("Server started successfully");
     axum::Server::bind(&"[::]:8080".parse().unwrap())
-        .serve(main_router.await.into_make_service())
+        .serve(main_router.into_make_service())
         .await
         .unwrap();
 

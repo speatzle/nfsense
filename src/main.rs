@@ -32,14 +32,18 @@ async fn main() {
 
     let app_state = AppState {
         config_manager,
-        session_state,
+        session_state: session_state.clone(),
     };
 
+    // Note: The Router Works Bottom Up, So the auth middleware will only applies to everything above it.
     let main_router = Router::new()
-        .merge(web::auth::routes())
         .merge(web::rpc::routes())
+        .layer(middleware::from_fn_with_state(
+            session_state,
+            web::auth::mw_auth,
+        ))
+        .merge(web::auth::routes())
         .with_state(app_state)
-        .layer(middleware::from_fn_with_state((), web::auth::mw_auth))
         .layer(CookieManagerLayer::new());
     // .fallback_service(service)
 

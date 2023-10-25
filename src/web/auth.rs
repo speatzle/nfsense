@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::hash::Hash;
 use std::sync::{Arc, RwLock};
 
+use super::super::AppState;
 use axum::routing::post;
 use axum::{Json, Router};
 use serde::Deserialize;
@@ -9,6 +10,7 @@ use tower_cookies::Cookies;
 
 use axum::{
     extract::Extension,
+    extract::State,
     http::{Request, StatusCode},
     middleware::{self, Next},
     response::{IntoResponse, Response},
@@ -33,20 +35,16 @@ struct LoginParameters {
     password: String,
 }
 
-pub fn routes() -> Router<super::super::AppState> {
+pub fn routes() -> Router<AppState> {
     Router::new()
-        .route("/session", post(session_handler))
         .route("/login", post(login_handler))
         .route("/logout", post(logout_handler))
-}
-
-async fn session_handler() -> impl IntoResponse {
-    //return Err(StatusCode::UNAUTHORIZED);
-    todo!()
+        .route("/session", post(session_handler))
 }
 
 async fn login_handler(
     cookies: Cookies,
+    State(state): State<AppState>,
     Json(payload): Json<LoginParameters>,
     // mut session_state: SessionState,
 ) -> impl IntoResponse {
@@ -54,10 +52,7 @@ async fn login_handler(
     todo!()
 }
 
-async fn logout_handler(
-    cookies: Cookies,
-    // mut session_state: SessionState
-) -> impl IntoResponse {
+async fn logout_handler(cookies: Cookies, app_state: State<AppState>) -> impl IntoResponse {
     /*
     if let Some(session_cookie) = cookies.get(SESSION_COOKIE) {
         let session_id = session_cookie.value();
@@ -71,7 +66,13 @@ async fn logout_handler(
     todo!()
 }
 
+async fn session_handler(cookies: Cookies, State(state): State<AppState>) -> impl IntoResponse {
+    //return Err(StatusCode::UNAUTHORIZED);
+    todo!()
+}
+
 pub async fn mw_auth<B>(
+    app_state: State<AppState>,
     cookies: Cookies,
     mut req: Request<B>,
     next: Next<B>,

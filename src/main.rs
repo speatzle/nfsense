@@ -8,6 +8,7 @@ use std::{
 use axum::{middleware, Router};
 use config_manager::ConfigManager;
 use state::AppState;
+use std::env;
 use tower_cookies::CookieManagerLayer;
 use tracing::info;
 use tracing_subscriber;
@@ -22,6 +23,16 @@ mod web;
 async fn main() {
     tracing_subscriber::fmt::init();
     info!("Starting...");
+
+    let args: Vec<String> = env::args().collect();
+
+    if args.len() > 1 && args[1] == "generate-default" {
+        info!("Generating default config...");
+        config_manager::generate_default_config(config_manager::CURRENT_CONFIG_PATH).unwrap();
+        config_manager::generate_default_config(config_manager::PENDING_CONFIG_PATH).unwrap();
+        info!("Done! Exiting...");
+        return;
+    }
 
     // TODO Check Config Manager Setup Error
     let config_manager = ConfigManager::new().unwrap();

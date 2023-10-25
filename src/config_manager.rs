@@ -109,3 +109,16 @@ fn write_config_to_file(path: &str, conf: Config) -> Result<(), ConfigError> {
     fs::write(path, data)?;
     Ok(())
 }
+
+pub fn generate_default_config(path: &str) -> Result<(), ConfigError> {
+    let mut conf = Config::default();
+    conf.system.users.insert(
+        "admin".to_string(),
+        crate::definitions::system::User {
+            comment: "Default Admin".to_string(),
+            hash: "".to_string(),
+            salt: "".to_string(),
+        },
+    );
+    write_config_to_file(path, conf)
+}

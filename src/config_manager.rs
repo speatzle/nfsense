@@ -25,6 +25,7 @@ impl ConfigManager {
         Ok(Self {
             shared_data: Arc::new(Mutex::new(SharedData {
                 current_config: read_file_to_config(CURRENT_CONFIG_PATH)?,
+                // TODO Dont Fail if pending config is missing, use current instead
                 pending_config: read_file_to_config(PENDING_CONFIG_PATH)?,
             })),
         })
@@ -40,15 +41,18 @@ impl ConfigManager {
 
     pub fn apply_pending_changes(&mut self) -> Result<(), Box<dyn Error>> {
         let mut data = self.shared_data.lock().unwrap();
-        // TODO run Apply functions, revert on failure
+        // TODO run Apply functions
+        // TODO Revert on Apply Failure and Return
         write_config_to_file(CURRENT_CONFIG_PATH, data.pending_config.clone())?;
-        // Also revert if config save fails
+        // TODO revert if config save fails
+        // TODO Remove Pending Config File
         data.current_config = data.pending_config.clone();
         Ok(())
     }
 
     pub fn discard_pending_changes(&mut self) -> Result<(), Box<dyn Error>> {
         let mut data = self.shared_data.lock().unwrap();
+        // TODO Remove Pending Config File
 
         data.pending_config = data.current_config.clone();
         Ok(())
@@ -76,6 +80,7 @@ impl<'a> ConfigTransaction<'a> {
         let ch = self.changes.clone();
         ch.validate()?;
         self.shared_data.pending_config = ch.clone();
+        write_config_to_file(PENDING_CONFIG_PATH, ch.clone())?;
         Ok(())
     }
 }

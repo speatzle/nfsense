@@ -26,20 +26,18 @@ async fn main() {
     // TODO Check Config Manager Setup Error
     let config_manager = ConfigManager::new().unwrap();
 
-    let session_state = SessionState {
-        sessions: Arc::new(RwLock::new(HashMap::new())),
-    };
-
     let app_state = AppState {
         config_manager,
-        session_state: session_state.clone(),
+        session_state: SessionState {
+            sessions: Arc::new(RwLock::new(HashMap::new())),
+        },
     };
 
     // Note: The Router Works Bottom Up, So the auth middleware will only applies to everything above it.
     let main_router = Router::new()
         .merge(web::rpc::routes())
         .layer(middleware::from_fn_with_state(
-            session_state,
+            app_state.clone(),
             web::auth::mw_auth,
         ))
         .merge(web::auth::routes())

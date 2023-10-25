@@ -3,67 +3,81 @@ use validator::Validate;
 use super::definitions::config::Config;
 use std::error::Error;
 use std::fs;
+use std::sync::{Arc, Mutex, MutexGuard};
 
 const CURRENT_CONFIG_PATH: &str = "config.json";
 const PENDING_CONFIG_PATH: &str = "pending.json";
 
+#[derive(Clone)]
 pub struct ConfigManager {
+    shared_data: Arc<Mutex<SharedData>>,
+}
+
+struct SharedData {
     current_config: Config,
     pending_config: Config,
 }
 
+// Note, using unwarp on a mutex lock is ok since that only errors with mutex poisoning
+
 impl ConfigManager {
+    pub fn new() -> Result<Self, Box<dyn Error>> {
+        Ok(Self {
+            shared_data: Arc::new(Mutex::new(SharedData {
+                current_config: read_file_to_config(CURRENT_CONFIG_PATH)?,
+                pending_config: read_file_to_config(PENDING_CONFIG_PATH)?,
+            })),
+        })
+    }
+
     pub fn get_current_config(&self) -> Config {
-        self.current_config.clone()
+        self.shared_data.lock().unwrap().current_config.clone()
     }
 
     pub fn get_pending_config(&self) -> Config {
-        self.pending_config.clone()
+        self.shared_data.lock().unwrap().pending_config.clone()
     }
 
     pub fn apply_pending_changes(&mut self) -> Result<(), Box<dyn Error>> {
+        let mut data = self.shared_data.lock().unwrap();
         // TODO run Apply functions, revert on failure
-        write_config_to_file(CURRENT_CONFIG_PATH, self.pending_config.clone())?;
+        write_config_to_file(CURRENT_CONFIG_PATH, data.pending_config.clone())?;
         // Also revert if config save fails
-        self.current_config = self.pending_config.clone();
+        data.current_config = data.pending_config.clone();
         Ok(())
     }
 
     pub fn discard_pending_changes(&mut self) -> Result<(), Box<dyn Error>> {
-        self.pending_config = self.current_config.clone();
+        let mut data = self.shared_data.lock().unwrap();
+
+        data.pending_config = data.current_config.clone();
         Ok(())
     }
 
     pub fn start_transaction(&mut self) -> Result<ConfigTransaction, Box<dyn Error>> {
+        let data = self.shared_data.lock().unwrap();
+
         Ok(ConfigTransaction {
             finished: false,
-            //guard: guard,
-            changes: self.pending_config.clone(),
-            config_manager: self,
+            changes: data.pending_config.clone(),
+            shared_data: data,
         })
     }
 }
 
 pub struct ConfigTransaction<'a> {
     finished: bool,
-    config_manager: &'a mut ConfigManager,
+    shared_data: MutexGuard<'a, SharedData>,
     pub changes: Config,
 }
 
 impl<'a> ConfigTransaction<'a> {
-    pub fn commit(&mut self) -> Result<(), Box<dyn Error>> {
+    pub fn commit(mut self) -> Result<(), Box<dyn Error>> {
         let ch = self.changes.clone();
         ch.validate()?;
-        self.config_manager.pending_config = ch.clone();
+        self.shared_data.pending_config = ch.clone();
         Ok(())
     }
-}
-
-pub fn new_config_manager() -> Result<ConfigManager, Box<dyn Error>> {
-    Ok(ConfigManager {
-        current_config: read_file_to_config(CURRENT_CONFIG_PATH)?,
-        pending_config: read_file_to_config(PENDING_CONFIG_PATH)?,
-    })
 }
 
 fn read_file_to_config(path: &str) -> Result<Config, Box<dyn Error>> {

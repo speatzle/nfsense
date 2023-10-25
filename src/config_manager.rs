@@ -1,12 +1,22 @@
+use serde_json::to_string;
 use validator::Validate;
 
 use super::definitions::config::Config;
-use std::error::Error;
 use std::fs;
 use std::sync::{Arc, Mutex, MutexGuard};
+use std::{io, result::Result};
 
-const CURRENT_CONFIG_PATH: &str = "config.json";
-const PENDING_CONFIG_PATH: &str = "pending.json";
+use custom_error::custom_error;
+
+custom_error! { pub ConfigError
+    IoError{source: io::Error}         = "io error",
+    SerdeError{source: serde_json::Error}         = "serde json error",
+    ValidatonError{source: validator::ValidationErrors} = "validation failed"
+
+}
+
+pub const CURRENT_CONFIG_PATH: &str = "config.json";
+pub const PENDING_CONFIG_PATH: &str = "pending.json";
 
 #[derive(Clone)]
 pub struct ConfigManager {
@@ -21,7 +31,7 @@ struct SharedData {
 // Note, using unwarp on a mutex lock is ok since that only errors with mutex poisoning
 
 impl ConfigManager {
-    pub fn new() -> Result<Self, Box<dyn Error>> {
+    pub fn new() -> Result<Self, ConfigError> {
         Ok(Self {
             shared_data: Arc::new(Mutex::new(SharedData {
                 current_config: read_file_to_config(CURRENT_CONFIG_PATH)?,
@@ -39,7 +49,7 @@ impl ConfigManager {
         self.shared_data.lock().unwrap().pending_config.clone()
     }
 
-    pub fn apply_pending_changes(&mut self) -> Result<(), Box<dyn Error>> {
+    pub fn apply_pending_changes(&mut self) -> Result<(), ConfigError> {
         let mut data = self.shared_data.lock().unwrap();
         // TODO run Apply functions
         // TODO Revert on Apply Failure and Return
@@ -50,7 +60,7 @@ impl ConfigManager {
         Ok(())
     }
 
-    pub fn discard_pending_changes(&mut self) -> Result<(), Box<dyn Error>> {
+    pub fn discard_pending_changes(&mut self) -> Result<(), ConfigError> {
         let mut data = self.shared_data.lock().unwrap();
         // TODO Remove Pending Config File
 
@@ -58,7 +68,7 @@ impl ConfigManager {
         Ok(())
     }
 
-    pub fn start_transaction(&mut self) -> Result<ConfigTransaction, Box<dyn Error>> {
+    pub fn start_transaction(&mut self) -> Result<ConfigTransaction, ConfigError> {
         let data = self.shared_data.lock().unwrap();
 
         Ok(ConfigTransaction {
@@ -76,7 +86,7 @@ pub struct ConfigTransaction<'a> {
 }
 
 impl<'a> ConfigTransaction<'a> {
-    pub fn commit(mut self) -> Result<(), Box<dyn Error>> {
+    pub fn commit(mut self) -> Result<(), ConfigError> {
         let ch = self.changes.clone();
         ch.validate()?;
         self.shared_data.pending_config = ch.clone();
@@ -85,7 +95,7 @@ impl<'a> ConfigTransaction<'a> {
     }
 }
 
-fn read_file_to_config(path: &str) -> Result<Config, Box<dyn Error>> {
+fn read_file_to_config(path: &str) -> Result<Config, ConfigError> {
     let data = fs::read_to_string(path)?;
     let conf: Config = serde_json::from_str(&data)?;
     if conf.config_version != 1 {
@@ -94,7 +104,7 @@ fn read_file_to_config(path: &str) -> Result<Config, Box<dyn Error>> {
     Ok(conf)
 }
 
-fn write_config_to_file(path: &str, conf: Config) -> Result<(), Box<dyn Error>> {
+fn write_config_to_file(path: &str, conf: Config) -> Result<(), ConfigError> {
     let data: String = serde_json::to_string_pretty(&conf)?;
     fs::write(path, data)?;
     Ok(())

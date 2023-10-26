@@ -11,5 +11,4 @@ pub struct System {
 pub struct User {
     pub comment: String,
     pub hash: String,
-    pub salt: String,
 }

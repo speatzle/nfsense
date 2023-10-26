@@ -1,4 +1,3 @@
-use serde_json::to_string;
 use validator::Validate;
 
 use super::definitions::config::Config;
@@ -8,11 +7,14 @@ use std::{io, result::Result};
 
 use custom_error::custom_error;
 
+use pwhash::sha512_crypt;
+
 custom_error! { pub ConfigError
     IoError{source: io::Error}         = "io error",
     SerdeError{source: serde_json::Error}         = "serde json error",
-    ValidatonError{source: validator::ValidationErrors} = "validation failed"
-
+    ValidatonError{source: validator::ValidationErrors} = "validation failed",
+    HashError{source: pwhash::error::Error} = "password hash generation",
+    UnsupportedVersionError = "unsupported config version",
 }
 
 pub const CURRENT_CONFIG_PATH: &str = "config.json";
@@ -99,7 +101,7 @@ fn read_file_to_config(path: &str) -> Result<Config, ConfigError> {
     let data = fs::read_to_string(path)?;
     let conf: Config = serde_json::from_str(&data)?;
     if conf.config_version != 1 {
-        // return Err("Unsupported config Version");
+        return Err(ConfigError::UnsupportedVersionError);
     }
     Ok(conf)
 }
@@ -112,12 +114,13 @@ fn write_config_to_file(path: &str, conf: Config) -> Result<(), ConfigError> {
 
 pub fn generate_default_config(path: &str) -> Result<(), ConfigError> {
     let mut conf = Config::default();
+    let hash = sha512_crypt::hash("nfsense")?;
+    conf.config_version = 1;
     conf.system.users.insert(
         "admin".to_string(),
         crate::definitions::system::User {
             comment: "Default Admin".to_string(),
-            hash: "".to_string(),
-            salt: "".to_string(),
+            hash: hash,
         },
     );
     write_config_to_file(path, conf)

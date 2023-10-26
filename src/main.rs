@@ -9,6 +9,7 @@ use axum::{middleware, Router};
 use config_manager::ConfigManager;
 use state::AppState;
 use std::env;
+use std::fs;
 use tower_cookies::CookieManagerLayer;
 use tracing::info;
 use tracing_subscriber;
@@ -29,7 +30,11 @@ async fn main() {
     if args.len() > 1 && args[1] == "generate-default" {
         info!("Generating default config...");
         config_manager::generate_default_config(config_manager::CURRENT_CONFIG_PATH).unwrap();
-        config_manager::generate_default_config(config_manager::PENDING_CONFIG_PATH).unwrap();
+        fs::copy(
+            config_manager::CURRENT_CONFIG_PATH,
+            config_manager::PENDING_CONFIG_PATH,
+        )
+        .unwrap();
         info!("Done! Exiting...");
         return;
     }

@@ -18,6 +18,9 @@ use axum::{
     response::{IntoResponse, Response},
 };
 
+use pwhash::sha512_crypt;
+use tracing::info;
+
 use custom_error::custom_error;
 
 custom_error! { AuthError
@@ -65,22 +68,24 @@ async fn login_handler(
         .users
         .get(&payload.username.to_string())
     {
-        // TODO use propper hash algorithm compatible with /etc/passwd
-        if payload.password == "nfsense" {
+        if sha512_crypt::verify(payload.password, &user.hash) {
             let mut sessions = state.session_state.sessions.write().unwrap();
             let id = Uuid::new_v4().to_string();
 
             sessions.insert(
                 id.clone(),
                 Session {
-                    username: payload.username,
+                    username: payload.username.clone(),
                 },
             );
 
             cookies.add(Cookie::new(SESSION_COOKIE, id));
+            info!("user logged in: {:?}", payload.username);
             return StatusCode::OK;
         }
     }
+
+    info!("user login failed: {:?}", payload.username);
     StatusCode::UNAUTHORIZED
 }
 
@@ -96,6 +101,7 @@ async fn logout_handler(cookies: Cookies, state: State<AppState>) -> impl IntoRe
             // cookies.remove(s.clone());
 
             if let Some(session) = sessions.get(session_id) {
+                info!("user logged out: {:?}", session.username);
                 sessions.remove(session_id);
                 return StatusCode::OK;
             }

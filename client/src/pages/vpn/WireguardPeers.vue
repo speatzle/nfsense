@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { apiCall } from "../../api";
+import { apiCall } from '../../api';
 import getPlugins from '../../plugins';
 const p = getPlugins();
 
@@ -32,28 +32,28 @@ const displayData = $computed(() => {
 
 async function load(){
   loading = true;
-  let res = await apiCall("VPN.GetWireguardPeers", {});
+  let res = await apiCall('vpn.get_wireguard_peers', {});
   if (res.Error === null) {
-    console.debug("peers", res.Data.WireguardPeers);
-    peers = res.Data.WireguardPeers;
+    console.debug('peers', res.Data);
+    peers = res.Data;
   } else {
-    console.debug("error", res);
+    console.debug('error', res);
   }
   loading = false;
 }
 
 async function deletePeer(){
-  let res = await apiCall("VPN.DeleteWireguardPeer", {name: displayData[selection[0]].name});
+  let res = await apiCall('vpn.delete_wireguard_peer', {name: displayData[selection[0]].name});
   if (res.Error === null) {
-    console.debug("deleted peer");
+    console.debug('deleted peer');
   } else {
-    console.debug("error", res);
+    console.debug('error', res);
   }
   load();
 }
 
 async function editPeer() {
-  p.router.push("/vpn/wireguardpeers/edit/" + displayData[selection[0]].name);
+  p.router.push(`/vpn/wireguardpeers/edit/${  displayData[selection[0]].name}`);
 }
 
 onMounted(async() => {

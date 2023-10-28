@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { apiCall } from "../../api";
+import { apiCall } from '../../api';
 import getPlugins from '../../plugins';
 const p = getPlugins();
 
@@ -19,34 +19,34 @@ const columns = [
 ];
 
 async function load(){
-  let res = await apiCall("Firewall.GetDestinationNATRules", {});
+  let res = await apiCall('firewall.get_destination_nat_rules', {});
   if (res.Error === null) {
-    rules = res.Data.destination_nat_rules;
-    console.debug("rules", rules);
+    rules = res.Data;
+    console.debug('rules', rules);
   } else {
-    console.debug("error", res);
+    console.debug('error', res);
   }
 }
 
 async function deleteRule(){
-  let res = await apiCall("Firewall.DeleteDestinationNATRule", {index: selection[0]});
+  let res = await apiCall('firewall.delete_destination_nat_rule', {index: selection[0]});
   if (res.Error === null) {
-    console.debug("deleted rule");
-    p.toast.success("Deleted Rule");
+    console.debug('deleted rule');
+    p.toast.success('Deleted Rule');
   } else {
-    console.debug("error", res);
+    console.debug('error', res);
   }
   load();
 }
 
 async function draggedRow(draggedRow: number, draggedOverRow: number) {
-  console.log("dragged", draggedRow, draggedOverRow);
-  let res = await apiCall("Firewall.MoveDestinationNATRule", {index: draggedRow, to_index: draggedOverRow});
+  console.log('dragged', draggedRow, draggedOverRow);
+  let res = await apiCall('firewall.move_destination_nat_rule', {index: draggedRow, to_index: draggedOverRow});
   if (res.Error === null) {
-    console.debug("moved rule");
-    p.toast.success("Moved Rule");
+    console.debug('moved rule');
+    p.toast.success('Moved Rule');
   } else {
-    console.debug("error", res);
+    console.debug('error', res);
   }
   load();
 }

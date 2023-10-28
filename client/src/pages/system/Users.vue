@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { apiCall } from "../../api";
+import { apiCall } from '../../api';
 import getPlugins from '../../plugins';
 const p = getPlugins();
 
@@ -14,12 +14,12 @@ const columns = [
 
 async function load(){
   loading = true;
-  let res = await apiCall("System.GetUsers", {});
+  let res = await apiCall('system.get_users', {});
   if (res.Error === null) {
-    users = res.Data.Users;
-    console.debug("users", users);
+    users = res.Data;
+    console.debug('users', users);
   } else {
-    console.debug("error", res);
+    console.debug('error', res);
   }
   loading = false;
 }
@@ -38,17 +38,17 @@ const displayData = $computed(() => {
 
 
 async function deleteUser(){
-  let res = await apiCall("System.DeleteUser", {name: displayData[selection[0]].name});
+  let res = await apiCall('system.delete_user', {name: displayData[selection[0]].name});
   if (res.Error === null) {
-    console.debug("deleted user");
+    console.debug('deleted user');
   } else {
-    console.debug("error", res);
+    console.debug('error', res);
   }
   load();
 }
 
 async function editUser() {
-  p.router.push("/system/users/edit/" + displayData[selection[0]].name);
+  p.router.push(`/system/users/edit/${  displayData[selection[0]].name}`);
 }
 
 onMounted(async() => {

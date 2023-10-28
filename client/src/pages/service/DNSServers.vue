@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { apiCall } from "../../api";
+import { apiCall } from '../../api';
 import getPlugins from '../../plugins';
 const p = getPlugins();
 
@@ -13,22 +13,22 @@ const columns = [
 ];
 
 async function load(){
-  let res = await apiCall("Service.GetDNSServers", {});
+  let res = await apiCall('service.get_dns_servers', {});
   if (res.Error === null) {
-    servers = res.Data.dns_servers;
-    console.debug("rules", servers);
+    servers = res.Data;
+    console.debug('rules', servers);
   } else {
-    console.debug("error", res);
+    console.debug('error', res);
   }
 }
 
 async function deleteRule(){
-  let res = await apiCall("Service.DeleteDNSServer", {index: selection[0]});
+  let res = await apiCall('service.delete_dns_server', {index: selection[0]});
   if (res.Error === null) {
-    console.debug("deleted server");
-    p.toast.success("Deleted DNS Server");
+    console.debug('deleted server');
+    p.toast.success('Deleted DNS Server');
   } else {
-    console.debug("error", res);
+    console.debug('error', res);
   }
   load();
 }

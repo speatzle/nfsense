@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { editTypes } from "../../../../definitions";
-import { apiCall } from "../../../../api";
+import { editTypes } from '../../../../definitions';
+import { apiCall } from '../../../../api';
 import getPlugins from '../../../../plugins';
 const p = getPlugins();
 
@@ -13,29 +13,29 @@ let loading = $ref(true);
 async function load(){
   loading = true;
   let res: any;
-  if (editTypes[subsystem][entity].idType == "Number") {
-    res = await apiCall(editTypes[subsystem].name +".Get"+ editTypes[subsystem][entity].name, {id: id as number - 0});
+  if (editTypes[subsystem][entity].idType == 'Number') {
+    res = await apiCall(`${editTypes[subsystem].name }.get_${ editTypes[subsystem][entity].name}`, {id: id as number - 0});
   } else {
-    res = await apiCall(editTypes[subsystem].name +".Get"+ editTypes[subsystem][entity].name, {id: id});
+    res = await apiCall(`${editTypes[subsystem].name }.get_${ editTypes[subsystem][entity].name}`, {id: id});
   }
 
   if (res.Error === null) {
-    console.debug("update data", res.Data);
+    console.debug('update data', res.Data);
     initialValues = res.Data;
   } else {
-    console.debug("error", res);
+    console.debug('error', res);
   }
   loading = false;
 }
 
 async function update(value: any) {
-  console.debug("value", value);
-  let res = await apiCall(editTypes[subsystem].name +".Update"+ editTypes[subsystem][entity].name, value);
+  console.debug('value', value);
+  let res = await apiCall(`${editTypes[subsystem].name }.update_${ editTypes[subsystem][entity].name}`, value);
   if (res.Error === null) {
-    p.toast.success("Updated " + editTypes[subsystem][entity].name);
+    p.toast.success(`Updated ${  editTypes[subsystem][entity].name}`);
     p.router.go(-1);
   } else {
-    console.debug("error", res);
+    console.debug('error', res);
   }
 }
 

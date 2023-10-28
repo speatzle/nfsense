@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { apiCall } from "../../api";
+import { apiCall } from '../../api';
 
-let status = $ref("");
+let status = $ref('');
 let loading = $ref(false);
 
 async function load() {
   loading = true;
-  let res = await apiCall("VPN.GetWireguardStatus", {});
+  let res = await apiCall('vpn.get_wireguard_status', {});
   if (res.Error === null) {
-    console.debug("status", res.Data.Status);
-    status = res.Data.Status;
+    console.debug('status', res.Data);
+    status = res.Data;
   } else {
-    console.debug("error", res);
+    console.debug('error', res);
   }
   loading = false;
 }

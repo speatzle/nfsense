@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { apiCall } from "../../api";
+import { apiCall } from '../../api';
 import getPlugins from '../../plugins';
 const p = getPlugins();
 
@@ -16,12 +16,12 @@ const columns = [
 
 async function load(){
   loading = true;
-  let res = await apiCall("Object.GetAddresses", {});
+  let res = await apiCall('object.get_addresses', {});
   if (res.Error === null) {
-    addresses = res.Data.Addresses;
-    console.debug("addresses", addresses);
+    addresses = res.Data;
+    console.debug('addresses', addresses);
   } else {
-    console.debug("error", res);
+    console.debug('error', res);
   }
   loading = false;
 }
@@ -43,36 +43,36 @@ const displayData = $computed(() => {
 function getAddressValue(s: any): string {
   let value: string;
   switch (s.type) {
-  case "host":
+  case 'host':
     value = s.host;
     break;
-  case "range":
+  case 'range':
     value = s.range;
     break;
-  case "network":
+  case 'network':
     value = s.network;
     break;
-  case "group":
+  case 'group':
     value = s.children;
     break;
   default:
-    value = "unkown";
+    value = 'unkown';
   }
   return value;
 }
 
 async function deleteAddress(){
-  let res = await apiCall("Object.DeleteAddress", {name: displayData[selection[0]].name});
+  let res = await apiCall('object.delete_address', {name: displayData[selection[0]].name});
   if (res.Error === null) {
-    console.debug("deleted address");
+    console.debug('deleted address');
   } else {
-    console.debug("error", res);
+    console.debug('error', res);
   }
   load();
 }
 
 async function editAddress() {
-  p.router.push("/object/addresses/edit/" + displayData[selection[0]].name);
+  p.router.push(`/object/addresses/edit/${  displayData[selection[0]].name}`);
 }
 
 onMounted(async() => {

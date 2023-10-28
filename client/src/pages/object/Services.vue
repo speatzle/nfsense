@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { apiCall } from "../../api";
+import { apiCall } from '../../api';
 import getPlugins from '../../plugins';
 const p = getPlugins();
 
@@ -31,53 +31,53 @@ const displayData = $computed(() => {
 function getServiceValue(s: any): string {
   let value: string;
   switch (s.type) {
-  case "tcp":
-  case "udp":
+  case 'tcp':
+  case 'udp':
     value = getServicePortRange(s);
     break;
-  case "icmp":
-    value = "icmp";
+  case 'icmp':
+    value = 'icmp';
     break;
-  case "group":
+  case 'group':
     value = s.children;
     break;
   default:
-    value = "unkown";
+    value = 'unkown';
   }
   return value;
 }
 
 function getServicePortRange(s:any): string {
   if (s.dport_end) {
-    return s.dport_start + "-" + s.dport_end;
+    return `${s.dport_start  }-${  s.dport_end}`;
   }
   return s.dport_start;
 }
 
 async function load(){
   loading = true;
-  let res = await apiCall("Object.GetServices", {});
+  let res = await apiCall('object.get_services', {});
   if (res.Error === null) {
-    console.debug("services", res.Data.Services);
-    services = res.Data.Services;
+    console.debug('services', res.Data);
+    services = res.Data;
   } else {
-    console.debug("error", res);
+    console.debug('error', res);
   }
   loading = false;
 }
 
 async function deleteService(){
-  let res = await apiCall("Object.DeleteService", {name: displayData[selection[0]].name});
+  let res = await apiCall('object.delete_service', {name: displayData[selection[0]].name});
   if (res.Error === null) {
-    console.debug("deleted service");
+    console.debug('deleted service');
   } else {
-    console.debug("error", res);
+    console.debug('error', res);
   }
   load();
 }
 
 async function editService() {
-  p.router.push("/object/services/edit/" + displayData[selection[0]].name);
+  p.router.push(`/object/services/edit/${  displayData[selection[0]].name}`);
 }
 
 onMounted(async() => {

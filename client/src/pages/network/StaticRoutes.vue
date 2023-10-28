@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { apiCall } from "../../api";
+import { apiCall } from '../../api';
 
 let staticRoutes = $ref([]);
 let loading = $ref(false);
@@ -14,23 +14,23 @@ const columns = [
 ];
 
 async function load(){
-  loading = true
-  let res = await apiCall("Network.GetStaticRoutes", {});
+  loading = true;
+  let res = await apiCall('network.get_static_routes', {});
   if (res.Error === null) {
-    console.debug("staticRoutes", res.Data.StaticRoutes);
-    staticRoutes = res.Data.StaticRoutes;
+    console.debug('staticRoutes', res.Data);
+    staticRoutes = res.Data;
   } else {
-    console.debug("error", res);
+    console.debug('error', res);
   }
-  loading = false
+  loading = false;
 }
 
 async function deleteStaticRoutes(){
-  let res = await apiCall("Network.DeleteStaticRoute", {index: selection[0]});
+  let res = await apiCall('network.delete_static_route', {index: selection[0]});
   if (res.Error === null) {
-    console.debug("deleted static routes");
+    console.debug('deleted static routes');
   } else {
-    console.debug("error", res);
+    console.debug('error', res);
   }
   load();
 }

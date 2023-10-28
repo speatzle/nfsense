@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { editTypes } from "../../../../definitions";
-import { apiCall } from "../../../../api";
+import { editTypes } from '../../../../definitions';
+import { apiCall } from '../../../../api';
 import getPlugins from '../../../../plugins';
 const p = getPlugins();
 
@@ -8,13 +8,13 @@ const props = $defineProps<{subsystem: string, entity: string}>();
 const { subsystem, entity } = $(props);
 
 async function create(value: any) {
-  console.debug("value", value);
-  let res = await apiCall(editTypes[subsystem].name +".Create"+ editTypes[subsystem][entity].name, value);
+  console.debug('value', value);
+  let res = await apiCall(`${editTypes[subsystem].name }.create_${ editTypes[subsystem][entity].name}`, value);
   if (res.Error === null) {
-    p.toast.success("Created " + editTypes[subsystem][entity].name);
+    p.toast.success(`Created ${  editTypes[subsystem][entity].name}`);
     p.router.go(-1);
   } else {
-    console.debug("error", res);
+    console.debug('error', res);
   }
 }
 

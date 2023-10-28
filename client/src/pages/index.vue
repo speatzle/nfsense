@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { apiCall } from "../api";
+import { apiCall } from '../api';
 
 let links = $ref([]);
 let loading = $ref(false);
 
 async function load(){
   loading = true;
-  let res = await apiCall("Network.GetLinks", {});
+  let res = await apiCall('network.get_links', {});
   if (res.Error === null) {
-    console.debug("links", res.Data.Links);
-    links = res.Data.Links;
+    console.debug('links', res.Data);
+    links = res.Data;
   } else {
-    console.debug("error", res);
+    console.debug('error', res);
   }
   loading = false;
 }

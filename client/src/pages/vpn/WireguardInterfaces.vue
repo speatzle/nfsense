@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { apiCall } from "../../api";
+import { apiCall } from '../../api';
 import getPlugins from '../../plugins';
 const p = getPlugins();
 
@@ -31,28 +31,28 @@ const displayData = $computed(() => {
 
 async function load(){
   loading = true;
-  let res = await apiCall("VPN.GetWireguardInterfaces", {});
+  let res = await apiCall('cpn.get_wireguard_interfaces', {});
   if (res.Error === null) {
-    console.debug("interfaces", res.Data.Interfaces);
-    interfaces = res.Data.Interfaces;
+    console.debug('interfaces', res.Data);
+    interfaces = res.Data;
   } else {
-    console.debug("error", res);
+    console.debug('error', res);
   }
   loading = false;
 }
 
 async function deleteInterface(){
-  let res = await apiCall("VPN.DeleteWireguardInterface", {name: displayData[selection[0]].name});
+  let res = await apiCall('vpn.delete_wireguard_interface', {name: displayData[selection[0]].name});
   if (res.Error === null) {
-    console.debug("deleted interface");
+    console.debug('deleted interface');
   } else {
-    console.debug("error", res);
+    console.debug('error', res);
   }
   load();
 }
 
 async function editInterface() {
-  p.router.push("/vpn/wireguardinterfaces/edit/" + displayData[selection[0]].name);
+  p.router.push(`/vpn/wireguardinterfaces/edit/${  displayData[selection[0]].name}`);
 }
 
 onMounted(async() => {

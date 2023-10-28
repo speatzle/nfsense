@@ -17,7 +17,6 @@ use web::auth::SessionState;
 
 mod config_manager;
 mod definitions;
-mod json_rpc;
 mod state;
 mod web;
 

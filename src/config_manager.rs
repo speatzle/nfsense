@@ -1,5 +1,7 @@
 use validator::Validate;
 
+use crate::api::ApiError;
+
 use super::definitions::config::Config;
 use std::fs;
 use std::sync::{Arc, Mutex, MutexGuard};
@@ -15,6 +17,13 @@ custom_error! { pub ConfigError
     ValidatonError{source: validator::ValidationErrors} = "validation failed",
     HashError{source: pwhash::error::Error} = "password hash generation",
     UnsupportedVersionError = "unsupported config version",
+}
+
+// TODO do Error conversion
+impl Into<ApiError> for ConfigError {
+    fn into(self) -> ApiError {
+        ApiError::Leet
+    }
 }
 
 pub const CURRENT_CONFIG_PATH: &str = "config.json";

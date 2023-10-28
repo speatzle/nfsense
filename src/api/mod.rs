@@ -1,8 +1,10 @@
+mod config;
 mod firewall;
 mod network;
 mod object;
 mod service;
 mod system;
+mod vpn;
 
 use crate::state::RpcState;
 use jsonrpsee::{
@@ -87,6 +89,42 @@ pub fn new_rpc_module(state: RpcState) -> RpcModule<RpcState> {
             "firewall.get_source_nat_rules",
             firewall::get_source_nat_rules,
         )
+        .unwrap();
+
+    module
+        .register_method(
+            "config.get_pending_changelog",
+            config::get_pending_changelog,
+        )
+        .unwrap();
+
+    module
+        .register_method(
+            "config.apply_pending_changes",
+            config::apply_pending_changes,
+        )
+        .unwrap();
+
+    module
+        .register_method(
+            "config.discard_pending_changes",
+            config::discard_pending_changes,
+        )
+        .unwrap();
+
+    module
+        .register_method("vpn.get_wireguard_status", vpn::get_wireguard_status)
+        .unwrap();
+
+    module
+        .register_method(
+            "vpn.get_wireguard_interfaces",
+            vpn::get_wireguard_interfaces,
+        )
+        .unwrap();
+
+    module
+        .register_method("vpn.get_wireguard_peers", vpn::get_wireguard_peers)
         .unwrap();
 
     module

@@ -5,6 +5,7 @@ use std::{
     sync::{Arc, RwLock},
 };
 
+use crate::state::RpcState;
 use axum::{middleware, Router};
 use config_manager::ConfigManager;
 use state::AppState;
@@ -15,6 +16,7 @@ use tracing::info;
 use tracing_subscriber;
 use web::auth::SessionState;
 
+mod api;
 mod config_manager;
 mod definitions;
 mod state;
@@ -41,12 +43,17 @@ async fn main() {
 
     // TODO Check Config Manager Setup Error
     let config_manager = ConfigManager::new().unwrap();
+    let session_state = SessionState {
+        sessions: Arc::new(RwLock::new(HashMap::new())),
+    };
 
     let app_state = AppState {
-        config_manager,
-        session_state: SessionState {
-            sessions: Arc::new(RwLock::new(HashMap::new())),
-        },
+        config_manager: config_manager.clone(),
+        session_state: session_state.clone(),
+        rpc_module: api::new_rpc_module(RpcState {
+            config_manager,
+            session_state,
+        }),
     };
 
     // Note: The Router Works Bottom Up, So the auth middleware will only applies to everything above it.

@@ -13,7 +13,7 @@ const columns = [
 ];
 
 async function load(){
-  let res = await apiCall('service.get_dhcp_v4_servers', {});
+  let res = await apiCall('service.get_dhcp_servers', {});
   if (res.Error === null) {
     servers = res.Data;
     console.debug('rules', servers);
@@ -23,7 +23,7 @@ async function load(){
 }
 
 async function deleteRule(){
-  let res = await apiCall('service.delete_dhcp_v4_server', {index: selection[0]});
+  let res = await apiCall('service.delete_dhcp_server', {index: selection[0]});
   if (res.Error === null) {
     console.debug('deleted server');
     p.toast.success('Deleted DHCP Server');

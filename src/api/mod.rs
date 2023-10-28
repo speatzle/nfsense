@@ -37,11 +37,11 @@ pub fn new_rpc_module(state: RpcState) -> RpcModule<RpcState> {
         .unwrap();
 
     module
-        .register_method("System.GetUsers", system::get_users)
+        .register_method("system.get_users", system::get_users)
         .unwrap();
 
     module
-        .register_method("Network.GetStaticRoutes", network::get_static_routes)
+        .register_method("network.get_static_routes", network::get_static_routes)
         .unwrap();
 
     module

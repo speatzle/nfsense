@@ -1,4 +1,7 @@
+mod firewall;
 mod network;
+mod object;
+mod service;
 mod system;
 
 use crate::state::RpcState;
@@ -42,6 +45,48 @@ pub fn new_rpc_module(state: RpcState) -> RpcModule<RpcState> {
 
     module
         .register_method("network.get_static_routes", network::get_static_routes)
+        .unwrap();
+
+    module
+        .register_method("network.get_interfaces", network::get_interfaces)
+        .unwrap();
+
+    module
+        .register_method("object.get_services", object::get_services)
+        .unwrap();
+
+    module
+        .register_method("object.get_addresses", object::get_addresses)
+        .unwrap();
+
+    module
+        .register_method("service.get_dhcp_servers", service::get_dhcp_servers)
+        .unwrap();
+
+    module
+        .register_method("service.get_dns_servers", service::get_dns_servers)
+        .unwrap();
+
+    module
+        .register_method("service.get_ntp_servers", service::get_ntp_servers)
+        .unwrap();
+
+    module
+        .register_method("firewall.get_forward_rules", firewall::get_forward_rules)
+        .unwrap();
+
+    module
+        .register_method(
+            "firewall.get_destination_nat_rules",
+            firewall::get_destination_nat_rules,
+        )
+        .unwrap();
+
+    module
+        .register_method(
+            "firewall.get_source_nat_rules",
+            firewall::get_source_nat_rules,
+        )
         .unwrap();
 
     module

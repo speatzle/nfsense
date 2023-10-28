@@ -43,8 +43,8 @@ onMounted(async() => {
   <div>
     <TableView title="DHCP v4 Servers" :columns="columns" :loading="loading" v-model:selection="selection" v-model:data="servers" :table-props="{sort:true, sortSelf: true}">
       <button @click="load">Refresh</button>
-      <router-link class="button" to="/service/dhcpv4servers/edit">Create</router-link>
-      <router-link class="button" :class="{ disabled: selection.length != 1 }" :to="'/service/dhcpv4servers/edit/' + selection[0]">Edit</router-link>
+      <router-link class="button" to="/service/dhcpservers/edit">Create</router-link>
+      <router-link class="button" :class="{ disabled: selection.length != 1 }" :to="'/service/dhcpservers/edit/' + selection[0]">Edit</router-link>
       <button @click="deleteRule" :disabled="selection.length != 1">Delete</button>
     </TableView>
   </div>

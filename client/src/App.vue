@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { authenticate, logout, checkAuthentication, setup } from "./api";
+import { authenticate, logout, checkAuthentication, setup } from './api';
 
 // Icons
 import IDashboard from '~icons/ri/dashboard-2-line';
@@ -21,32 +21,32 @@ enum NavState { Open, Reduced, Collapsed };
 const NavStateCount = 3;
 let navState = $ref(NavState.Open);
 const navRoutes = {
-  "/": { icon: IDashboard, caption: "Dashboard" },
-  "/firewall/forwardrules": { icon: IRule, caption: "Rules" },
-  "/firewall/sourcenatrules": { icon: ISNAT, caption: "SNAT" },
-  "/firewall/destinationnatrules": { icon: IDNAT, caption: "DNAT" },
-  "/network/interfaces": { icon: IEthernet, caption: "Interfaces" },
-  "/network/staticroutes": { icon: IStaticRoutes, caption: "Static Routes" },
-  "/object/addresses": { icon: IAddress, caption: "Addresses" },
-  "/object/services": { icon: IService, caption: "Services" },
-  "/service/dhcpv4servers": { icon: IDHCPServer, caption: "DHCP v4" },
-  "/service/dnsservers": { icon: IDNSServer, caption: "DNS Server" },
-  "/service/ntpservers": { icon: ITimeServer, caption: "NTP Server" },
-  "/vpn/wireguardstatus": { icon: IWireguard, caption: "Wireguard Status" },
-  "/vpn/wireguardinterfaces": { icon: IWireguard, caption: "Wireguard Interfaces" },
-  "/vpn/wireguardpeers": { icon: IWireguard, caption: "Wireguard Peers" },
-  "/system/users": { icon: IUser, caption: "Users" },
-  "/config/config": { icon: IConfig, caption: "Config" },
+  '/': { icon: IDashboard, caption: 'Dashboard' },
+  '/firewall/forwardrules': { icon: IRule, caption: 'Rules' },
+  '/firewall/sourcenatrules': { icon: ISNAT, caption: 'SNAT' },
+  '/firewall/destinationnatrules': { icon: IDNAT, caption: 'DNAT' },
+  '/network/interfaces': { icon: IEthernet, caption: 'Interfaces' },
+  '/network/staticroutes': { icon: IStaticRoutes, caption: 'Static Routes' },
+  '/object/addresses': { icon: IAddress, caption: 'Addresses' },
+  '/object/services': { icon: IService, caption: 'Services' },
+  '/service/dhcpservers': { icon: IDHCPServer, caption: 'DHCP Server' },
+  '/service/dnsservers': { icon: IDNSServer, caption: 'DNS Server' },
+  '/service/ntpservers': { icon: ITimeServer, caption: 'NTP Server' },
+  '/vpn/wireguardstatus': { icon: IWireguard, caption: 'Wireguard Status' },
+  '/vpn/wireguardinterfaces': { icon: IWireguard, caption: 'Wireguard Interfaces' },
+  '/vpn/wireguardpeers': { icon: IWireguard, caption: 'Wireguard Peers' },
+  '/system/users': { icon: IUser, caption: 'Users' },
+  '/config/config': { icon: IConfig, caption: 'Config' },
 };
 
 enum AuthState { Unauthenticated, MfaRequired, Authenticated };
 let authState = $ref(AuthState.Unauthenticated);
 let loginDisabled = $ref(true);
 
-let username = $ref("");
-let password = $ref("");
+let username = $ref('');
+let password = $ref('');
 
-const mobileMedia = window.matchMedia("only screen and (max-width: 768px)");
+const mobileMedia = window.matchMedia('only screen and (max-width: 768px)');
 if (mobileMedia.matches) {
   navState = NavState.Collapsed;
 }
@@ -67,10 +67,10 @@ function toggleNavState() {
 async function tryLogin() {
   loginDisabled = true;
   const res = await authenticate(username, password);
-  password = "";
+  password = '';
   loginDisabled = false;
   if (res.error != null) {
-    console.info("authentication error");
+    console.info('authentication error');
   }
   else {
     // TODO Check for MFA here
@@ -79,27 +79,27 @@ async function tryLogin() {
 }
 
 async function tryLogout() {
-  console.info("Logging out...");
+  console.info('Logging out...');
   authState = AuthState.Unauthenticated;
   logout();
 }
 
 function UnauthorizedCallback() {
-  console.info("Unauthenticated");
+  console.info('Unauthenticated');
   authState = AuthState.Unauthenticated;
 }
 
 async function checkAuth() {
-  console.info("Checking Auth State...");
+  console.info('Checking Auth State...');
   let res = await checkAuthentication();
   authState = res.auth;
   loginDisabled = false;
   if (authState === AuthState.Authenticated) {
-    console.info("Already Authenticated ", authState);
+    console.info('Already Authenticated ', authState);
   } else if (res.error == null) {
-    console.info("Unauthorized");
+    console.info('Unauthorized');
   }
-  else console.info("Check Authentication error",res.error);
+  else console.info('Check Authentication error',res.error);
 }
 
 onMounted(async() => {

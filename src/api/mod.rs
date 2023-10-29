@@ -46,6 +46,10 @@ pub fn new_rpc_module(state: RpcState) -> RpcModule<RpcState> {
         .unwrap();
 
     module
+        .register_method("system.create_user", system::create_user)
+        .unwrap();
+
+    module
         .register_method("network.get_static_routes", network::get_static_routes)
         .unwrap();
 

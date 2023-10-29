@@ -12,12 +12,19 @@ use jsonrpsee::{
     RpcModule,
 };
 
-use custom_error::custom_error;
+use thiserror::Error;
 use tracing::info;
 
-custom_error! { pub ApiError
-    InvalidParams = "Invalid Parameters",
-    Leet = "1337",
+#[derive(Error, Debug)]
+pub enum ApiError {
+    #[error("Unsupported config version")]
+    InvalidParams,
+
+    #[error("1337")]
+    Leet,
+
+    #[error(transparent)]
+    ConfigError(#[from] crate::config_manager::ConfigError),
 }
 
 impl Into<ErrorObject<'static>> for ApiError {

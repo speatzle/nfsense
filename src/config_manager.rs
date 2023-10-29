@@ -7,24 +7,38 @@ use std::fs;
 use std::sync::{Arc, Mutex, MutexGuard};
 use std::{io, result::Result};
 
-use custom_error::custom_error;
-
 use pwhash::sha512_crypt;
 
-custom_error! { pub ConfigError
-    IoError{source: io::Error}         = "io error",
-    SerdeError{source: serde_json::Error}         = "serde json error",
-    ValidatonError{source: validator::ValidationErrors} = "validation failed",
-    HashError{source: pwhash::error::Error} = "password hash generation",
-    UnsupportedVersionError = "unsupported config version",
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum ConfigError {
+    #[error("Json Error")]
+    SerdeError(#[from] serde_json::Error),
+
+    #[error("Validation Error")]
+    ValidatonError(#[from] validator::ValidationErrors),
+
+    #[error("Hash Error")]
+    HashError(#[from] pwhash::error::Error),
+
+    #[error("Unsupported config version")]
+    UnsupportedVersionError,
+
+    /// Represents all other cases of `std::io::Error`.
+    #[error(transparent)]
+    IOError(#[from] std::io::Error),
 }
 
+/*
 // TODO do Error conversion
 impl Into<ApiError> for ConfigError {
     fn into(self) -> ApiError {
         ApiError::Leet
     }
 }
+
+*/
 
 pub const CURRENT_CONFIG_PATH: &str = "config.json";
 pub const PENDING_CONFIG_PATH: &str = "pending.json";

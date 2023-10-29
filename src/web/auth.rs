@@ -21,11 +21,15 @@ use axum::{
 use pwhash::sha512_crypt;
 use tracing::info;
 
-use custom_error::custom_error;
+use thiserror::Error;
 
-custom_error! { AuthError
-    NoSessionCookie = "No Session Cookie Found",
-    InvalidSession            = "Invalid Session"
+#[derive(Error, Debug)]
+pub enum AuthError {
+    #[error("No Session Cookie Found")]
+    NoSessionCookie,
+
+    #[error("Invalid Session")]
+    InvalidSession,
 }
 
 const SESSION_COOKIE: &str = "session";

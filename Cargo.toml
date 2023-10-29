@@ -8,7 +8,6 @@ edition = "2021"
 [dependencies]
 async-trait = "0.1.74"
 axum = "0.6.20"
-custom_error = "1.9.2"
 ipnet = { version = "2.8.0", features = ["serde"] }
 jsonrpsee = { version = "0.20.3", features = ["server"] }
 macaddr = { version = "1.0.1", features = ["serde"] }

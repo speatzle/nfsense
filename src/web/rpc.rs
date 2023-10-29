@@ -1,4 +1,5 @@
 use crate::AppState;
+use anyhow::Context;
 use axum::routing::post;
 use axum::{Json, Router};
 use jsonrpsee::core::traits::ToRpcParams;
@@ -9,6 +10,8 @@ use serde_json::value::RawValue;
 use axum::{extract::Extension, extract::State, response::IntoResponse};
 
 use tracing::info;
+
+const JSON_RPC_VERSION: &str = "2.0";
 
 // TODO fix this "workaround"
 struct ParamConverter {
@@ -66,19 +69,48 @@ async fn api_handler(
     session: Extension<super::auth::Session>,
     body: String,
 ) -> impl IntoResponse {
-    info!("api hit! user: {:?}", session.username);
+    let req: RpcRequest = match serde_json::from_str(&body) {
+        Ok(req) => req,
+        Err(err) => {
+            return Json(RpcResponse {
+                id: 0,
+                jsonrpc: JSON_RPC_VERSION.to_string(),
+                result: None,
+                error: Some(RpcErrorObject {
+                    // TODO Send back correct code
+                    code: 0,
+                    message: err.to_string(),
+                    data: None,
+                }),
+            });
+        }
+    };
 
-    // TODO handle Parse Error
-    let req: RpcRequest = serde_json::from_str(&body).unwrap();
-
-    // TODO check version
-
-    let params = ParamConverter { params: req.params };
-
+    if req.jsonrpc != JSON_RPC_VERSION {
+        return Json(RpcResponse {
+            id: req.id,
+            jsonrpc: JSON_RPC_VERSION.to_string(),
+            result: None,
+            error: Some(RpcErrorObject {
+                // TODO Send back correct code
+                code: 0,
+                message: "Invalid Jsonrpc Version".to_string(),
+                data: None,
+            }),
+        });
+    }
     // TODO check Permissions for method here?
 
-    let res: Result<Option<Box<RawValue>>, Error> =
-        state.rpc_module.call(&req.method, params).await;
+    info!(
+        "api hit! user: {:?} method: {:?}",
+        session.username, req.method
+    );
+
+    // TODO find a async save way to catch panics?
+    let res: Result<Option<Box<RawValue>>, Error> = state
+        .rpc_module
+        .call(&req.method, ParamConverter { params: req.params })
+        .await;
 
     match res {
         Ok(res) => Json(RpcResponse {

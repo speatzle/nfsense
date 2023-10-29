@@ -31,16 +31,6 @@ pub enum ConfigError {
     IOError(#[from] std::io::Error),
 }
 
-/*
-// TODO do Error conversion
-impl Into<ApiError> for ConfigError {
-    fn into(self) -> ApiError {
-        ApiError::Leet
-    }
-}
-
-*/
-
 pub const CURRENT_CONFIG_PATH: &str = "config.json";
 pub const PENDING_CONFIG_PATH: &str = "pending.json";
 

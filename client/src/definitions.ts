@@ -378,9 +378,9 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
     },
   },
   'system': {
-    name: 'System',
+    name: 'system',
     'users': {
-      name: 'User',
+      name: 'user',
       validationSchema: toFormValidator(
         zod.object({
         }),

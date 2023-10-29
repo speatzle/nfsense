@@ -45,8 +45,9 @@ struct RpcRequest {
 struct RpcResponse {
     id: i64,
     jsonrpc: String,
+    // Note: this Option<Option<>> is for distinguishing between success without a result (null) and and error where the field is skipped
     #[serde(skip_serializing_if = "Option::is_none")]
-    result: Option<Box<RawValue>>,
+    result: Option<Option<Box<RawValue>>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     error: Option<RpcErrorObject>,
 }
@@ -116,7 +117,7 @@ async fn api_handler(
         Ok(res) => Json(RpcResponse {
             id: req.id,
             jsonrpc: req.jsonrpc,
-            result: res,
+            result: Some(res),
             error: None,
         }),
         Err(err) => Json(RpcResponse {

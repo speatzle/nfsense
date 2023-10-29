@@ -79,14 +79,14 @@ impl ConfigManager {
         Ok(())
     }
 
-    pub fn start_transaction(&mut self) -> Result<ConfigTransaction, ConfigError> {
+    pub fn start_transaction(&mut self) -> ConfigTransaction {
         let data = self.shared_data.lock().unwrap();
 
-        Ok(ConfigTransaction {
+        ConfigTransaction {
             finished: false,
             changes: data.pending_config.clone(),
             shared_data: data,
-        })
+        }
     }
 }
 
@@ -104,6 +104,8 @@ impl<'a> ConfigTransaction<'a> {
         write_config_to_file(PENDING_CONFIG_PATH, ch.clone())?;
         Ok(())
     }
+
+    pub fn revert(mut self) {}
 }
 
 fn read_file_to_config(path: &str) -> Result<Config, ConfigError> {

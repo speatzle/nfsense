@@ -48,3 +48,23 @@ pub fn create_user(p: Params, state: &RpcState) -> Result<(), ApiError> {
         Err(ApiError::InvalidParams)
     }
 }
+
+#[derive(Deserialize)]
+struct DeleteUser {
+    name: String,
+}
+
+pub fn delete_user(p: Params, state: &RpcState) -> Result<(), ApiError> {
+    let u: DeleteUser = p.parse().unwrap();
+
+    let mut cm = state.config_manager.clone();
+    let mut tx = cm.start_transaction();
+
+    match tx.changes.system.users.remove(&u.name) {
+        Some(_) => return tx.commit().map_err(|source| ApiError::InvalidParams),
+        None => {
+            tx.revert();
+            Err(ApiError::InvalidParams)
+        }
+    }
+}

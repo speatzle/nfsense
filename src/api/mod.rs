@@ -57,6 +57,10 @@ pub fn new_rpc_module(state: RpcState) -> RpcModule<RpcState> {
         .unwrap();
 
     module
+        .register_method("system.delete_user", system::delete_user)
+        .unwrap();
+
+    module
         .register_method("network.get_static_routes", network::get_static_routes)
         .unwrap();
 

@@ -15,7 +15,7 @@ pub fn get_users(_: Params, state: &RpcState) -> Result<HashMap<String, User>, A
 struct CreateUser {
     name: String,
     password: String,
-    comment: String,
+    comment: Option<String>,
 }
 
 pub fn create_user(p: Params, state: &RpcState) -> Result<(), ApiError> {
@@ -33,7 +33,10 @@ pub fn create_user(p: Params, state: &RpcState) -> Result<(), ApiError> {
         .insert(
             u.name,
             User {
-                comment: u.comment,
+                comment: match u.comment {
+                    Some(c) => c,
+                    None => "".to_string(),
+                },
                 hash: hash,
             },
         )

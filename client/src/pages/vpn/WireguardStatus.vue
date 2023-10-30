@@ -6,7 +6,7 @@ let loading = $ref(false);
 
 async function load() {
   loading = true;
-  let res = await apiCall('vpn.get_wireguard_status', {});
+  let res = await apiCall('vpn.wireguard.get_status', {});
   if (res.Error === null) {
     console.debug('status', res.Data);
     status = res.Data;

@@ -32,7 +32,7 @@ const displayData = $computed(() => {
 
 async function load(){
   loading = true;
-  let res = await apiCall('vpn.get_wireguard_peers', {});
+  let res = await apiCall('vpn.wireguard.get_peers', {});
   if (res.Error === null) {
     console.debug('peers', res.Data);
     peers = res.Data;
@@ -43,7 +43,7 @@ async function load(){
 }
 
 async function deletePeer(){
-  let res = await apiCall('vpn.delete_wireguard_peer', {name: displayData[selection[0]].name});
+  let res = await apiCall('vpn.wireguard.delete_peer', {name: displayData[selection[0]].name});
   if (res.Error === null) {
     console.debug('deleted peer');
   } else {

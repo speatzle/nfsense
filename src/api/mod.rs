@@ -60,13 +60,6 @@ pub fn new_rpc_module(state: RpcState) -> RpcModule<RpcState> {
     let mut module = RpcModule::new(state);
 
     module
-        .register_method("ping", |_, _| {
-            info!("ping called");
-            "pong"
-        })
-        .unwrap();
-
-    module
         .register_method("system.get_user", system::get_user)
         .unwrap();
 

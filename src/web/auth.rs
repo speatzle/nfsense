@@ -1,6 +1,5 @@
 use std::collections::HashMap;
-use std::error::Error;
-use std::hash::Hash;
+
 use std::sync::{Arc, RwLock};
 use uuid::Uuid;
 
@@ -11,10 +10,9 @@ use serde::Deserialize;
 use tower_cookies::{Cookie, Cookies};
 
 use axum::{
-    extract::Extension,
     extract::State,
     http::{Request, StatusCode},
-    middleware::{self, Next},
+    middleware::Next,
     response::{IntoResponse, Response},
 };
 

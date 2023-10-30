@@ -29,9 +29,6 @@ use tracing::info;
 
 #[derive(Error, Debug)]
 pub enum ApiError {
-    #[error("Not Implemented")]
-    NotImplemented,
-
     #[error("Not Found")]
     NotFound,
 
@@ -50,8 +47,6 @@ impl Into<ErrorObject<'static>> for ApiError {
         info!("Converting Error {:?}", self);
         match self {
             // Todo Add Proper mappings
-            // ApiError::ParameterDeserialize => ErrorCode::InvalidParams,
-            ApiError::NotImplemented => ErrorCode::ServerError(0),
             _ => ErrorCode::InternalError,
         }
         .into()

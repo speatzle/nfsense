@@ -37,7 +37,6 @@ pub struct ConfigManager {
 }
 
 pub struct ConfigTransaction<'a> {
-    finished: bool,
     shared_data: MutexGuard<'a, SharedData>,
     pub config: Config,
 }
@@ -114,7 +113,6 @@ impl ConfigManager {
         let data = self.shared_data.lock().unwrap();
 
         ConfigTransaction {
-            finished: false,
             config: data.pending_config.clone(),
             shared_data: data,
         }
@@ -131,7 +129,7 @@ impl<'a> ConfigTransaction<'a> {
         Ok(())
     }
 
-    pub fn revert(mut self) {}
+    pub fn revert(self) {}
 }
 
 fn read_file_to_config(path: &str) -> Result<Config, ConfigError> {

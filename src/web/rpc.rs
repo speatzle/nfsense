@@ -1,5 +1,4 @@
 use crate::AppState;
-use anyhow::Context;
 use axum::routing::post;
 use axum::{Json, Router};
 use jsonrpsee::core::traits::ToRpcParams;

@@ -12,6 +12,7 @@ use jsonrpsee::{
     RpcModule,
 };
 
+use serde::Deserialize;
 use thiserror::Error;
 use tracing::info;
 
@@ -38,6 +39,16 @@ impl Into<ErrorObject<'static>> for ApiError {
     }
 }
 
+#[derive(Deserialize)]
+struct GetStringID {
+    id: String,
+}
+
+#[derive(Deserialize)]
+struct GetIntID {
+    id: i64,
+}
+
 pub fn new_rpc_module(state: RpcState) -> RpcModule<RpcState> {
     let mut module = RpcModule::new(state);
 
@@ -49,11 +60,19 @@ pub fn new_rpc_module(state: RpcState) -> RpcModule<RpcState> {
         .unwrap();
 
     module
+        .register_method("system.get_user", system::get_user)
+        .unwrap();
+
+    module
         .register_method("system.get_users", system::get_users)
         .unwrap();
 
     module
         .register_method("system.create_user", system::create_user)
+        .unwrap();
+
+    module
+        .register_method("system.update_user", system::update_user)
         .unwrap();
 
     module

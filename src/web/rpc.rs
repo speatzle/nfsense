@@ -27,8 +27,7 @@ impl ToRpcParams for ParamConverter {
                     .map(Some)
                     .map_err(Error::ParseError)
             }
-            // TODO make this a Parse error wrapping Utf8Error
-            Err(err) => return Err(Error::AlreadyStopped),
+            Err(err) => return Err(Error::Custom(err.to_string())),
         }
     }
 }

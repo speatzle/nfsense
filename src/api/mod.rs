@@ -18,11 +18,17 @@ use tracing::info;
 
 #[derive(Error, Debug)]
 pub enum ApiError {
-    #[error("Unsupported config version")]
-    InvalidParams,
+    #[error("Not Implemented")]
+    NotImplemented,
 
-    #[error("1337")]
-    Leet,
+    #[error("Not Found")]
+    NotFound,
+
+    #[error("Hash Error")]
+    HashError(#[from] pwhash::error::Error),
+
+    #[error(transparent)]
+    ParameterDeserialize(#[from] jsonrpsee::types::ErrorObjectOwned),
 
     #[error(transparent)]
     ConfigError(#[from] crate::config_manager::ConfigError),
@@ -31,8 +37,9 @@ pub enum ApiError {
 impl Into<ErrorObject<'static>> for ApiError {
     fn into(self) -> ErrorObject<'static> {
         match self {
-            Self::InvalidParams => ErrorCode::InvalidParams,
-            Self::Leet => ErrorCode::ServerError(1337),
+            // Todo Add Proper mappings
+            // ApiError::ParameterDeserialize => ErrorCode::InvalidParams,
+            ApiError::NotImplemented => ErrorCode::ServerError(0),
             _ => ErrorCode::InternalError,
         }
         .into()

@@ -1,11 +1,7 @@
 use validator::Validate;
 
-use crate::api::ApiError;
-
 use super::definitions::config::Config;
-use anyhow::{Context, Result};
 use std::fs;
-use std::io;
 use std::sync::{Arc, Mutex, MutexGuard};
 
 use pwhash::sha512_crypt;
@@ -65,12 +61,11 @@ impl ConfigManager {
         self.shared_data.lock().unwrap().pending_config.clone()
     }
 
-    pub fn apply_pending_changes(&mut self) -> Result<()> {
+    pub fn apply_pending_changes(&mut self) -> Result<(), ConfigError> {
         let mut data = self.shared_data.lock().unwrap();
         // TODO run Apply functions
         // TODO Revert on Apply Failure and Return
-        write_config_to_file(CURRENT_CONFIG_PATH, data.pending_config.clone())
-            .context("Writing Config to file".to_string())?;
+        write_config_to_file(CURRENT_CONFIG_PATH, data.pending_config.clone())?;
         // TODO revert if config save fails
         // TODO Remove Pending Config File
         data.current_config = data.pending_config.clone();

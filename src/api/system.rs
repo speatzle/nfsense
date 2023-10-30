@@ -1,9 +1,12 @@
-use std::collections::HashMap;
-
 use crate::{definitions::system::User, state::RpcState};
 use jsonrpsee::types::Params;
 use pwhash::sha512_crypt;
 use serde::{Deserialize, Serialize};
+
+use ApiError::ConfigError;
+use ApiError::HashError;
+use ApiError::NotFound;
+use ApiError::ParameterDeserialize;
 
 use super::{ApiError, GetStringID};
 
@@ -14,7 +17,7 @@ pub struct GetUser {
 }
 
 pub fn get_user(p: Params, state: &RpcState) -> Result<GetUser, ApiError> {
-    let u: GetStringID = p.parse().unwrap();
+    let u: GetStringID = p.parse().map_err(ParameterDeserialize)?;
 
     match state
         .config_manager
@@ -27,7 +30,7 @@ pub fn get_user(p: Params, state: &RpcState) -> Result<GetUser, ApiError> {
             name: u.id,
             comment: user.comment.clone(),
         }),
-        None => Err(ApiError::InvalidParams),
+        None => Err(NotFound),
     }
 }
 
@@ -57,9 +60,9 @@ struct CreateUser {
 }
 
 pub fn create_user(p: Params, state: &RpcState) -> Result<(), ApiError> {
-    let u: CreateUser = p.parse().unwrap();
+    let u: CreateUser = p.parse().map_err(ParameterDeserialize)?;
 
-    let hash = sha512_crypt::hash(u.password).unwrap();
+    let hash = sha512_crypt::hash(u.password).map_err(HashError)?;
 
     let mut cm = state.config_manager.clone();
     let mut tx = cm.start_transaction();
@@ -80,10 +83,11 @@ pub fn create_user(p: Params, state: &RpcState) -> Result<(), ApiError> {
         )
         .is_none()
     {
-        return tx.commit().map_err(|source| ApiError::InvalidParams);
+        tx.commit().map_err(ConfigError)?;
+        Ok(())
     } else {
         tx.revert();
-        Err(ApiError::InvalidParams)
+        Err(NotFound)
     }
 }
 
@@ -95,13 +99,20 @@ struct UpdateUser {
 }
 
 pub fn update_user(p: Params, state: &RpcState) -> Result<(), ApiError> {
-    let u: UpdateUser = p.parse().unwrap();
+    let u: UpdateUser = p.parse().map_err(ParameterDeserialize)?;
 
     let mut cm = state.config_manager.clone();
     let mut tx = cm.start_transaction();
 
     match tx.changes.system.users.get(&u.name) {
         Some(user) => {
+            // Only Update Password if field is not empty
+            let hash = if u.password == "" {
+                user.hash.clone()
+            } else {
+                sha512_crypt::hash(u.password).map_err(HashError)?
+            };
+
             tx.changes.system.users.insert(
                 u.name,
                 User {
@@ -109,17 +120,12 @@ pub fn update_user(p: Params, state: &RpcState) -> Result<(), ApiError> {
                         Some(c) => c,
                         None => "".to_string(),
                     },
-                    // Only Update Password if field is not empty
-                    hash: if u.password == "" {
-                        user.hash.clone()
-                    } else {
-                        sha512_crypt::hash(u.password).unwrap()
-                    },
+                    hash,
                 },
             );
             Ok(())
         }
-        None => Err(ApiError::InvalidParams),
+        None => Err(NotFound),
     }
 }
 
@@ -129,16 +135,16 @@ struct DeleteUser {
 }
 
 pub fn delete_user(p: Params, state: &RpcState) -> Result<(), ApiError> {
-    let u: DeleteUser = p.parse().unwrap();
+    let u: DeleteUser = p.parse().map_err(ParameterDeserialize)?;
 
     let mut cm = state.config_manager.clone();
     let mut tx = cm.start_transaction();
 
     match tx.changes.system.users.remove(&u.name) {
-        Some(_) => return tx.commit().map_err(|source| ApiError::InvalidParams),
+        Some(_) => tx.commit().map_err(ConfigError),
         None => {
             tx.revert();
-            Err(ApiError::InvalidParams)
+            Err(NotFound)
         }
     }
 }

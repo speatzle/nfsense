@@ -1,3 +1,4 @@
+use serde::Serialize;
 use validator::Validate;
 
 use super::definitions::config::Config;
@@ -35,9 +36,30 @@ pub struct ConfigManager {
     shared_data: Arc<Mutex<SharedData>>,
 }
 
+pub struct ConfigTransaction<'a> {
+    finished: bool,
+    shared_data: MutexGuard<'a, SharedData>,
+    pub config: Config,
+}
+
 struct SharedData {
     current_config: Config,
     pending_config: Config,
+    changelog: Vec<Change>,
+}
+
+#[derive(Clone, Serialize)]
+pub struct Change {
+    pub action: ChangeAction,
+    pub path: &'static str,
+    pub id: String,
+}
+
+#[derive(Clone, Serialize)]
+pub enum ChangeAction {
+    Create,
+    Update,
+    Delete,
 }
 
 // Note, using unwarp on a mutex lock is ok since that only errors with mutex poisoning
@@ -49,6 +71,8 @@ impl ConfigManager {
                 current_config: read_file_to_config(CURRENT_CONFIG_PATH)?,
                 // TODO Dont Fail if pending config is missing, use current instead
                 pending_config: read_file_to_config(PENDING_CONFIG_PATH)?,
+                // TODO Figure out how to restore changes
+                changelog: Vec::new(),
             })),
         })
     }
@@ -61,6 +85,10 @@ impl ConfigManager {
         self.shared_data.lock().unwrap().pending_config.clone()
     }
 
+    pub fn get_pending_changelog(&self) -> Vec<Change> {
+        self.shared_data.lock().unwrap().changelog.clone()
+    }
+
     pub fn apply_pending_changes(&mut self) -> Result<(), ConfigError> {
         let mut data = self.shared_data.lock().unwrap();
         // TODO run Apply functions
@@ -69,6 +97,7 @@ impl ConfigManager {
         // TODO revert if config save fails
         // TODO Remove Pending Config File
         data.current_config = data.pending_config.clone();
+        data.changelog = Vec::new();
         Ok(())
     }
 
@@ -77,6 +106,7 @@ impl ConfigManager {
         // TODO Remove Pending Config File
 
         data.pending_config = data.current_config.clone();
+        data.changelog = Vec::new();
         Ok(())
     }
 
@@ -85,23 +115,18 @@ impl ConfigManager {
 
         ConfigTransaction {
             finished: false,
-            changes: data.pending_config.clone(),
+            config: data.pending_config.clone(),
             shared_data: data,
         }
     }
 }
 
-pub struct ConfigTransaction<'a> {
-    finished: bool,
-    shared_data: MutexGuard<'a, SharedData>,
-    pub changes: Config,
-}
-
 impl<'a> ConfigTransaction<'a> {
-    pub fn commit(mut self) -> Result<(), ConfigError> {
-        let ch = self.changes.clone();
+    pub fn commit(mut self, change: Change) -> Result<(), ConfigError> {
+        let ch = self.config.clone();
         ch.validate()?;
         self.shared_data.pending_config = ch.clone();
+        self.shared_data.changelog.push(change);
         write_config_to_file(PENDING_CONFIG_PATH, ch.clone())?;
         Ok(())
     }

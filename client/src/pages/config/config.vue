@@ -9,9 +9,8 @@ let loading = $ref(false);
 
 const columns = [
   {heading: 'Path', path: 'path'},
-  {heading: 'Type', path: 'type'},
-  {heading: 'From', path: 'from'},
-  {heading: 'To', path: 'to'},
+  {heading: 'Action', path: 'action'},
+  {heading: 'ID', path: 'id'},
 ];
 
 const displayData = $computed(() => {
@@ -20,9 +19,8 @@ const displayData = $computed(() => {
   for (const change of changelog) {
     data.push({
       path: change.path,
-      type: change.type,
-      from: change.from,
-      to: change.to,
+      action: change.action,
+      id: change.id,
     });
   }
   return data;

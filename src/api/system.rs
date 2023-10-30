@@ -1,3 +1,6 @@
+use crate::config_manager::{
+    Change, ChangeAction::Create, ChangeAction::Delete, ChangeAction::Update,
+};
 use crate::{definitions::system::User, state::RpcState};
 use jsonrpsee::types::Params;
 use pwhash::sha512_crypt;
@@ -9,6 +12,8 @@ use ApiError::NotFound;
 use ApiError::ParameterDeserialize;
 
 use super::{ApiError, GetStringID};
+
+const USER_CHANGE_PATH: &str = "system.user";
 
 #[derive(Serialize, Clone)]
 pub struct GetUser {
@@ -68,11 +73,11 @@ pub fn create_user(p: Params, state: &RpcState) -> Result<(), ApiError> {
     let mut tx = cm.start_transaction();
 
     if tx
-        .changes
+        .config
         .system
         .users
         .insert(
-            u.name,
+            u.name.clone(),
             User {
                 comment: match u.comment {
                     Some(c) => c,
@@ -83,8 +88,12 @@ pub fn create_user(p: Params, state: &RpcState) -> Result<(), ApiError> {
         )
         .is_none()
     {
-        tx.commit().map_err(ConfigError)?;
-        Ok(())
+        tx.commit(Change {
+            action: Create,
+            path: USER_CHANGE_PATH,
+            id: u.name,
+        })
+        .map_err(ConfigError)
     } else {
         tx.revert();
         Err(NotFound)
@@ -104,7 +113,7 @@ pub fn update_user(p: Params, state: &RpcState) -> Result<(), ApiError> {
     let mut cm = state.config_manager.clone();
     let mut tx = cm.start_transaction();
 
-    match tx.changes.system.users.get(&u.name) {
+    match tx.config.system.users.get(&u.name) {
         Some(user) => {
             // Only Update Password if field is not empty
             let hash = if u.password == "" {
@@ -113,8 +122,8 @@ pub fn update_user(p: Params, state: &RpcState) -> Result<(), ApiError> {
                 sha512_crypt::hash(u.password).map_err(HashError)?
             };
 
-            tx.changes.system.users.insert(
-                u.name,
+            tx.config.system.users.insert(
+                u.name.clone(),
                 User {
                     comment: match u.comment {
                         Some(c) => c,
@@ -123,7 +132,12 @@ pub fn update_user(p: Params, state: &RpcState) -> Result<(), ApiError> {
                     hash,
                 },
             );
-            Ok(())
+            tx.commit(Change {
+                action: Update,
+                path: USER_CHANGE_PATH,
+                id: u.name,
+            })
+            .map_err(ConfigError)
         }
         None => Err(NotFound),
     }
@@ -140,8 +154,14 @@ pub fn delete_user(p: Params, state: &RpcState) -> Result<(), ApiError> {
     let mut cm = state.config_manager.clone();
     let mut tx = cm.start_transaction();
 
-    match tx.changes.system.users.remove(&u.name) {
-        Some(_) => tx.commit().map_err(ConfigError),
+    match tx.config.system.users.remove(&u.name) {
+        Some(_) => tx
+            .commit(Change {
+                action: Delete,
+                path: USER_CHANGE_PATH,
+                id: u.name,
+            })
+            .map_err(ConfigError),
         None => {
             tx.revert();
             Err(NotFound)

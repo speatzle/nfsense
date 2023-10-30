@@ -84,9 +84,9 @@ const GetPeers: SearchProvider = async (o) => {
 
 export const editTypes: { [key: string]: { [key: string]: any } } = {
   'firewall': {
-    name: 'Firewall',
+    name: 'firewall',
     'forwardrules': {
-      name: 'ForwardRule',
+      name: 'forward_rule',
       idType: 'Number',
       validationSchema: toFormValidator(
         zod.object({
@@ -111,7 +111,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
       ],
     },
     'destinationnatrules': {
-      name: 'DestinationNATRule',
+      name: 'destination_nat_rule',
       idType: 'Number',
       validationSchema: toFormValidator(
         zod.object({
@@ -142,7 +142,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
       ],
     },
     'sourcenatrules': {
-      name: 'SourceNATRule',
+      name: 'source_nat_rule',
       idType: 'Number',
       validationSchema: toFormValidator(
         zod.object({
@@ -175,9 +175,9 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
     },
   },
   'network': {
-    name: 'Network',
+    name: 'network',
     'interfaces': {
-      name: 'Interface',
+      name: 'interface',
       validationSchema: toFormValidator(
         zod.object({
           name: zod.string(),
@@ -210,7 +210,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
       ],
     },
     'staticroutes': {
-      name: 'StaticRoute',
+      name: 'static_route',
       idType: 'Number',
       validationSchema: toFormValidator(
         zod.object({
@@ -231,9 +231,9 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
     },
   },
   'object': {
-    name: 'Object',
+    name: 'object',
     'addresses': {
-      name: 'Address',
+      name: 'address',
       validationSchema: toFormValidator(
         zod.object({
         }),
@@ -253,7 +253,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
       ],
     },
     'services': {
-      name: 'Service',
+      name: 'service',
       validationSchema: toFormValidator(
         zod.object({
         }),
@@ -276,9 +276,9 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
     },
   },
   'service': {
-    name: 'Service',
-    'dhcpv4servers': {
-      name: 'DHCPv4Server',
+    name: 'service',
+    'dhcpservers': {
+      name: 'dhcp_server',
       idType: 'Number',
       validationSchema: toFormValidator(
         zod.object({
@@ -303,7 +303,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
       ],
     },
     'ntpservers': {
-      name: 'NTPServer',
+      name: 'ntp_server',
       idType: 'Number',
       validationSchema: toFormValidator(
         zod.object({
@@ -319,7 +319,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
       ],
     },
     'dnsservers': {
-      name: 'DNSServer',
+      name: 'dns_server',
       idType: 'Number',
       validationSchema: toFormValidator(
         zod.object({
@@ -336,9 +336,9 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
     },
   },
   'vpn': {
-    name: 'VPN',
+    name: 'vpn',
     'wireguardinterfaces': {
-      name: 'WireguardInterface',
+      name: 'wireguard_interface',
       validationSchema: toFormValidator(
         zod.object({
         }),
@@ -357,7 +357,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
       ],
     },
     'wireguardpeers': {
-      name: 'WireguardPeer',
+      name: 'wireguard_peer',
       validationSchema: toFormValidator(
         zod.object({
         }),

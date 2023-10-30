@@ -24,21 +24,8 @@ async function load(){
   loading = false;
 }
 
-const displayData = $computed(() => {
-  let data: any;
-  data = [];
-  for (const name in users) {
-    data.push({
-      name,
-      comment: users[name].comment,
-    });
-  }
-  return data;
-});
-
-
 async function deleteUser(){
-  let res = await apiCall('system.delete_user', {name: displayData[selection[0]].name});
+  let res = await apiCall('system.delete_user', {name: users[selection[0]].name});
   if (res.Error === null) {
     console.debug('deleted user');
   } else {
@@ -48,7 +35,7 @@ async function deleteUser(){
 }
 
 async function editUser() {
-  p.router.push(`/system/users/edit/${  displayData[selection[0]].name}`);
+  p.router.push(`/system/users/edit/${  users[selection[0]].name}`);
 }
 
 onMounted(async() => {
@@ -58,7 +45,7 @@ onMounted(async() => {
 </script>
 
 <template>
-  <TableView title="Users" :columns="columns" :loading="loading" v-model:selection="selection" v-model:data="displayData" :table-props="{sort:true, sortSelf: true}">
+  <TableView title="Users" :columns="columns" :loading="loading" v-model:selection="selection" v-model:data="users" :table-props="{sort:true, sortSelf: true}">
     <button @click="load">Refresh</button>
     <router-link class="button" to="/system/users/edit">Create</router-link>
     <button @click="editUser" :disabled="selection.length != 1">Edit</button>

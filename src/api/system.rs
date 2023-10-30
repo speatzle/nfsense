@@ -3,6 +3,7 @@ use crate::config_manager::{
 };
 use crate::{definitions::system::User, state::RpcState};
 use jsonrpsee::types::Params;
+use jsonrpsee::RpcModule;
 use pwhash::sha512_crypt;
 use serde::{Deserialize, Serialize};
 
@@ -11,18 +12,43 @@ use ApiError::HashError;
 use ApiError::NotFound;
 use ApiError::ParameterDeserialize;
 
-use super::{ApiError, GetStringID};
+use super::ApiError;
 
 const USER_CHANGE_PATH: &str = "system.user";
 
+pub fn register_methods(module: &mut RpcModule<RpcState>) {
+    module.register_method("system.get_user", get_user).unwrap();
+
+    module
+        .register_method("system.get_users", get_users)
+        .unwrap();
+
+    module
+        .register_method("system.create_user", create_user)
+        .unwrap();
+
+    module
+        .register_method("system.update_user", update_user)
+        .unwrap();
+
+    module
+        .register_method("system.delete_user", delete_user)
+        .unwrap();
+}
+
 #[derive(Serialize, Clone)]
-pub struct GetUser {
+pub struct GetUserResult {
     name: String,
     comment: String,
 }
 
-pub fn get_user(p: Params, state: &RpcState) -> Result<GetUser, ApiError> {
-    let u: GetStringID = p.parse().map_err(ParameterDeserialize)?;
+#[derive(Deserialize)]
+pub struct GetUser {
+    id: String,
+}
+
+pub fn get_user(p: Params, state: &RpcState) -> Result<GetUserResult, ApiError> {
+    let u: GetUser = p.parse().map_err(ParameterDeserialize)?;
 
     match state
         .config_manager
@@ -31,7 +57,7 @@ pub fn get_user(p: Params, state: &RpcState) -> Result<GetUser, ApiError> {
         .users
         .get(&u.id)
     {
-        Some(user) => Ok(GetUser {
+        Some(user) => Ok(GetUserResult {
             name: u.id,
             comment: user.comment.clone(),
         }),
@@ -39,8 +65,8 @@ pub fn get_user(p: Params, state: &RpcState) -> Result<GetUser, ApiError> {
     }
 }
 
-pub fn get_users(_: Params, state: &RpcState) -> Result<Vec<GetUser>, ApiError> {
-    let mut res: Vec<GetUser> = Vec::new();
+pub fn get_users(_: Params, state: &RpcState) -> Result<Vec<GetUserResult>, ApiError> {
+    let mut res: Vec<GetUserResult> = Vec::new();
     for u in state
         .config_manager
         .get_pending_config()
@@ -48,7 +74,7 @@ pub fn get_users(_: Params, state: &RpcState) -> Result<Vec<GetUser>, ApiError> 
         .users
         .iter()
     {
-        res.push(GetUser {
+        res.push(GetUserResult {
             name: u.0.to_string(),
             comment: u.1.comment.clone(),
         })

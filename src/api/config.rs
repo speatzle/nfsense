@@ -1,10 +1,25 @@
 use jsonrpsee::types::Params;
+use jsonrpsee::RpcModule;
 
 use crate::config_manager::Change;
 use crate::state::RpcState;
 
 use super::ApiError;
 use super::ApiError::ConfigError;
+
+pub fn register_methods(module: &mut RpcModule<RpcState>) {
+    module
+        .register_method("config.get_pending_changelog", get_pending_changelog)
+        .unwrap();
+
+    module
+        .register_method("config.apply_pending_changes", apply_pending_changes)
+        .unwrap();
+
+    module
+        .register_method("config.discard_pending_changes", discard_pending_changes)
+        .unwrap();
+}
 
 pub fn get_pending_changelog(_: Params, state: &RpcState) -> Result<Vec<Change>, ApiError> {
     Ok(state.config_manager.clone().get_pending_changelog())

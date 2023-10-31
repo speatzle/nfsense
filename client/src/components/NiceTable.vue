@@ -4,7 +4,7 @@ import { useKeyModifier } from '@vueuse/core';
 const shiftState = $(useKeyModifier('Shift'));
 const ctrlState = $(useKeyModifier('Control'));
 
-const props = defineModel<{
+const props = defineModels<{
   columns?: {
     heading: string,
     path: string,

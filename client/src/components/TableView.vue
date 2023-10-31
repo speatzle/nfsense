@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-const props = defineModel<{
+const props = defineModels<{
   title: string,
   loading: boolean,
   columns?: {

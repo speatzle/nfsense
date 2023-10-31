@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import Vue from '@vitejs/plugin-vue';
 import Pages from 'vite-plugin-pages';
-import Markdown from 'vite-plugin-vue-markdown';
+import Markdown from 'unplugin-vue-markdown/vite';
 
 import Components from 'unplugin-vue-components/vite';
 import Icons from 'unplugin-icons/vite';

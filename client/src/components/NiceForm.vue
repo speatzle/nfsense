@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useForm } from 'vee-validate';
 
-const props = defineModel<{
+const props = defineModels<{
   title?: string
   validationSchema?: Record<string, string | Function>,
   sections: {

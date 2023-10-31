@@ -127,7 +127,7 @@ function focusIn() {
 function toggle(key: any) {
   if (multiple) {
     const mv = modelValue as Index[];
-    if (mv?.includes(key)) mv?.splice(mv?.indexOf(key), 1);
+    if (mv?.some((x: Index) => x == key)) mv?.splice(mv?.indexOf(key), 1);
     else mv?.push(key);
     return;
   }
@@ -205,10 +205,10 @@ function handleKeydown(e: KeyboardEvent) {
     <Transition name="fade-fast">
       <div tabindex="-1" class="dropdown" v-if="expanded">
         <div v-for="([key, option], index) in Object.entries(options)" :key="key"
-             :class="{selected: multiple ? modelValue?.includes(key) : key == modelValue, navigated: navigated === index + 1}"
+             :class="{selected: multiple ? modelValue?.some((x: Index) => x == key) : key == modelValue, navigated: navigated === index + 1}"
              @click="() => toggle(key)">
           <template v-if="multiple">
-            <i-material-symbols-check-box-outline v-if="modelValue?.includes(key)" width="1em" height="1em"/>
+            <i-material-symbols-check-box-outline v-if="modelValue?.some((x: Index) => x == key)" width="1em" height="1em"/>
             <i-material-symbols-check-box-outline-blank v-else width="1em" height="1em"/>
           </template>
           <div v-text="option.display"/>

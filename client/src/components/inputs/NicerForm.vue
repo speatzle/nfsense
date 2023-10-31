@@ -59,5 +59,7 @@ watch($$(modelValue), (val) => {
 </template>
 
 <style scoped>
-
+label::after {
+  content: ":";
+}
 </style>

@@ -89,6 +89,7 @@
       "vue/first-attribute-linebreak": "off",
       "vue/max-attributes-per-line": "off",
       "vue/html-closing-bracket-newline": "off",
+      "vue/no-dupe-keys": "off",
       "vue/singleline-html-element-content-newline": "off",
       "indent": [
         "error",

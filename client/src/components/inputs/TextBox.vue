@@ -1,7 +1,7 @@
 <script setup lang="ts">
 
 const props = defineModels<{
-  modelValue: string,
+  modelValue?: string,
 }>();
 let { modelValue } = $(props);
 

@@ -1,7 +1,7 @@
 use super::ApiError;
 use crate::{
     definitions::service::{DHCPServer, DNSServer, NTPServer},
-    get_things, get_vec_thing,
+    delete_vec_thing, get_things, get_vec_thing,
     state::RpcState,
 };
 use jsonrpsee::RpcModule;
@@ -23,6 +23,13 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
 
     module
         .register_method(
+            "service.delete_dhcp_server",
+            delete_vec_thing!(service.dhcp_servers),
+        )
+        .unwrap();
+
+    module
+        .register_method(
             "service.get_dns_server",
             get_vec_thing!(service.dns_servers),
         )
@@ -37,6 +44,13 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
 
     module
         .register_method(
+            "service.delete_dns_server",
+            delete_vec_thing!(service.dns_servers),
+        )
+        .unwrap();
+
+    module
+        .register_method(
             "service.get_ntp_server",
             get_vec_thing!(service.ntp_servers),
         )
@@ -46,6 +60,13 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .register_method::<Result<Vec<NTPServer>, ApiError>, _>(
             "service.get_ntp_servers",
             get_things!(service.ntp_servers),
+        )
+        .unwrap();
+
+    module
+        .register_method(
+            "service.delete_ntp_server",
+            delete_vec_thing!(service.ntp_servers),
         )
         .unwrap();
 }

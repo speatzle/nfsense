@@ -104,6 +104,71 @@ macro_rules! get_things {
     };
 }
 
+#[macro_export]
+macro_rules! delete_map_thing {
+    ($( $sub_system:ident ).+) => {
+        |params, state| {
+            use serde::{Deserialize, Serialize};
+
+            #[derive(Deserialize, Serialize)]
+            struct GetStringID {
+                id: String,
+            }
+
+            let t: GetStringID = params.parse().map_err(ApiError::ParameterDeserialize)?;
+
+            let mut cm = state.config_manager.clone();
+            let mut tx = cm.start_transaction();
+
+            match tx.config.$($sub_system).+.remove(&t.id) {
+                Some(_) => tx
+                    .commit(crate::config_manager::Change {
+                        action: crate::config_manager::ChangeAction::Delete,
+                        path: stringify!($($sub_system).+),
+                        id: t.id,
+                    })
+                    .map_err(ApiError::ConfigError),
+                None => {
+                    tx.revert();
+                    Err(ApiError::NotFound)
+                }
+            }
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! delete_vec_thing {
+    ($( $sub_system:ident ).+) => {
+        |params, state| {
+            use serde::{Deserialize, Serialize};
+
+            #[derive(Deserialize, Serialize)]
+            struct GetIntID {
+                id: i64,
+            }
+
+            let t: GetIntID = params.parse().map_err(ApiError::ParameterDeserialize)?;
+
+            let mut cm = state.config_manager.clone();
+            let mut tx = cm.start_transaction();
+
+            if tx.config.$($sub_system).+.len() > t.id as usize {
+                tx.config.$($sub_system).+.remove(t.id as usize);
+                tx.commit(crate::config_manager::Change {
+                    action: crate::config_manager::ChangeAction::Delete,
+                    path: stringify!($($sub_system).+),
+                    id: t.id.to_string(),
+                })
+                .map_err(ApiError::ConfigError)
+            } else {
+                tx.revert();
+                Err(ApiError::NotFound)
+            }
+        }
+    };
+}
+
 pub fn new_rpc_module(state: RpcState) -> RpcModule<RpcState> {
     let mut module = RpcModule::new(state);
 

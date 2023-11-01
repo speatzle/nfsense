@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use super::ApiError;
 use crate::definitions::vpn::{WireguardInterface, WireguardPeer};
 use crate::state::RpcState;
-use crate::{get_map_thing, get_things};
+use crate::{delete_map_thing, get_map_thing, get_things};
 use jsonrpsee::types::Params;
 use jsonrpsee::RpcModule;
 
@@ -28,6 +28,13 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
 
     module
         .register_method(
+            "vpn.wireguard.delete_interface",
+            delete_map_thing!(vpn.wireguard.interfaces),
+        )
+        .unwrap();
+
+    module
+        .register_method(
             "vpn.wireguard.get_peer",
             get_map_thing!(vpn.wireguard.peers),
         )
@@ -37,6 +44,13 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .register_method::<Result<HashMap<String, WireguardPeer>, ApiError>, _>(
             "vpn.wireguard.get_peers",
             get_things!(vpn.wireguard.peers),
+        )
+        .unwrap();
+
+    module
+        .register_method(
+            "vpn.wireguard.delete_peer",
+            delete_map_thing!(vpn.wireguard.peers),
         )
         .unwrap();
 }

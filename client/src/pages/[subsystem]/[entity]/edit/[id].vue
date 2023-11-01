@@ -14,9 +14,9 @@ async function load(){
   loading = true;
   let res: any;
   if (editTypes[subsystem][entity].idType == 'Number') {
-    res = await apiCall(`${subsystem }.${entity}.get`, {id: id as number - 0});
+    res = await apiCall(`${subsystem}.${entity}.get`, {id: id as number - 0});
   } else {
-    res = await apiCall(`${subsystem }.${entity}.get`, {id: id});
+    res = await apiCall(`${subsystem}.${entity}.get`, {id: id});
   }
 
   if (res.Error === null) {
@@ -30,7 +30,16 @@ async function load(){
 
 async function update(value: any) {
   console.debug('value', value);
-  let res = await apiCall(`${subsystem}.${entity}.update`, value);
+  let res: any;
+
+  if (editTypes[subsystem][entity].idType == 'Number') {
+    res = await apiCall(`${subsystem}.${entity}.update`, {id: id as number - 0, thing: value});
+  } else {
+    // TODO dont have name in value at all, see create (index.vue)
+    delete value.name;
+    res = await apiCall(`${subsystem}.${entity}.update`, {id: id, thing: value});
+  }
+
   if (res.Error === null) {
     p.toast.success(`Updated ${  editTypes[subsystem][entity].name}`);
     p.router.go(-1);

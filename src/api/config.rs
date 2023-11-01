@@ -9,15 +9,15 @@ use super::ApiError::ConfigError;
 
 pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
-        .register_method("config.get_pending_changelog", get_pending_changelog)
+        .register_method("config.pending_changes.log", get_pending_changelog)
         .unwrap();
 
     module
-        .register_method("config.apply_pending_changes", apply_pending_changes)
+        .register_method("config.pending_changes.apply", apply_pending_changes)
         .unwrap();
 
     module
-        .register_method("config.discard_pending_changes", discard_pending_changes)
+        .register_method("config.pending_changes.discard", discard_pending_changes)
         .unwrap();
 }
 

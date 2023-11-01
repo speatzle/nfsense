@@ -14,7 +14,7 @@ const columns = [
 
 async function load(){
   loading = true;
-  let res = await apiCall('system.get_users', {});
+  let res = await apiCall('system.users.list', {});
   if (res.Error === null) {
     users = res.Data;
     console.debug('users', users);
@@ -25,7 +25,7 @@ async function load(){
 }
 
 async function deleteUser(){
-  let res = await apiCall('system.delete_user', {name: users[selection[0]].name});
+  let res = await apiCall('system.users.delete', {name: users[selection[0]].name});
   if (res.Error === null) {
     console.debug('deleted user');
   } else {

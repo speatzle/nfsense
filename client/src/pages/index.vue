@@ -12,7 +12,7 @@ let loading = $ref(false);
 
 async function load(){
   loading = true;
-  let res = await apiCall('network.get_links', {});
+  let res = await apiCall('network.links.get', {});
   if (res.Error === null) {
     console.debug('links', res.Data);
     links = res.Data;

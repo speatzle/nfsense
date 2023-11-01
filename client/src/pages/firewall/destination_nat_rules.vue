@@ -19,7 +19,7 @@ const columns = [
 ];
 
 async function load(){
-  let res = await apiCall('firewall.get_destination_nat_rules', {});
+  let res = await apiCall('firewall.destination_nat_rules.list', {});
   if (res.Error === null) {
     rules = res.Data;
     console.debug('rules', rules);
@@ -29,7 +29,7 @@ async function load(){
 }
 
 async function deleteRule(){
-  let res = await apiCall('firewall.delete_destination_nat_rule', {index: selection[0]});
+  let res = await apiCall('firewall.destination_nat_rules.delete', {id: selection[0]});
   if (res.Error === null) {
     console.debug('deleted rule');
     p.toast.success('Deleted Rule');
@@ -41,7 +41,7 @@ async function deleteRule(){
 
 async function draggedRow(draggedRow: number, draggedOverRow: number) {
   console.log('dragged', draggedRow, draggedOverRow);
-  let res = await apiCall('firewall.move_destination_nat_rule', {index: draggedRow, to_index: draggedOverRow});
+  let res = await apiCall('firewall.destination_nat_rules.move', {index: draggedRow, to_index: draggedOverRow});
   if (res.Error === null) {
     console.debug('moved rule');
     p.toast.success('Moved Rule');
@@ -61,8 +61,8 @@ onMounted(async() => {
   <div>
     <TableView title="DNAT Rules" :columns="columns" :loading="loading" @dragged-row="draggedRow" v-model:selection="selection" v-model:data="rules" :table-props="{sort:true, sortSelf: true, draggable: true}">
       <button @click="load">Refresh</button>
-      <router-link class="button" to="/firewall/destinationnatrules/edit">Create</router-link>
-      <router-link class="button" :class="{ disabled: selection.length != 1 }" :to="'/firewall/destinationnatrules/edit/' + selection[0]">Edit</router-link>
+      <router-link class="button" to="/firewall/destination_nat_rules/edit">Create</router-link>
+      <router-link class="button" :class="{ disabled: selection.length != 1 }" :to="'/firewall/destination_nat_rules/edit/' + selection[0]">Edit</router-link>
       <button @click="deleteRule" :disabled="selection.length != 1">Delete</button>
     </TableView>
   </div>

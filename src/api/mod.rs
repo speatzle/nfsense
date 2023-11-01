@@ -93,13 +93,100 @@ macro_rules! get_vec_thing {
 }
 
 #[macro_export]
-macro_rules! get_things {
+macro_rules! list_things {
     ($( $sub_system:ident ).+) => {
         |_, state| {
             Ok(state
             .config_manager
             .get_pending_config()
             .$($sub_system).+)
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! create_vec_thing {
+    ($( $sub_system:ident ).+, $typ:ty) => {
+        |params, state| {
+            let t: $typ = params.parse().map_err(ApiError::ParameterDeserialize)?;
+
+            let mut cm = state.config_manager.clone();
+            let mut tx = cm.start_transaction();
+
+            tx.config.$($sub_system).+.push(t);
+            let id = {tx.config.$($sub_system).+.len() - 1}.to_string();
+            tx.commit(crate::config_manager::Change {
+                action: crate::config_manager::ChangeAction::Delete,
+                path: stringify!($($sub_system).+),
+                id,
+            })
+            .map_err(ApiError::ConfigError)
+
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! delete_map_thing {
+    ($( $sub_system:ident ).+) => {
+        |params, state| {
+            use serde::{Deserialize, Serialize};
+
+            #[derive(Deserialize, Serialize)]
+            struct GetStringID {
+                id: String,
+            }
+
+            let t: GetStringID = params.parse().map_err(ApiError::ParameterDeserialize)?;
+
+            let mut cm = state.config_manager.clone();
+            let mut tx = cm.start_transaction();
+
+            match tx.config.$($sub_system).+.remove(&t.id) {
+                Some(_) => tx
+                    .commit(crate::config_manager::Change {
+                        action: crate::config_manager::ChangeAction::Delete,
+                        path: stringify!($($sub_system).+),
+                        id: t.id,
+                    })
+                    .map_err(ApiError::ConfigError),
+                None => {
+                    tx.revert();
+                    Err(ApiError::NotFound)
+                }
+            }
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! delete_vec_thing {
+    ($( $sub_system:ident ).+) => {
+        |params, state| {
+            use serde::{Deserialize, Serialize};
+
+            #[derive(Deserialize, Serialize)]
+            struct GetIntID {
+                id: i64,
+            }
+
+            let t: GetIntID = params.parse().map_err(ApiError::ParameterDeserialize)?;
+
+            let mut cm = state.config_manager.clone();
+            let mut tx = cm.start_transaction();
+
+            if tx.config.$($sub_system).+.len() > t.id as usize {
+                tx.config.$($sub_system).+.remove(t.id as usize);
+                tx.commit(crate::config_manager::Change {
+                    action: crate::config_manager::ChangeAction::Delete,
+                    path: stringify!($($sub_system).+),
+                    id: t.id.to_string(),
+                })
+                .map_err(ApiError::ConfigError)
+            } else {
+                tx.revert();
+                Err(ApiError::NotFound)
+            }
         }
     };
 }

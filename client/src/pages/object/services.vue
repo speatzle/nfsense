@@ -56,7 +56,7 @@ function getServicePortRange(s:any): string {
 
 async function load(){
   loading = true;
-  let res = await apiCall('object.get_services', {});
+  let res = await apiCall('object.services.list', {});
   if (res.Error === null) {
     console.debug('services', res.Data);
     services = res.Data;
@@ -67,7 +67,7 @@ async function load(){
 }
 
 async function deleteService(){
-  let res = await apiCall('object.delete_service', {name: displayData[selection[0]].name});
+  let res = await apiCall('object.services.delete', {name: displayData[selection[0]].name});
   if (res.Error === null) {
     console.debug('deleted service');
   } else {

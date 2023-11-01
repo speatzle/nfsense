@@ -34,16 +34,12 @@ pub struct Service {
 #[serde(rename_all = "snake_case")]
 pub enum ServiceType {
     TCP {
-        source_port: u64,
-        source_port_end: Option<u64>,
-        destination_port: u64,
-        destination_port_end: Option<u64>,
+        source: PortDefinition,
+        destination: PortDefinition,
     },
     UDP {
-        source_port: u64,
-        source_port_end: Option<u64>,
-        destination_port: u64,
-        destination_port_end: Option<u64>,
+        source: PortDefinition,
+        destination: PortDefinition,
     },
     ICMP {
         code: u8,
@@ -51,4 +47,11 @@ pub enum ServiceType {
     Group {
         children: Vec<String>,
     },
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "snake_case")]
+pub enum PortDefinition {
+    Single { port: u64 },
+    Range { start_port: u64, end_port: u64 },
 }

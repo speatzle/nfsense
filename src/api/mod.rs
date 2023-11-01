@@ -19,6 +19,9 @@ pub enum ApiError {
     #[error("Not Found")]
     NotFound,
 
+    #[error("Already Exists")]
+    AlreadyExists,
+
     #[error("Hash Error")]
     HashError(#[from] pwhash::error::Error),
 

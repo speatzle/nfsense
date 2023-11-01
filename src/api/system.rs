@@ -7,6 +7,7 @@ use jsonrpsee::RpcModule;
 use pwhash::sha512_crypt;
 use serde::{Deserialize, Serialize};
 
+use ApiError::AlreadyExists;
 use ApiError::ConfigError;
 use ApiError::HashError;
 use ApiError::NotFound;
@@ -124,7 +125,7 @@ pub fn create_user(p: Params, state: &RpcState) -> Result<(), ApiError> {
         .map_err(ConfigError)
     } else {
         tx.revert();
-        Err(NotFound)
+        Err(AlreadyExists)
     }
 }
 

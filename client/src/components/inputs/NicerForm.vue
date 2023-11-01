@@ -62,4 +62,9 @@ watch($$(modelValue), (val) => {
 label::after {
   content: ":";
 }
+
+label {
+  border-left: 1px solid var(--cl-fg);
+  border-bottom: 1px solid var(--cl-fg);
+}
 </style>

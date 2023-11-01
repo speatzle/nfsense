@@ -16,13 +16,13 @@ import LinkAttributes from 'markdown-it-link-attributes';
 // https://vitejs.dev/config/
 export default defineConfig({
   server: {
-    "proxy": {
-      "/api": "http://localhost:8080",
-      "/login": "http://localhost:8080",
-      "/logout": "http://localhost:8080",
-      "/session": "http://localhost:8080",
-      "/ws": {
-        target: "ws://localhost:8080",
+    'proxy': {
+      '/api': 'http://localhost:8080',
+      '/login': 'http://localhost:8080',
+      '/logout': 'http://localhost:8080',
+      '/session': 'http://localhost:8080',
+      '/ws': {
+        target: 'ws://localhost:8080',
         ws: true,
       },
     },
@@ -96,8 +96,8 @@ export default defineConfig({
         '@vueuse/core',
         '@vueuse/head',
         {
-          from: "vue-toast-notification",
-          imports: ["useToast"],
+          from: 'vue-toast-notification',
+          imports: ['useToast'],
         },
       ],
       dts: 'src/generated/auto-imports.d.ts',

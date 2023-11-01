@@ -81,4 +81,7 @@ watchEffect(() => {
 }
 .variant { padding: 0.25rem; gap: 0.25rem; }
 .selected { background-color: var(--cl-bg-sl); }
+.enum-fields {
+  padding-left: 0px;
+}
 </style>

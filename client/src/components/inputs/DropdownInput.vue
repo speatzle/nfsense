@@ -29,11 +29,11 @@ const props = withDefaults(defineProps<{
   placeholder?: string,
 }>(), {
   modelValue: null,
-  search: "",
+  search: '',
   options: () => ({}),
   multiple: false,
   searchProvider: null,
-  placeholder: "Search...",
+  placeholder: 'Search...',
 });
 let { multiple, searchProvider, placeholder } = $(props);
 
@@ -62,14 +62,14 @@ onMounted(() => {
       await performSearch(unknownKeys);
       knownKeys = Object.keys(options);
       unknownKeys = (val as Index[]).filter(key => !knownKeys.includes(key.toString()));
-      for (let key of unknownKeys) console.warn(`Unknown key in DropdownInput:`, key/*, options*/);
+      for (let key of unknownKeys) console.warn('Unknown key in DropdownInput:', key/*, options*/);
       return modelValue = (val as Index[]).filter(key => knownKeys.includes(key.toString()));
     }
     if (!knownKeys.includes(val.toString())) {
       await performSearch([val]);
       knownKeys = Object.keys(options);
       if (!knownKeys.includes(val.toString()))
-        return console.warn(`Unknown key in DropdownInput:`, val/*, options*/);
+        return console.warn('Unknown key in DropdownInput:', val/*, options*/);
     }
     modelValue = val;
   }, { deep: true, immediate: true });
@@ -150,9 +150,9 @@ function toggle(key: any) {
 
 function handleKeydown(e: KeyboardEvent) {
   switch (e.key) {
-  case "Backspace":
-  case "Delete":
-    if (!modelValue || search !== "" || !multiple) break;
+  case 'Backspace':
+  case 'Delete':
+    if (!modelValue || search !== '' || !multiple) break;
     if (navigated === 0) modelValue.pop();
     else if (navigated > 0) navigated = 0;
     else {
@@ -161,21 +161,21 @@ function handleKeydown(e: KeyboardEvent) {
     }
     modelValue = modelValue;
     break;
-  case "ArrowUp":
+  case 'ArrowUp':
     navigated--;
     if (-navigated > selCount) navigated = 0;
     e.preventDefault(); // Prevent cursor from moving to the front/back
     break;
-  case "ArrowDown":
+  case 'ArrowDown':
     navigated++;
     if (navigated > Object.entries(options).length) navigated = 0;
     e.preventDefault(); // Prevent cursor from moving to the front/back
     break;
-  case "Enter":
+  case 'Enter':
     if (!expanded) expand();
     else if (navigated > 0) toggle(Object.entries(options)[navigated-1][0]);
     break;
-  case "Escape":
+  case 'Escape':
     if (navigated !== 0) navigated = 0;
     else expanded = false;
     break;

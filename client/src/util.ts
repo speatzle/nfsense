@@ -12,7 +12,7 @@ export function equals(a: any, b: any): boolean {
 }
 
 export function isNullish(value: any) {
-  return !!(value === null || value === undefined);
+  return (value === null || value === undefined);
 }
 
 export type Index = string | number | symbol;

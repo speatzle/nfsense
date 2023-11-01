@@ -20,7 +20,7 @@ const emit = defineEmits<{
 }>();
 
 async function draggedRow(draggedRow: number, draggedOverRow: number) {
-  emit("draggedRow", draggedRow, draggedOverRow);
+  emit('draggedRow', draggedRow, draggedOverRow);
 }
 
 </script>
@@ -31,6 +31,6 @@ async function draggedRow(draggedRow: number, draggedOverRow: number) {
       <slot/>
     </PageHeader>
     <div v-if="loading" >Loading...</div>
-    <NiceTable v-else :columns="columns" v-model:selection="selection" @draggedRow="draggedRow" v-bind="tableProps" :data="data"/>
+    <NiceTable v-else :columns="columns" v-model:selection="selection" @dragged-row="draggedRow" v-bind="tableProps" :data="data"/>
   </div>
 </template>

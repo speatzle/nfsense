@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { isNullish, Index, MaybeIndex } from '../../util';
+import { Index, MaybeIndex } from '../../util';
 
 const props = withDefaults(defineProps<{
   options: Record<Index, {

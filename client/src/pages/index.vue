@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import { apiCall } from '../api';
 
-let links = $ref([]);
+type Link = {
+  name: string,
+  carrier_state: string,
+  operational_state: string,
+}
+
+let links: Link[] = $ref([]);
 let loading = $ref(false);
 
 async function load(){
@@ -26,9 +32,11 @@ onMounted(async() => {
   <div style="overflow-y: auto;">
     <PageHeader title="Dashboard">
     </PageHeader>
-    <div v-if="!loading" v-for="(link, index) in links" :key="index">
-      <p>{{ link.name }} {{ link.carrier_state }} {{ link.operational_state }}</p>
-    </div>
+    <template v-if="!loading">
+      <div v-for="(link, index) in links" :key="index">
+        <p>{{ link.name }} {{ link.carrier_state }} {{ link.operational_state }}</p>
+      </div>
+    </template>
     <div v-else>
       Loading...
     </div>

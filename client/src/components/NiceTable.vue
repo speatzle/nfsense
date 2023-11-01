@@ -26,9 +26,7 @@ const emit = defineEmits<{
   (event: 'draggedRow', draggedRow: number, draggedOverRow: number): void,
 }>();
 
-if (selection == undefined) {
-  selection = [];
-}
+if (!selection) selection = [];
 
 const displayData = $computed(() => (sortSelf && sortBy !== '')
   ? data?.sort((a, b) => {
@@ -53,8 +51,9 @@ function toggleSorting(columnName: string) {
 }
 
 function rowSelection(index: number) {
+  if (!selection) selection = [];
   if (shiftState) {
-    if (selection.length === 0) {
+    if (!selection?.length) {
       selection = [index];
     } else {
       let last = selection[selection.length-1];
@@ -84,11 +83,11 @@ function rowSelection(index: number) {
       selection = [index];
     }
   }
-  emit("selectionChanged");
+  emit('selectionChanged');
 }
 
 function atPath(value: any, path: string): any {
-  for (const segment of path.split(".")) {
+  for (const segment of path.split('.')) {
     value = value[segment];
   }
   return value;
@@ -102,7 +101,7 @@ function dragDropRow() {
     data.splice(draggedRow, 1);
     data.splice(draggedOverRow, 0, row);
     data = data;
-    emit("draggedRow", draggedRow, draggedOverRow);
+    emit('draggedRow', draggedRow, draggedOverRow);
   }
 
   // Reset drag data
@@ -137,7 +136,7 @@ function dragDropRow() {
           @dragenter="() => draggedOverRow = index"
           @dragend="() => dragDropRow()"
           :class="{
-            'selected': selection.includes(index),
+            'selected': (selection ?? []).includes(index),
             'dragged-over-before': index === draggedOverRow && draggedOverRow < draggedRow,
             'dragged-over-after': index === draggedOverRow && draggedOverRow > draggedRow,
           }">

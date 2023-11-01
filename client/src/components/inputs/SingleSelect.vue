@@ -1,7 +1,7 @@
 <!-- Wrapper component that sets "multiple" on DropdownInput to false and declares its type to be an Index -->
 <script setup lang="ts">
-import { equals, MaybeIndex } from "../../util";
-import { Options, MaybeSearchProvider } from "./DropdownInput.vue";
+import { equals, MaybeIndex } from '../../util';
+import { Options, MaybeSearchProvider } from './DropdownInput.vue';
 const props = withDefaults(defineProps<{
   // Two-Way Bindings (v-model)
   modelValue?: MaybeIndex,
@@ -13,10 +13,10 @@ const props = withDefaults(defineProps<{
   placeholder?: string,
 }>(), {
   modelValue: null,
-  search: "",
+  search: '',
   options: () => ({}),
   searchProvider: null,
-  placeholder: "Search...",
+  placeholder: 'Search...',
 });
 
 const emit = defineEmits<{

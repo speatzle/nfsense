@@ -1,11 +1,12 @@
 <script setup lang="ts">
-const { title, noSpacer } = $(withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   title?: string,
   noSpacer?: boolean,
 }>(), {
-  title: "",
+  title: '',
   noSpacer: false,
-}));
+});
+let { title, noSpacer } = $(props);
 watchEffect(() => useTitle(`${title} - nfSense`));
 </script>
 <template>

@@ -26,9 +26,11 @@ onMounted(async () => {
   <div style="overflow-y: auto;">
     <PageHeader title="Wireguard Status">
     </PageHeader>
-    <div v-if="!loading" v-for="(line, index) in status.split('\n')" :key="index">
-      <p>{{ line }}</p>
-    </div>
+    <template v-if="!loading">
+      <div v-for="(line, index) in status.split('\n')" :key="index">
+        <p>{{ line }}</p>
+      </div>
+    </template>
     <div v-else>
       Loading...
     </div>

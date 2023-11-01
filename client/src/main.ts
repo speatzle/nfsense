@@ -5,11 +5,11 @@ import './global-styles/mlfe.css';
 import './global-styles/transitions.css';
 import 'vue-toast-notification/dist/theme-default.css';
 
-import PillBar from "./components/inputs/PillBar.vue";
-import TextBox from "./components/inputs/TextBox.vue";
-import NumberBox from "./components/inputs/NumberBox.vue";
-import MultilineTextBox from "./components/inputs/MultilineTextBox.vue";
-import CheckBox from "./components/inputs/CheckBox.vue";
+import PillBar from './components/inputs/PillBar.vue';
+import TextBox from './components/inputs/TextBox.vue';
+import NumberBox from './components/inputs/NumberBox.vue';
+import MultilineTextBox from './components/inputs/MultilineTextBox.vue';
+import CheckBox from './components/inputs/CheckBox.vue';
 import SingleSelect from './components/inputs/SingleSelect.vue';
 import MultiSelect from './components/inputs/MultiSelect.vue';
 

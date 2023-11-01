@@ -90,6 +90,7 @@
       "vue/max-attributes-per-line": "off",
       "vue/html-closing-bracket-newline": "off",
       "vue/no-dupe-keys": "off",
+      "vue/no-template-shadow": "off",
       "vue/singleline-html-element-content-newline": "off",
       "indent": [
         "error",

@@ -1,5 +1,6 @@
 use super::ApiError;
 use crate::{
+    create_vec_thing,
     definitions::network::{NetworkInterface, StaticRoute},
     delete_map_thing, delete_vec_thing, get_map_thing, get_vec_thing, list_things,
     state::RpcState,
@@ -19,6 +20,13 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .register_method::<Result<Vec<StaticRoute>, ApiError>, _>(
             "network.static_routes.list",
             list_things!(network.static_routes),
+        )
+        .unwrap();
+
+    module
+        .register_method(
+            "network.static_routes.create",
+            create_vec_thing!(network.static_routes, StaticRoute),
         )
         .unwrap();
 

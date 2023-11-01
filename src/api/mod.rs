@@ -105,6 +105,28 @@ macro_rules! list_things {
 }
 
 #[macro_export]
+macro_rules! create_vec_thing {
+    ($( $sub_system:ident ).+, $typ:ty) => {
+        |params, state| {
+            let t: $typ = params.parse().map_err(ApiError::ParameterDeserialize)?;
+
+            let mut cm = state.config_manager.clone();
+            let mut tx = cm.start_transaction();
+
+            tx.config.$($sub_system).+.push(t);
+            let id = {tx.config.$($sub_system).+.len() - 1}.to_string();
+            tx.commit(crate::config_manager::Change {
+                action: crate::config_manager::ChangeAction::Delete,
+                path: stringify!($($sub_system).+),
+                id,
+            })
+            .map_err(ApiError::ConfigError)
+
+        }
+    };
+}
+
+#[macro_export]
 macro_rules! delete_map_thing {
     ($( $sub_system:ident ).+) => {
         |params, state| {

@@ -17,22 +17,24 @@ use super::ApiError;
 const USER_CHANGE_PATH: &str = "system.user";
 
 pub fn register_methods(module: &mut RpcModule<RpcState>) {
-    module.register_method("system.get_user", get_user).unwrap();
-
     module
-        .register_method("system.get_users", get_users)
+        .register_method("system.users.get", get_user)
         .unwrap();
 
     module
-        .register_method("system.create_user", create_user)
+        .register_method("system.users.list", get_users)
         .unwrap();
 
     module
-        .register_method("system.update_user", update_user)
+        .register_method("system.users.create", create_user)
         .unwrap();
 
     module
-        .register_method("system.delete_user", delete_user)
+        .register_method("system.users.update", update_user)
+        .unwrap();
+
+    module
+        .register_method("system.users.delete", delete_user)
         .unwrap();
 }
 

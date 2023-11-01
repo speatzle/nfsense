@@ -1,7 +1,7 @@
 use super::ApiError;
 use crate::{
     definitions::object::{Address, Service},
-    delete_map_thing, get_map_thing, get_things,
+    delete_map_thing, get_map_thing, list_things,
     state::RpcState,
 };
 use jsonrpsee::RpcModule;
@@ -9,32 +9,32 @@ use std::collections::HashMap;
 
 pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
-        .register_method("object.get_service", get_map_thing!(object.services))
+        .register_method("object.services.get", get_map_thing!(object.services))
         .unwrap();
 
     module
         .register_method::<Result<HashMap<String, Service>, ApiError>, _>(
-            "object.get_services",
-            get_things!(object.services),
+            "object.services.list",
+            list_things!(object.services),
         )
         .unwrap();
 
     module
-        .register_method("object.delete_service", delete_map_thing!(object.services))
+        .register_method("object.services.delete", delete_map_thing!(object.services))
         .unwrap();
 
     module
-        .register_method("object.get_address", get_map_thing!(object.addresses))
+        .register_method("object.addresses.get", get_map_thing!(object.addresses))
         .unwrap();
 
     module
         .register_method::<Result<HashMap<String, Address>, ApiError>, _>(
-            "object.get_addresses",
-            get_things!(object.addresses),
+            "object.addresses.list",
+            list_things!(object.addresses),
         )
         .unwrap();
 
     module
-        .register_method("object.delete_address", delete_map_thing!(object.addresses))
+        .register_method("object.addresses.list", delete_map_thing!(object.addresses))
         .unwrap();
 }

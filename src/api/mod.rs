@@ -93,7 +93,7 @@ macro_rules! get_vec_thing {
 }
 
 #[macro_export]
-macro_rules! get_things {
+macro_rules! list_things {
     ($( $sub_system:ident ).+) => {
         |_, state| {
             Ok(state

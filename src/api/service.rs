@@ -1,7 +1,7 @@
 use super::ApiError;
 use crate::{
     definitions::service::{DHCPServer, DNSServer, NTPServer},
-    delete_vec_thing, get_things, get_vec_thing,
+    delete_vec_thing, get_vec_thing, list_things,
     state::RpcState,
 };
 use jsonrpsee::RpcModule;
@@ -9,63 +9,63 @@ use jsonrpsee::RpcModule;
 pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method(
-            "service.get_dhcp_server",
+            "service.dhcp_servers.get",
             get_vec_thing!(service.dhcp_servers),
         )
         .unwrap();
 
     module
         .register_method::<Result<Vec<DHCPServer>, ApiError>, _>(
-            "service.get_dhcp_servers",
-            get_things!(service.dhcp_servers),
+            "service.dhcp_servers.list",
+            list_things!(service.dhcp_servers),
         )
         .unwrap();
 
     module
         .register_method(
-            "service.delete_dhcp_server",
+            "service.dhcp_servers.delete",
             delete_vec_thing!(service.dhcp_servers),
         )
         .unwrap();
 
     module
         .register_method(
-            "service.get_dns_server",
+            "service.dns_servers.get",
             get_vec_thing!(service.dns_servers),
         )
         .unwrap();
 
     module
         .register_method::<Result<Vec<DNSServer>, ApiError>, _>(
-            "service.get_dns_servers",
-            get_things!(service.dns_servers),
+            "service.dns_servers.list",
+            list_things!(service.dns_servers),
         )
         .unwrap();
 
     module
         .register_method(
-            "service.delete_dns_server",
+            "service.dns_servers.delete",
             delete_vec_thing!(service.dns_servers),
         )
         .unwrap();
 
     module
         .register_method(
-            "service.get_ntp_server",
+            "service.ntp_servers.get",
             get_vec_thing!(service.ntp_servers),
         )
         .unwrap();
 
     module
         .register_method::<Result<Vec<NTPServer>, ApiError>, _>(
-            "service.get_ntp_servers",
-            get_things!(service.ntp_servers),
+            "service.ntp_servers.list",
+            list_things!(service.ntp_servers),
         )
         .unwrap();
 
     module
         .register_method(
-            "service.delete_ntp_server",
+            "service.ntp_servers.delete",
             delete_vec_thing!(service.ntp_servers),
         )
         .unwrap();

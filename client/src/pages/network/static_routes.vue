@@ -15,7 +15,7 @@ const columns = [
 
 async function load(){
   loading = true;
-  let res = await apiCall('network.get_static_routes', {});
+  let res = await apiCall('network.static_routes.list', {});
   if (res.Error === null) {
     console.debug('staticRoutes', res.Data);
     staticRoutes = res.Data;
@@ -26,7 +26,7 @@ async function load(){
 }
 
 async function deleteStaticRoutes(){
-  let res = await apiCall('network.delete_static_route', {index: selection[0]});
+  let res = await apiCall('network.static_routes.delete', {id: selection[0]});
   if (res.Error === null) {
     console.debug('deleted static routes');
   } else {
@@ -44,8 +44,8 @@ onMounted(async() => {
 <template>
   <TableView title="Static Routes" :columns="columns" :loading="loading" v-model:selection="selection" v-model:data="staticRoutes" :table-props="{sort:true, sortSelf: true}">
     <button @click="load">Refresh</button>
-    <router-link class="button" to="/network/staticroutes/edit">Create</router-link>
-    <router-link class="button" :class="{ disabled: selection.length != 1 }" :to="'/network/staticroutes/edit/' + selection[0]">Edit</router-link>
+    <router-link class="button" to="/network/static_routes/edit">Create</router-link>
+    <router-link class="button" :class="{ disabled: selection.length != 1 }" :to="'/network/static_routes/edit/' + selection[0]">Edit</router-link>
     <button @click="deleteStaticRoutes" :disabled="selection.length != 1">Delete</button>
   </TableView>
 </template>

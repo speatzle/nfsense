@@ -13,7 +13,7 @@ const columns = [
 ];
 
 async function load(){
-  let res = await apiCall('service.get_ntp_servers', {});
+  let res = await apiCall('service.ntp_servers.list', {});
   if (res.Error === null) {
     servers = res.Data;
     console.debug('rules', servers);
@@ -23,7 +23,7 @@ async function load(){
 }
 
 async function deleteRule(){
-  let res = await apiCall('service.delete_ntp_server', {index: selection[0]});
+  let res = await apiCall('service.ntp_server.delete', {id: selection[0]});
   if (res.Error === null) {
     console.debug('deleted server');
     p.toast.success('Deleted NTP Server');
@@ -43,8 +43,8 @@ onMounted(async() => {
   <div>
     <TableView title="NTP Servers" :columns="columns" :loading="loading" v-model:selection="selection" v-model:data="servers" :table-props="{sort:true, sortSelf: true}">
       <button @click="load">Refresh</button>
-      <router-link class="button" to="/service/ntpservers/edit">Create</router-link>
-      <router-link class="button" :class="{ disabled: selection.length != 1 }" :to="'/service/ntpservers/edit/' + selection[0]">Edit</router-link>
+      <router-link class="button" to="/service/ntp_servers/edit">Create</router-link>
+      <router-link class="button" :class="{ disabled: selection.length != 1 }" :to="'/service/ntp_servers/edit/' + selection[0]">Edit</router-link>
       <button @click="deleteRule" :disabled="selection.length != 1">Delete</button>
     </TableView>
   </div>

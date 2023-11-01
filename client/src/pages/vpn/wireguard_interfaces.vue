@@ -31,7 +31,7 @@ const displayData = $computed(() => {
 
 async function load(){
   loading = true;
-  let res = await apiCall('vpn.wireguard.get_interfaces', {});
+  let res = await apiCall('vpn.wireguard.interfaces.list', {});
   if (res.Error === null) {
     console.debug('interfaces', res.Data);
     interfaces = res.Data;
@@ -42,7 +42,7 @@ async function load(){
 }
 
 async function deleteInterface(){
-  let res = await apiCall('vpn.wireguard_delete_interface', {name: displayData[selection[0]].name});
+  let res = await apiCall('vpn.wireguard.interfaces.delete', {name: displayData[selection[0]].name});
   if (res.Error === null) {
     console.debug('deleted interface');
   } else {
@@ -52,7 +52,7 @@ async function deleteInterface(){
 }
 
 async function editInterface() {
-  p.router.push(`/vpn/wireguardinterfaces/edit/${  displayData[selection[0]].name}`);
+  p.router.push(`/vpn/wireguard_interfaces/edit/${  displayData[selection[0]].name}`);
 }
 
 onMounted(async() => {
@@ -64,7 +64,7 @@ onMounted(async() => {
 <template>
   <TableView title="Wireguard Interfaces" :columns="columns" :loading="loading" v-model:selection="selection" v-model:data="displayData" :table-props="{sort:true, sortSelf: true}">
     <button @click="load">Refresh</button>
-    <router-link class="button" to="/vpn/wireguardinterfaces/edit">Create</router-link>
+    <router-link class="button" to="/vpn/wireguard_interfaces/edit">Create</router-link>
     <button @click="editInterface" :disabled="selection.length != 1">Edit</button>
     <button @click="deleteInterface" :disabled="selection.length != 1">Delete</button>
   </TableView>

@@ -9,7 +9,7 @@ const { subsystem, entity } = $(props);
 
 async function create(value: any) {
   console.debug('value', value);
-  let res = await apiCall(`${editTypes[subsystem].name }.create_${ editTypes[subsystem][entity].name}`, value);
+  let res = await apiCall(`${editTypes[subsystem].name }.${ editTypes[subsystem][entity].name}.create`, value);
   if (res.Error === null) {
     p.toast.success(`Created ${  editTypes[subsystem][entity].name}`);
     p.router.go(-1);

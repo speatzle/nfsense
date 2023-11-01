@@ -13,7 +13,7 @@ const columns = [
 ];
 
 async function load(){
-  let res = await apiCall('service.get_dns_servers', {});
+  let res = await apiCall('service.dhcp_servers.list', {});
   if (res.Error === null) {
     servers = res.Data;
     console.debug('rules', servers);
@@ -23,10 +23,10 @@ async function load(){
 }
 
 async function deleteRule(){
-  let res = await apiCall('service.delete_dns_server', {index: selection[0]});
+  let res = await apiCall('service.dhcp_servers.delete', {index: selection[0]});
   if (res.Error === null) {
     console.debug('deleted server');
-    p.toast.success('Deleted DNS Server');
+    p.toast.success('Deleted DHCP Server');
   } else {
     console.debug('error', res);
   }
@@ -41,10 +41,10 @@ onMounted(async() => {
 
 <template>
   <div>
-    <TableView title="DNS Servers" :columns="columns" :loading="loading" v-model:selection="selection" v-model:data="servers" :table-props="{sort:true, sortSelf: true}">
+    <TableView title="DHCP v4 Servers" :columns="columns" :loading="loading" v-model:selection="selection" v-model:data="servers" :table-props="{sort:true, sortSelf: true}">
       <button @click="load">Refresh</button>
-      <router-link class="button" to="/service/dnsservers/edit">Create</router-link>
-      <router-link class="button" :class="{ disabled: selection.length != 1 }" :to="'/service/dnsservers/edit/' + selection[0]">Edit</router-link>
+      <router-link class="button" to="/service/dhcp_servers/edit">Create</router-link>
+      <router-link class="button" :class="{ disabled: selection.length != 1 }" :to="'/service/dhcp_servers/edit/' + selection[0]">Edit</router-link>
       <button @click="deleteRule" :disabled="selection.length != 1">Delete</button>
     </TableView>
   </div>

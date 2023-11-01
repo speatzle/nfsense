@@ -16,7 +16,7 @@ const columns = [
 
 async function load(){
   loading = true;
-  let res = await apiCall('object.get_addresses', {});
+  let res = await apiCall('object.addresses.list', {});
   if (res.Error === null) {
     addresses = res.Data;
     console.debug('addresses', addresses);
@@ -62,7 +62,7 @@ function getAddressValue(s: any): string {
 }
 
 async function deleteAddress(){
-  let res = await apiCall('object.delete_address', {name: displayData[selection[0]].name});
+  let res = await apiCall('object.addresses_delete', {id: displayData[selection[0]].name});
   if (res.Error === null) {
     console.debug('deleted address');
   } else {

@@ -14,9 +14,9 @@ async function load(){
   loading = true;
   let res: any;
   if (editTypes[subsystem][entity].idType == 'Number') {
-    res = await apiCall(`${editTypes[subsystem].name }.get_${ editTypes[subsystem][entity].name}`, {id: id as number - 0});
+    res = await apiCall(`${editTypes[subsystem].name }.${ editTypes[subsystem][entity].name}.get`, {id: id as number - 0});
   } else {
-    res = await apiCall(`${editTypes[subsystem].name }.get_${ editTypes[subsystem][entity].name}`, {id: id});
+    res = await apiCall(`${editTypes[subsystem].name }.${ editTypes[subsystem][entity].name}.get`, {id: id});
   }
 
   if (res.Error === null) {
@@ -30,7 +30,7 @@ async function load(){
 
 async function update(value: any) {
   console.debug('value', value);
-  let res = await apiCall(`${editTypes[subsystem].name }.update_${ editTypes[subsystem][entity].name}`, value);
+  let res = await apiCall(`${editTypes[subsystem].name }.${ editTypes[subsystem][entity].name}.update`, value);
   if (res.Error === null) {
     p.toast.success(`Updated ${  editTypes[subsystem][entity].name}`);
     p.router.go(-1);

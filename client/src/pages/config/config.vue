@@ -28,7 +28,7 @@ const displayData = $computed(() => {
 
 async function load(){
   loading = true;
-  let res = await apiCall('config.get_pending_changelog', {});
+  let res = await apiCall('config.pending_changes.log', {});
   if (res.Error === null) {
     console.debug('changelog', res.Data);
     changelog = res.Data;
@@ -39,7 +39,7 @@ async function load(){
 }
 
 async function apply(){
-  let res = await apiCall('config.apply_pending_changes', {});
+  let res = await apiCall('config.pending_changes.apply', {});
   if (res.Error === null) {
     console.debug('apply');
     p.toast.success('Applied Pending Config');
@@ -50,7 +50,7 @@ async function apply(){
 }
 
 async function discard(){
-  let res = await apiCall('config.discard_pending_changes', {});
+  let res = await apiCall('config.pending_changes.discard', {});
   if (res.Error === null) {
     console.debug('discard');
     p.toast.success('Discarded Pending Config');

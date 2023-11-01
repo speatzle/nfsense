@@ -35,6 +35,9 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method("object.addresses.list", delete_map_thing!(object.addresses))
+        .register_method(
+            "object.addresses.delete",
+            delete_map_thing!(object.addresses),
+        )
         .unwrap();
 }

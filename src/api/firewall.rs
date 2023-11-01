@@ -58,7 +58,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
 
     module
         .register_method::<Result<Vec<SourceNATRule>, ApiError>, _>(
-            "firewall.source_nat_rules.get",
+            "firewall.source_nat_rules.list",
             list_things!(firewall.source_nat_rules),
         )
         .unwrap();

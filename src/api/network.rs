@@ -1,9 +1,10 @@
 use super::ApiError;
 use crate::{
-    create_vec_thing,
+    create_map_thing, create_vec_thing,
     definitions::network::{NetworkInterface, StaticRoute},
     delete_map_thing, delete_vec_thing, get_map_thing, get_vec_thing, list_things,
     state::RpcState,
+    update_map_thing, update_vec_thing,
 };
 use jsonrpsee::RpcModule;
 use std::collections::HashMap;
@@ -32,6 +33,13 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
 
     module
         .register_method(
+            "network.static_routes.update",
+            update_vec_thing!(network.static_routes, StaticRoute),
+        )
+        .unwrap();
+
+    module
+        .register_method(
             "network.static_routes.delete",
             delete_vec_thing!(network.static_routes),
         )
@@ -45,6 +53,20 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .register_method::<Result<HashMap<String, NetworkInterface>, ApiError>, _>(
             "network.interfaces.list",
             list_things!(network.interfaces),
+        )
+        .unwrap();
+
+    module
+        .register_method(
+            "network.interfaces.create",
+            create_map_thing!(network.interfaces, NetworkInterface),
+        )
+        .unwrap();
+
+    module
+        .register_method(
+            "network.interfaces.update",
+            update_map_thing!(network.interfaces, NetworkInterface),
         )
         .unwrap();
 

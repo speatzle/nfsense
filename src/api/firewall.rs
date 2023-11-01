@@ -4,6 +4,7 @@ use crate::{
     definitions::firewall::{DestinationNATRule, ForwardRule, SourceNATRule},
     delete_vec_thing, get_vec_thing, list_things,
     state::RpcState,
+    update_vec_thing,
 };
 use jsonrpsee::RpcModule;
 
@@ -26,6 +27,13 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .register_method(
             "firewall.forward_rules.create",
             create_vec_thing!(firewall.forward_rules, ForwardRule),
+        )
+        .unwrap();
+
+    module
+        .register_method(
+            "firewall.forward_rules.update",
+            update_vec_thing!(firewall.forward_rules, ForwardRule),
         )
         .unwrap();
 
@@ -59,6 +67,13 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
 
     module
         .register_method(
+            "firewall.destination_nat_rules.update",
+            update_vec_thing!(firewall.destination_nat_rules, DestinationNATRule),
+        )
+        .unwrap();
+
+    module
+        .register_method(
             "firewall.destination_nat_rules.delete",
             delete_vec_thing!(firewall.destination_nat_rules),
         )
@@ -82,6 +97,13 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .register_method(
             "firewall.source_nat_rules.create",
             create_vec_thing!(firewall.source_nat_rules, SourceNATRule),
+        )
+        .unwrap();
+
+    module
+        .register_method(
+            "firewall.source_nat_rules.update",
+            update_vec_thing!(firewall.source_nat_rules, SourceNATRule),
         )
         .unwrap();
 

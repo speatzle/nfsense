@@ -108,6 +108,37 @@ macro_rules! list_things {
 }
 
 #[macro_export]
+macro_rules! create_map_thing {
+    ($( $sub_system:ident ).+, $typ:ty) => {
+        |params, state| {
+            use serde::{Deserialize, Serialize};
+
+            #[derive(Deserialize, Serialize)]
+            struct CreateThing {
+                id: String,
+                thing: $typ
+            }
+
+            let t: CreateThing = params.parse().map_err(ApiError::ParameterDeserialize)?;
+            let mut cm = state.config_manager.clone();
+            let mut tx = cm.start_transaction();
+
+            if tx.config.$($sub_system).+.insert(t.id.clone(), t.thing).is_none() {
+                tx.commit(crate::config_manager::Change {
+                    action: crate::config_manager::ChangeAction::Create,
+                    path: stringify!($($sub_system).+),
+                    id: t.id,
+                })
+                .map_err(ApiError::ConfigError)
+            } else {
+                tx.revert();
+                Err(ApiError::AlreadyExists)
+            }
+        }
+    };
+}
+
+#[macro_export]
 macro_rules! create_vec_thing {
     ($( $sub_system:ident ).+, $typ:ty) => {
         |params, state| {
@@ -119,12 +150,75 @@ macro_rules! create_vec_thing {
             tx.config.$($sub_system).+.push(t);
             let id = {tx.config.$($sub_system).+.len() - 1}.to_string();
             tx.commit(crate::config_manager::Change {
-                action: crate::config_manager::ChangeAction::Delete,
+                action: crate::config_manager::ChangeAction::Create,
                 path: stringify!($($sub_system).+),
                 id,
             })
             .map_err(ApiError::ConfigError)
+        }
+    };
+}
 
+#[macro_export]
+macro_rules! update_map_thing {
+    ($( $sub_system:ident ).+, $typ:ty) => {
+        |params, state| {
+            use serde::{Deserialize, Serialize};
+
+            #[derive(Deserialize, Serialize)]
+            struct CreateThing {
+                id: String,
+                thing: $typ
+            }
+
+            let t: CreateThing = params.parse().map_err(ApiError::ParameterDeserialize)?;
+            let mut cm = state.config_manager.clone();
+            let mut tx = cm.start_transaction();
+
+            if tx.config.$($sub_system).+.insert(t.id.clone(), t.thing).is_none() {
+                tx.revert();
+                Err(ApiError::NotFound)
+            } else {
+                tx.commit(crate::config_manager::Change {
+                    action: crate::config_manager::ChangeAction::Update,
+                    path: stringify!($($sub_system).+),
+                    id: t.id,
+                })
+                .map_err(ApiError::ConfigError)
+            }
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! update_vec_thing {
+    ($( $sub_system:ident ).+, $typ:ty) => {
+        |params, state| {
+            use serde::{Deserialize, Serialize};
+
+            #[derive(Deserialize, Serialize)]
+            struct CreateThing {
+                id: i64,
+                thing: $typ
+            }
+
+            let t: CreateThing = params.parse().map_err(ApiError::ParameterDeserialize)?;
+            let mut cm = state.config_manager.clone();
+            let mut tx = cm.start_transaction();
+
+            if tx.config.$($sub_system).+.len() > t.id as usize {
+                tx.config.$($sub_system).+[t.id as usize] = t.thing;
+
+                tx.commit(crate::config_manager::Change {
+                    action: crate::config_manager::ChangeAction::Update,
+                    path: stringify!($($sub_system).+),
+                    id: t.id.to_string(),
+                })
+                .map_err(ApiError::ConfigError)
+            } else {
+                tx.revert();
+                Err(ApiError::NotFound)
+            }
         }
     };
 }

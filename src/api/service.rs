@@ -4,6 +4,7 @@ use crate::{
     definitions::service::{DHCPServer, DNSServer, NTPServer},
     delete_vec_thing, get_vec_thing, list_things,
     state::RpcState,
+    update_vec_thing,
 };
 use jsonrpsee::RpcModule;
 
@@ -26,6 +27,13 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .register_method(
             "service.dhcp_servers.create",
             create_vec_thing!(service.dhcp_servers, DHCPServer),
+        )
+        .unwrap();
+
+    module
+        .register_method(
+            "service.dhcp_servers.update",
+            update_vec_thing!(service.dhcp_servers, DHCPServer),
         )
         .unwrap();
 
@@ -59,6 +67,13 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
 
     module
         .register_method(
+            "service.dns_servers.update",
+            update_vec_thing!(service.dns_servers, DNSServer),
+        )
+        .unwrap();
+
+    module
+        .register_method(
             "service.dns_servers.delete",
             delete_vec_thing!(service.dns_servers),
         )
@@ -82,6 +97,13 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .register_method(
             "service.ntp_servers.create",
             create_vec_thing!(service.ntp_servers, NTPServer),
+        )
+        .unwrap();
+
+    module
+        .register_method(
+            "service.ntp_servers.update",
+            update_vec_thing!(service.ntp_servers, NTPServer),
         )
         .unwrap();
 

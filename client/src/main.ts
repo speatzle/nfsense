@@ -7,6 +7,7 @@ import 'vue-toast-notification/dist/theme-default.css';
 
 import PillBar from './components/inputs/PillBar.vue';
 import TextBox from './components/inputs/TextBox.vue';
+import EnumInput from './components/inputs/EnumInput.vue';
 import NumberBox from './components/inputs/NumberBox.vue';
 import MultilineTextBox from './components/inputs/MultilineTextBox.vue';
 import CheckBox from './components/inputs/CheckBox.vue';
@@ -43,5 +44,7 @@ app.component('Field', Field);
 app.component('ErrorMessage', ErrorMessage);
 app.component('SingleSelect', SingleSelect);
 app.component('MultiSelect', MultiSelect);
+app.component('EnumInput', EnumInput);
+
 
 app.mount('#app');

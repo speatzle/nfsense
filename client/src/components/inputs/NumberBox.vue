@@ -1,7 +1,7 @@
 <script setup lang="ts">
 
 const props = defineModels<{
-  modelValue: number,
+  modelValue?: number,
   min?: number,
   max?: number,
 }>();

@@ -18,10 +18,10 @@ pub struct Address {
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum AddressType {
-    Host { host: String },
+    Host { address: String },
     Range { range: IpAddr },
     Network { network: IpNet },
-    Group { children: Vec<String> },
+    Group { members: Vec<String> },
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
@@ -31,7 +31,7 @@ pub struct Service {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "lowercase")]
 pub enum ServiceType {
     TCP {
         source: PortDefinition,
@@ -52,6 +52,7 @@ pub enum ServiceType {
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum PortDefinition {
+    Any,
     Single { port: u64 },
     Range { start_port: u64, end_port: u64 },
 }

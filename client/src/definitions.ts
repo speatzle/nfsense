@@ -4,7 +4,7 @@ import { SearchProvider, Options } from '~/components/inputs/DropdownInput.vue';
 import { apiCall } from './api';
 
 const GetHardwareInterfaces: SearchProvider = async (o) => {
-  let res = await apiCall('network.get_links', {});
+  let res = await apiCall('network.links.list', {});
   if (res.Error === null) {
     console.debug('links', res.Data);
     return Object.fromEntries(res.Data.map(r => [r.name, { display: r.name }]));
@@ -15,7 +15,7 @@ const GetHardwareInterfaces: SearchProvider = async (o) => {
 };
 
 const GetInterfaces: SearchProvider = async (o) => {
-  let res = await apiCall('network.get_interfaces', {});
+  let res = await apiCall('network.interfaces.list', {});
   if (res.Error === null) {
     console.debug('interfaces', res.Data);
     let obj = {} as Options;
@@ -32,7 +32,7 @@ const GetInterfaces: SearchProvider = async (o) => {
 };
 
 const GetAddresses: SearchProvider = async (o) => {
-  let res = await apiCall('object.get_addresses', {});
+  let res = await apiCall('object.addresses.list', {});
   if (res.Error === null) {
     console.debug('addresses', res.Data);
     let obj = {} as Options;
@@ -49,7 +49,7 @@ const GetAddresses: SearchProvider = async (o) => {
 };
 
 const GetServices: SearchProvider = async (o) => {
-  let res = await apiCall('Object.get_services', {});
+  let res = await apiCall('Object.services.list', {});
   if (res.Error === null) {
     console.debug('services', res.Data);
     let obj = {} as Options;
@@ -66,7 +66,7 @@ const GetServices: SearchProvider = async (o) => {
 };
 
 const GetPeers: SearchProvider = async (o) => {
-  let res = await apiCall('VPN.get_wireguard_peers', {});
+  let res = await apiCall('VPN.wireguard.peers.list', {});
   if (res.Error === null) {
     console.debug('peers', res.Data);
     let obj = {} as Options;
@@ -82,11 +82,28 @@ const GetPeers: SearchProvider = async (o) => {
   }
 };
 
+const PortDefinition: Object = {
+  'any': { display: 'Any'},
+  'single': {
+    display: 'Single',
+    fields: {
+      port: { is: 'NumberBox', label: 'Port'},
+    },
+  },
+  'range': {
+    display: 'Range',
+    fields: {
+      start_port: { is: 'NumberBox', label: 'Start Port'},
+      end_port: { is: 'NumberBox', label: 'End Port'},
+    },
+  },
+};
+
 export const editTypes: { [key: string]: { [key: string]: any } } = {
   'firewall': {
-    name: 'firewall',
-    'forwardrules': {
-      name: 'forward_rule',
+    name: 'Firewall',
+    'forward_rules': {
+      name: 'Forward Rule',
       idType: 'Number',
       validationSchema: toFormValidator(
         zod.object({
@@ -110,8 +127,8 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
         },
       ],
     },
-    'destinationnatrules': {
-      name: 'destination_nat_rule',
+    'destination_nat_rules': {
+      name: 'Destination NAT Rule',
       idType: 'Number',
       validationSchema: toFormValidator(
         zod.object({
@@ -141,8 +158,8 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
         },
       ],
     },
-    'sourcenatrules': {
-      name: 'source_nat_rule',
+    'source_nat_rules': {
+      name: 'Source NAT Rule',
       idType: 'Number',
       validationSchema: toFormValidator(
         zod.object({
@@ -175,110 +192,144 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
     },
   },
   'network': {
-    name: 'network',
+    name: 'Network',
     'interfaces': {
-      name: 'interface',
-      validationSchema: toFormValidator(
-        zod.object({
-          name: zod.string(),
-          type: zod.string(),
-          hardware_interface: zod.string().optional(),
-          vlan_id: zod.number().optional(),
-          comment: zod.string().optional(),
-        }),
-      ),
-      sections: [
-        {
-          fields: [
-            { key: 'name', label: 'Name', as: 'TextBox', default: 'placeholder' },
-            { key: 'type', label: 'Type', as: 'PillBar', props: { options: { hardware: { display: 'Hardware' }, vlan: { display: 'VLAN' }, bond: { display: 'Bond' }, bridge: { display: 'Bridge' } } } },
-            { key: 'hardware_device', label: 'Hardware Device', as: 'SingleSelect', enabled: (values: any) => (values['type'] == 'hardware'), props: { searchProvider: GetHardwareInterfaces } },
-            { key: 'vlan_parent', label: 'VLAN Parent', as: 'SingleSelect', enabled: (values: any) => (values['type'] == 'vlan'), props: { searchProvider: GetInterfaces } },
-            { key: 'vlan_id', label: 'VLAN ID', as: 'NumberBox', props: { min: 1, max: 4094 }, enabled: (values: any) => (values['type'] == 'vlan') },
-            { key: 'bond_members', label: 'Bond Members', as: 'MultiSelect', enabled: (values: any) => (values['type'] == 'bond'), props: { searchProvider: GetHardwareInterfaces } },
-            { key: 'bridge_members', label: 'Bridge Members', as: 'MultiSelect', enabled: (values: any) => (values['type'] == 'bridge'), props: { searchProvider: GetHardwareInterfaces } },
-          ],
-        },
-        {
-          title: 'Addressing',
-          fields: [
-            { key: 'addressing_mode', label: 'Addressing Mode', as: 'PillBar', props: { options: { none: { display: 'None' }, static: { display: 'Static' }, dhcp: { display: 'DHCP' } } } },
-            { key: 'address', label: 'Address', as: 'TextBox', enabled: (values: any) => (values['addressing_mode'] == 'static') },
-            { key: 'comment', label: 'Comment', as: 'MultilineTextBox' },
-          ],
-        },
-      ],
+      name: 'Interface',
+      fields: {
+        name: { is: 'TextBox', label: 'Name'},
+        alias: { is: 'TextBox', label: 'Alias'},
+        interface_type: { is: 'EnumInput', label: 'Type', props: { variants: {
+          'hardware': {
+            display: 'Hardware',
+            fields: {
+              device: { is: 'SingleSelect', label: 'Device', props: { searchProvider: GetHardwareInterfaces }},
+            },
+          },
+          'vlan': {
+            display: 'VLAN',
+            fields: {
+              vlan_parent: { is: 'SingleSelect', label: 'VLAN Parent', props: { searchProvider: GetInterfaces}},
+              vlan_id: { is: 'NumberBox', label: 'VLAN ID', props: { min: 1, max: 4094 }},
+            },
+          },
+          'bond': {
+            display: 'Bond',
+            fields: {
+              members: { is: 'MultiSelect', label: 'Members', props: { searchProvider: GetInterfaces}},
+            },
+          },
+          'bridge': {
+            display: 'Bridge',
+            fields: {
+              members: { is: 'MultiSelect', label: 'Members', props: { searchProvider: GetInterfaces}},
+            },
+          },
+        }}},
+        addressing_mode: { is: 'EnumInput', label: 'Addressing Mode', props: { variants: {
+          'none': { display: 'None' },
+          'static': {
+            display: 'Static',
+            fields: {
+              address: { is: 'TextBox', label: 'Address'},
+            },
+          },
+          'dhcp': { display: 'DHCP' },
+        }}},
+        comment: { is: 'TextBox', label: 'Comment'},
+      },
     },
-    'staticroutes': {
-      name: 'static_route',
+    'static_routes': {
+      name: 'Static Route',
       idType: 'Number',
       validationSchema: toFormValidator(
         zod.object({
           name: zod.string(),
         }),
       ),
-      sections: [
-        {
-          fields: [
-            { key: 'name', label: 'Name', as: 'TextBox' },
-            { key: 'interface', label: 'Interface', as: 'SingleSelect', props: { searchProvider: GetInterfaces } },
-            { key: 'gateway', label: 'Gateway', as: 'TextBox' },
-            { key: 'destination', label: 'Destination', as: 'TextBox' },
-            { key: 'metric', label: 'Metric', as: 'NumberBox' },
-          ],
-        },
-      ],
+      fields: {
+        name: { is: 'TextBox', label: 'Name'},
+        interface: { is: 'SingleSelect', label: 'Interface', props: { searchProvider: GetInterfaces} },
+        gatway: { is: 'TextBox', label: 'Gateway'},
+        destination: { is: 'TextBox', label: 'Destination'},
+        metric: { is: 'NumberBox', label: 'Metric'},
+      },
     },
   },
   'object': {
     name: 'object',
     'addresses': {
-      name: 'address',
-      validationSchema: toFormValidator(
-        zod.object({
-        }),
-      ),
-      sections: [
-        {
-          fields: [
-            { key: 'name', label: 'Name', as: 'TextBox', default: 'placeholder' },
-            { key: 'type', label: 'Type', as: 'PillBar', props: { options: { host: { display: 'Host' }, range: { display: 'Range' }, network: { display: 'Network' }, group: { display: 'Group' } } } },
-            { key: 'host', label: 'Host', as: 'TextBox', default: 'placeholder', enabled: (values: any) => (values['type'] == 'host') },
-            { key: 'range', label: 'Range', as: 'TextBox', default: 'placeholder', enabled: (values: any) => (values['type'] == 'range') },
-            { key: 'network', label: 'Network', as: 'TextBox', default: 'placeholder', enabled: (values: any) => (values['type'] == 'network') },
-            { key: 'children', label: 'Children', as: 'MultiSelect', enabled: (values: any) => (values['type'] == 'group'), props: { searchProvider: GetAddresses } },
-            { key: 'comment', label: 'Comment', as: 'MultilineTextBox' },
-          ],
-        },
-      ],
+      name: 'Address',
+      fields: {
+        name: { is: 'TextBox', label: 'Name'},
+        address_type: { is: 'EnumInput', label: 'Type', props: { variants: {
+          'host': {
+            display: 'Host',
+            fields: {
+              address: { is: 'TextBox', label: 'Address'},
+            },
+          },
+          'range': {
+            display: 'Range',
+            fields: {
+              range: { is: 'TextBox', label: 'Range'},
+            },
+          },
+          'network': {
+            display: 'Network',
+            fields: {
+              network: { is: 'TextBox', label: 'Network'},
+            },
+          },
+          'group': {
+            display: 'Group',
+            fields: {
+              members: { is: 'MultiSelect', label: 'Members', props: { searchProvider: GetAddresses}},
+            },
+          },
+        }}},
+        comment: { is: 'TextBox', label: 'Comment'},
+      },
     },
     'services': {
-      name: 'service',
-      validationSchema: toFormValidator(
-        zod.object({
-        }),
-      ),
-      sections: [
-        {
-          fields: [
-            { key: 'name', label: 'Name', as: 'TextBox', default: 'placeholder' },
-            { key: 'type', label: 'Type', as: 'PillBar', props: { options: { tcp: { display: 'TCP' }, udp: { display: 'UDP' }, icmp: { display: 'ICMP' }, group: { display: 'Group' } } } },
-            { key: 'sport_start', label: 'Source Port Start', as: 'NumberBox', enabled: (values: any) => (values['type'] == 'tcp' || values['type'] == 'udp') },
-            { key: 'sport_end', label: 'Source Port End', as: 'NumberBox', enabled: (values: any) => (values['type'] == 'tcp' || values['type'] == 'udp') },
-            { key: 'dport_start', label: 'Destination Port Start', as: 'NumberBox', enabled: (values: any) => (values['type'] == 'tcp' || values['type'] == 'udp') },
-            { key: 'dport_end', label: 'Destination Port End', as: 'NumberBox', enabled: (values: any) => (values['type'] == 'tcp' || values['type'] == 'udp') },
-            { key: 'icmp_code', label: 'ICMP Code', as: 'NumberBox', enabled: (values: any) => (values['type'] == 'icmp') },
-            { key: 'children', label: 'Children', as: 'MultiSelect', enabled: (values: any) => (values['type'] == 'group'), props: { searchProvider: GetServices } },
-            { key: 'comment', label: 'Comment', as: 'MultilineTextBox' },
-          ],
-        },
-      ],
+      name: 'Service',
+      fields: {
+        name: { is: 'TextBox', label: 'Name'},
+        service_type: { is: 'EnumInput', label: 'Type', props: { variants: {
+          'tcp': {
+            display: 'TCP',
+            fields: {
+              source: { is: 'EnumInput', label: 'Source', props: { variants: PortDefinition }},
+              destination: { is: 'EnumInput', label: 'Destination', props: { variants: PortDefinition }},
+            },
+          },
+          'udp': {
+            display: 'UDP',
+            fields: {
+              source: { is: 'EnumInput', label: 'Source', props: { variants: PortDefinition }},
+              destination: { is: 'EnumInput', label: 'Destination', props: { variants: PortDefinition }},
+            },
+          },
+          'icmp': {
+            display: 'ICMP',
+            fields: {
+              icmp_code: { is: 'NumberBox', label: 'ICMP Code'},
+            },
+          },
+          'group': {
+            display: 'Group',
+            fields: {
+              members: { is: 'MultiSelect', label: 'Members', props: { searchProvider: GetServices}},
+            },
+          },
+        }}},
+        comment: { is: 'TextBox', label: 'Comment'},
+      },
     },
   },
   'service': {
-    name: 'service',
-    'dhcpservers': {
-      name: 'dhcp_server',
+    name: 'Service',
+    'dhcp_servers': {
+      name: 'DHCP Server',
       idType: 'Number',
       validationSchema: toFormValidator(
         zod.object({
@@ -302,8 +353,8 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
         },
       ],
     },
-    'ntpservers': {
-      name: 'ntp_server',
+    'ntp_servers': {
+      name: 'NTP Server',
       idType: 'Number',
       validationSchema: toFormValidator(
         zod.object({
@@ -318,8 +369,8 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
         },
       ],
     },
-    'dnsservers': {
-      name: 'dns_server',
+    'dns_servers': {
+      name: 'DNS Server',
       idType: 'Number',
       validationSchema: toFormValidator(
         zod.object({
@@ -336,9 +387,9 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
     },
   },
   'vpn': {
-    name: 'vpn',
-    'wireguardinterfaces': {
-      name: 'wireguard_interface',
+    name: 'VPN',
+    'wireguard_interfaces': {
+      name: 'Wireguard Interface',
       validationSchema: toFormValidator(
         zod.object({
         }),
@@ -356,8 +407,8 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
         },
       ],
     },
-    'wireguardpeers': {
-      name: 'wireguard_peer',
+    'wireguard_peers': {
+      name: 'Wireguard Peer',
       validationSchema: toFormValidator(
         zod.object({
         }),
@@ -378,9 +429,9 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
     },
   },
   'system': {
-    name: 'system',
+    name: 'System',
     'users': {
-      name: 'user',
+      name: 'User',
       validationSchema: toFormValidator(
         zod.object({
         }),

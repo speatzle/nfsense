@@ -49,7 +49,7 @@ const GetAddresses: SearchProvider = async (o) => {
 };
 
 const GetServices: SearchProvider = async (o) => {
-  let res = await apiCall('Object.services.list', {});
+  let res = await apiCall('object.services.list', {});
   if (res.Error === null) {
     console.debug('services', res.Data);
     let obj = {} as Options;

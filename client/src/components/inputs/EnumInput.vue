@@ -1,6 +1,6 @@
 <script lang="ts">
 import { Index, MaybeIndex, equals } from '../../util';
-import NicerForm, { Fields } from './NicerForm.vue';
+import { Fields } from './NicerForm.vue';
 
 export type Variant = {
   fields?: Fields,
@@ -21,9 +21,11 @@ const props = withDefaults(defineProps<{
 
   // One-Way Bindings
   variants?: Variants,
+  label?: string,
 }>(), {
   modelValue: null,
   variants: () => ({}),
+  label: '',
 });
 const { variants } = $(props);
 
@@ -64,14 +66,15 @@ watchEffect(() => {
 
 </script>
 <template>
-  <div class="enum-input">
+  <div class="form">
+    <label v-text="label"/>
     <div class="pillbar">
-      <button class="variant" v-for="[index, variant] of Object.entries(variants)" :key="index" :class="{selected: currentVariant === index}" @click="() => currentVariant = index">
+      <button v-for="[index, variant] of Object.entries(variants)" :key="index" :class="{selected: currentVariant === index}" @click="() => currentVariant = index">
         <component v-if="variant.icon" :is="variant.icon"/>
         <template v-else>{{ variant.display }}</template>
       </button>
     </div>
-    <NicerForm class="enum-fields" v-if="currentVariant && variants[currentVariant]?.fields" :fields="variants[currentVariant].fields" v-model="formValue" :key="currentVariant"/>
+    <NicerForm v-if="currentVariant && variants[currentVariant]?.fields" :fields="variants[currentVariant].fields" v-model="formValue" :key="currentVariant"/>
   </div>
 </template>
 <style scoped>
@@ -79,9 +82,6 @@ watchEffect(() => {
   flex-flow: nowrap;
   gap: 0.25rem;
 }
-.variant { padding: 0.25rem; gap: 0.25rem; }
-.selected { background-color: var(--cl-bg-sl); }
-.enum-fields {
-  padding-left: 0px;
-}
+.pillbar > button { padding: 0.25rem; gap: 0.25rem; }
+.pillbar > .selected { background-color: var(--cl-bg-sl); }
 </style>

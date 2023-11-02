@@ -50,21 +50,12 @@ watch($$(modelValue), (val) => {
 
 <template>
   <div class="form">
-    <component v-if="heading" :is="`h${headingLevel}`" :text="heading"/>
-    <template v-for="[index, field] of Object.entries(fields)" :key="index">
-      <label v-if="field.label" v-text="field.label"/>
-      <component :is="field.is" v-model="modelValue[index]" v-bind="field.props"/>
-    </template>
+    <component v-if="heading" :is="`h${headingLevel}`">{{ heading }}</component>
+    <div class="form inner-form">
+      <template v-for="[index, field] of Object.entries(fields)" :key="index">
+        <label v-if="field.label && field.is !== 'EnumInput'" v-text="field.label"/>
+        <component :is="field.is" v-model="modelValue[index]" v-bind="field.is === 'EnumInput' ? Object.assign({label: field.label}, field.props) : field.props"/>
+      </template>
+    </div>
   </div>
 </template>
-
-<style scoped>
-label::after {
-  content: ":";
-}
-
-label {
-  border-left: 1px solid var(--cl-fg);
-  border-bottom: 1px solid var(--cl-fg);
-}
-</style>

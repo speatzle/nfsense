@@ -5,6 +5,7 @@ import './global-styles/mlfe.css';
 import './global-styles/transitions.css';
 import 'vue-toast-notification/dist/theme-default.css';
 
+import NicerForm from './components/inputs/NicerForm.vue';
 import PillBar from './components/inputs/PillBar.vue';
 import TextBox from './components/inputs/TextBox.vue';
 import EnumInput from './components/inputs/EnumInput.vue';
@@ -34,6 +35,7 @@ app.use(head);
 app.use(ToastPlugin);
 
 // Global Components
+app.component('NicerForm', NicerForm);
 app.component('PillBar', PillBar);
 app.component('TextBox', TextBox);
 app.component('NumberBox', NumberBox);

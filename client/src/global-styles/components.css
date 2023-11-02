@@ -25,18 +25,31 @@ input {
   padding: 0.25rem;
 }
 
-form, .form {
+/* Universal Form Style-Component */
+:is(form, .form) {
   display: grid;
   grid-template-columns: auto 1fr;
   padding: 0.5rem;
   gap: 0.5rem;
 }
-:is(form, .form) > :is(button, .button, h1) {
-  grid-column: 1 / 3;
+:is(form, .form) :is(form, .form) { /* Subform and EnumInput */
+  grid-column: 1 / 3; /* Maintenance: This column-end must match the column count of the host form, +1 */
+  grid-template-columns: subgrid; /* All descendants of a form align to that same form */
+  padding: 0px; /* To keep alignment, no padding is needed for those descendants */
+}
+:is(form, .form) :is(form, .form) > .inner-form { /* Soft-Nesting for Subform and EnumInput */
+  border-left: 1px solid var(--cl-fg);
+  padding-left: 0.5rem;
+}
+:is(form, .form) > :is(button, .button, h1, h2, h3, h4, h5, h6) {
+  grid-column: 1 / 3; /* Full-Span children */
 }
 :is(form, .form) > label {
-  grid-column: 1;
+  grid-column: 1; /* Re-align unbalanced grid => allows the last column(s) to be optional */
   padding: 0.25rem;
+}
+:is(form, .form) > label::after {
+  content: ":";
 }
 
 table {

@@ -1,10 +1,5 @@
 <script setup lang="ts">
-import SingleSelect from '../components/inputs/SingleSelect.vue';
 import { SearchProvider, Options } from '../components/inputs/DropdownInput.vue';
-import MultiSelect from '../components/inputs/MultiSelect.vue';
-import NicerForm from '../components/inputs/NicerForm.vue';
-import EnumInput from '../components/inputs/EnumInput.vue';
-import TextBox from '../components/inputs/TextBox.vue';
 
 const testValues: Options = {
   1: { display: 'Option 1' },
@@ -28,18 +23,24 @@ function genSP(indexIsChar: boolean): SearchProvider {
   <div>
     <PageHeader title="Test Page"/>
     <NicerForm :fields="{
-      Single: { is: SingleSelect, label: 'SingleSelect', props: { options: testValues, searchProvider: genSP(true) } },
-      Multiple: { is: MultiSelect, label: 'Multiselect', props: { options: testValues, searchProvider: genSP(false) } },
-      IP: { is: EnumInput, label: 'IP Address', props: { variants: {
+      Single: { is: 'SingleSelect', label: 'SingleSelect', props: { options: testValues, searchProvider: genSP(true) } },
+      Multiple: { is: 'MultiSelect', label: 'Multiselect', props: { options: testValues, searchProvider: genSP(false) } },
+      IP: { is: 'EnumInput', label: 'IP Address', props: { variants: {
         'dhcp': { display: 'DHCP' },
         'static-ipv4': {
           display: 'Static (IPV4)',
           fields: {
-            ip: { is: TextBox, label: 'IP Address + CIDR' },
-            gw: { is: TextBox, label: 'Gateway Address' },
+            ip: { is: 'TextBox', label: 'IP Address (CIDR)' },
+            gw: { is: 'TextBox', label: 'Gateway Address' },
           },
         },
       }}},
+      Subform: { is: 'NicerForm', props: { heading: 'Subform', fields: {
+        Text: { is: 'TextBox', label: 'Text' },
+        Subform2: { is: 'NicerForm', props: { heading: 'Subform2', fields: {
+          Text: { is: 'TextBox', label: 'Text' },
+        } } },
+      } } },
     }" v-model="vm"/>
     {{ vm }}
     <button @click="() => { vm.Multiple = [1]; }">Click me</button>

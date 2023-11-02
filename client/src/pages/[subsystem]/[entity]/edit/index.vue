@@ -7,16 +7,18 @@ const p = getPlugins();
 const props = $defineProps<{subsystem: string, entity: string}>();
 const { subsystem, entity } = $(props);
 
-async function create(value: any) {
-  console.debug('value', value);
+let vm: any = $ref({});
+
+async function create() {
+  console.debug('value', vm);
   let res: any;
   if (editTypes[subsystem][entity].idType == 'Number') {
-    res = await apiCall(`${subsystem }.${entity}.create`, value);
+    res = await apiCall(`${subsystem }.${entity}.create`, vm);
   } else {
     // TODO find way to only have a name/id field in the form on create and not put it into the value
-    let id = value.name;
-    delete value.name;
-    res = await apiCall(`${subsystem }.${entity}.create`, {id: id, thing: value});
+    let id = vm.name;
+    delete vm.name;
+    res = await apiCall(`${subsystem }.${entity}.create`, {id: id, thing: vm});
   }
 
   if (res.Error === null) {
@@ -32,7 +34,15 @@ async function create(value: any) {
   <div v-if="editTypes[subsystem][entity]">
     <PageHeader :title="'Create ' + editTypes[subsystem][entity].name">
     </PageHeader>
-    <NiceForm class="scroll cl-secondary" :submit="create" :discard="() => $router.go(-1)" :sections="editTypes[subsystem][entity].sections"/>
+    <NicerForm class="scroll cl-secondary" :fields="editTypes[subsystem][entity].fields" v-model="vm"/>
+    <div class="actions">
+      <div class="flex-grow"/>
+      <button @click="create">Submit</button>
+      <div class="space"/>
+      <button @click="$router.go(-1)">Discard</button>
+      <div class="flex-grow"/>
+    </div>
+    <p>{{ vm }}</p>
   </div>
   <div v-else>
     <PageHeader title="Error"/>

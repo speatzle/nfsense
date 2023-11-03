@@ -25,6 +25,7 @@ function genSP(indexIsChar: boolean): SearchProvider {
     <NicerForm :fields="{
       Single: { is: 'SingleSelect', label: 'SingleSelect', props: { options: testValues, searchProvider: genSP(true) } },
       Multiple: { is: 'MultiSelect', label: 'Multiselect', props: { options: testValues, searchProvider: genSP(false) } },
+      adv: { is: 'Heading', props: { caption: 'Subsection' } },
       IP: { is: 'EnumInput', label: 'IP Address', props: { variants: {
         'dhcp': { display: 'DHCP' },
         'static-ipv4': {

@@ -14,6 +14,7 @@ import MultilineTextBox from './components/inputs/MultilineTextBox.vue';
 import CheckBox from './components/inputs/CheckBox.vue';
 import SingleSelect from './components/inputs/SingleSelect.vue';
 import MultiSelect from './components/inputs/MultiSelect.vue';
+import Heading from './components/display/Heading.vue';
 
 import { Form, Field, ErrorMessage  } from 'vee-validate';
 
@@ -47,6 +48,7 @@ app.component('ErrorMessage', ErrorMessage);
 app.component('SingleSelect', SingleSelect);
 app.component('MultiSelect', MultiSelect);
 app.component('EnumInput', EnumInput);
+app.component('Heading', Heading);
 
 
 app.mount('#app');

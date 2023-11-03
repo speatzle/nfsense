@@ -66,7 +66,7 @@ const GetServices: SearchProvider = async (o) => {
 };
 
 const GetPeers: SearchProvider = async (o) => {
-  let res = await apiCall('VPN.wireguard.peers.list', {});
+  let res = await apiCall('vpn.wireguard.peers.list', {});
   if (res.Error === null) {
     console.debug('peers', res.Data);
     let obj = {} as Options;
@@ -105,90 +105,59 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
     'forward_rules': {
       name: 'Forward Rule',
       idType: 'Number',
-      validationSchema: toFormValidator(
-        zod.object({
-          name: zod.string(),
-          verdict: zod.string(),
-          counter: zod.boolean(),
-          comment: zod.string().optional(),
-        }),
-      ),
-      sections: [
-        {
-          fields: [
-            { key: 'name', label: 'Name', as: 'TextBox' },
-            { key: 'match.source_addresses', label: 'Source', as: 'MultiSelect', props: { searchProvider: GetAddresses } },
-            { key: 'match.destination_addresses', label: 'Destination', as: 'MultiSelect', props: { searchProvider: GetAddresses } },
-            { key: 'match.services', label: 'Services', as: 'MultiSelect', props: { searchProvider: GetServices } },
-            { key: 'verdict', label: 'Verdict', as: 'PillBar', props: { options: { accept: { display: 'Accept' }, drop: { display: 'Drop' }, continue: { display: 'Continue' } } } },
-            { key: 'counter', label: 'Counter', as: 'CheckBox' },
-            { key: 'comment', label: 'Comment', as: 'MultilineTextBox' },
-          ],
-        },
-      ],
+      fields: {
+        name: { is: 'TextBox', label: 'Name'},
+        source_addresses: { is: 'MultiSelect', label: 'Source', props: { searchProvider: GetAddresses}},
+        destination_addresses: { is: 'MultiSelect', label: 'Destination', props: { searchProvider: GetAddresses}},
+        services: { is: 'MultiSelect', label: 'Services', props: { searchProvider: GetServices}},
+        verdict: { is: 'EnumInput', label: 'Verdict', props: { variants: {
+          'accept': { display: 'Accept'},
+          'drop': { display: 'Drop'},
+          'continue': { display: 'Continue'},
+        }}},
+        counter: { is: 'CheckBox', label: 'Counter'},
+        comment: { is: 'TextBox', label: 'Comment'},
+      },
     },
     'destination_nat_rules': {
       name: 'Destination NAT Rule',
       idType: 'Number',
-      validationSchema: toFormValidator(
-        zod.object({
-          name: zod.string(),
-          verdict: zod.string(),
-          counter: zod.boolean(),
-          comment: zod.string().optional(),
-        }),
-      ),
-      sections: [
-        {
-          fields: [
-            { key: 'name', label: 'Name', as: 'TextBox' },
-            { key: 'match.source_addresses', label: 'Source', as: 'MultiSelect', props: { searchProvider: GetAddresses } },
-            { key: 'match.destination_addresses', label: 'Destination', as: 'MultiSelect', props: { searchProvider: GetAddresses } },
-            { key: 'match.services', label: 'Services', as: 'MultiSelect', props: { searchProvider: GetServices } },
-          ],
-        },
-        {
-          title: 'DNAT',
-          fields: [
-            { key: 'address', label: 'Destination', as: 'SingleSelect', props: { searchProvider: GetAddresses } },
-            { key: 'service', label: 'Service', as: 'SingleSelect', props: { searchProvider: GetServices } },
-            { key: 'counter', label: 'Counter', as: 'CheckBox' },
-            { key: 'comment', label: 'Comment', as: 'MultilineTextBox' },
-          ],
-        },
-      ],
+      fields: {
+        name: { is: 'TextBox', label: 'Name'},
+        source_addresses: { is: 'MultiSelect', label: 'Source', props: { searchProvider: GetAddresses}},
+        destination_addresses: { is: 'MultiSelect', label: 'Destination', props: { searchProvider: GetAddresses}},
+        services: { is: 'MultiSelect', label: 'Services', props: { searchProvider: GetServices}},
+        // TODO section DNAT
+        dnat_address: { is: 'SingleSelect', label: 'Destination', props: { searchProvider: GetAddresses}},
+        dnat_service: { is: 'SingleSelect', label: 'Service', props: { searchProvider: GetServices}},
+
+        counter: { is: 'CheckBox', label: 'Counter'},
+        comment: { is: 'TextBox', label: 'Comment'},
+      },
     },
     'source_nat_rules': {
       name: 'Source NAT Rule',
       idType: 'Number',
-      validationSchema: toFormValidator(
-        zod.object({
-          name: zod.string(),
-          verdict: zod.string(),
-          counter: zod.boolean(),
-          comment: zod.string().optional(),
-        }),
-      ),
-      sections: [
-        {
-          fields: [
-            { key: 'name', label: 'Name', as: 'TextBox' },
-            { key: 'match.source_addresses', label: 'Source', as: 'MultiSelect', props: { searchProvider: GetAddresses } },
-            { key: 'match.destination_addresses', label: 'Destination', as: 'MultiSelect', props: { searchProvider: GetAddresses } },
-            { key: 'match.services', label: 'Services', as: 'MultiSelect', props: { searchProvider: GetServices } },
-          ],
-        },
-        {
-          title: 'SNAT',
-          fields: [
-            { key: 'type', label: 'Type', as: 'PillBar', props: { options: { snat: { display: 'SNAT' }, masquerade: { display: 'Masquerade' } } } },
-            { key: 'address', label: 'Source', as: 'SingleSelect', enabled: (values: any) => (values['type'] == 'snat'), props: { searchProvider: GetAddresses } },
-            { key: 'service', label: 'Service', as: 'SingleSelect', enabled: (values: any) => (values['type'] == 'snat'), props: { searchProvider: GetServices } },
-            { key: 'counter', label: 'Counter', as: 'CheckBox' },
-            { key: 'comment', label: 'Comment', as: 'MultilineTextBox' },
-          ],
-        },
-      ],
+      fields: {
+        name: { is: 'TextBox', label: 'Name'},
+        source_addresses: { is: 'MultiSelect', label: 'Source', props: { searchProvider: GetAddresses}},
+        destination_addresses: { is: 'MultiSelect', label: 'Destination', props: { searchProvider: GetAddresses}},
+        services: { is: 'MultiSelect', label: 'Services', props: { searchProvider: GetServices}},
+        // TODO section SNAT
+        snat_type: { is: 'EnumInput', label: 'Type', props: { variants: {
+          'masquerade': { display: 'Masquerade' },
+          'snat': {
+            display: 'SNAT',
+            fields: {
+              address: { is: 'SingleSelect', label: 'Destination', props: { searchProvider: GetAddresses}},
+              service: { is: 'SingleSelect', label: 'Service', props: { searchProvider: GetServices}},
+            },
+          },
+        }}},
+
+        counter: { is: 'CheckBox', label: 'Counter'},
+        comment: { is: 'TextBox', label: 'Comment'},
+      },
     },
   },
   'network': {

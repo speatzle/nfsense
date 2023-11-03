@@ -53,9 +53,6 @@ pub enum Verdict {
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum SNATType {
-    SNAT {
-        snat_address: String,
-        snat_service: String,
-    },
+    SNAT { address: String, service: String },
     Masquerade,
 }

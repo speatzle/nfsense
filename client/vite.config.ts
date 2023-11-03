@@ -61,8 +61,8 @@ export default defineConfig({
       },
     }),
     Components({
-      extensions: ['vue', 'md'],
-      include: [/\.vue$/, /\.vue\?vue/, /\.md$/],
+      extensions: ['vue'],
+      include: [/\.vue$/, /\.vue\?vue/],
       dts: 'src/generated/components.d.ts',
       resolvers: [
         IconsResolver(),

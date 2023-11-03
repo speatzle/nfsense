@@ -1,6 +1,6 @@
 import { toFormValidator } from '@vee-validate/zod';
 import * as zod from 'zod';
-import { SearchProvider, Options } from '~/components/inputs/DropdownInput.vue';
+import { SearchProvider, Options } from '~/components/input/DropdownInput.vue';
 import { apiCall } from './api';
 
 const GetHardwareInterfaces: SearchProvider = async (o) => {

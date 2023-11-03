@@ -5,15 +5,15 @@ import './global-styles/mlfe.css';
 import './global-styles/transitions.css';
 import 'vue-toast-notification/dist/theme-default.css';
 
-import NicerForm from './components/inputs/NicerForm.vue';
-import PillBar from './components/inputs/PillBar.vue';
-import TextBox from './components/inputs/TextBox.vue';
-import EnumInput from './components/inputs/EnumInput.vue';
-import NumberBox from './components/inputs/NumberBox.vue';
-import MultilineTextBox from './components/inputs/MultilineTextBox.vue';
-import CheckBox from './components/inputs/CheckBox.vue';
-import SingleSelect from './components/inputs/SingleSelect.vue';
-import MultiSelect from './components/inputs/MultiSelect.vue';
+import NicerForm from './components/input/NicerForm.vue';
+import PillBar from './components/input/PillBar.vue';
+import TextBox from './components/input/TextBox.vue';
+import EnumInput from './components/input/EnumInput.vue';
+import NumberBox from './components/input/NumberBox.vue';
+import MultilineTextBox from './components/input/MultilineTextBox.vue';
+import CheckBox from './components/input/CheckBox.vue';
+import SingleSelect from './components/input/SingleSelect.vue';
+import MultiSelect from './components/input/MultiSelect.vue';
 import Heading from './components/display/Heading.vue';
 
 import { Form, Field, ErrorMessage  } from 'vee-validate';

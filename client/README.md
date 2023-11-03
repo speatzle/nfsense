@@ -1,18 +1,25 @@
-# Vue 3 + TypeScript + Vite
+# nfSense Web Client
+This folder contains the standard client for the nfSense firewall.
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+## Goals and Priorities
+The nfSense web client should be...
+- As reliable as possible
+- Pleasing to the eye and intuitive to new users
+- Fast, and not get in your way.
 
-## Recommended IDE Setup
+## Technology
+### General Structure
+The nfSense web client is a monolithic Single-Page Web-Application.
 
-- [VS Code](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+### Critical Dependencies
+We encourage any potential contributor to familiarize themselves with these tools and libraries before making changes, as they lie at the heart of the project.
+- Vue 3: Frontend Framework
+- Vite: Dev and Build Tool
+- Typescript: Adds Type Information to JS
+- Vue Macros: Replacement for the deprecated experimental Reactivity Transform feature of Vue 3
 
-## Type Support For `.vue` Imports in TS
-
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
-
-If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669) that is more performant. You can enable it by the following steps:
-
-1. Disable the built-in TypeScript Extension
-   1. Run `Extensions: Show Built-in Extensions` from VSCode's command palette
-   2. Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
-2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
+### Important Dependencies
+These libraries aren't mandatory to be able to work on the nfSense web client, this listing is merely meant to pre-empt redundancies.
+- ESLint: The standard JS linter, which we also use to enforce some code style choices.
+- Iconify: Icons (Could be replaced with custom ones)
+- Markdown-It: We prefer markdown for informational texts, and use this to render it on the frontend.

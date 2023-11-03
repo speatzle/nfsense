@@ -16,28 +16,44 @@ import ITimeServer from '~icons/carbon/server-time';
 import IWireguard from '~icons/simple-icons/wireguard';
 import IDHCPServer from '~icons/material-symbols/book-rounded';
 import IUser from '~icons/mdi/user';
+import IServer from '~icons/ri/server-line';
+import INodes from '~icons/fa6-solid/share-nodes';
+import IList from '~icons/material-symbols/format-list-bulleted';
+import IFirewall from '~icons/mdi/wall-fire';
+import INetwork from '~icons/mdi/lan';
 
 enum NavState { Open, Reduced, Collapsed };
 const NavStateCount = 3;
 let navState = $ref(NavState.Open);
-const navRoutes = {
-  '/': { icon: IDashboard, caption: 'Dashboard' },
-  '/firewall/forward_rules': { icon: IRule, caption: 'Rules' },
-  '/firewall/source_nat_rules': { icon: ISNAT, caption: 'SNAT' },
-  '/firewall/destination_nat_rules': { icon: IDNAT, caption: 'DNAT' },
-  '/network/interfaces': { icon: IEthernet, caption: 'Interfaces' },
-  '/network/static_routes': { icon: IStaticRoutes, caption: 'Static Routes' },
-  '/object/addresses': { icon: IAddress, caption: 'Addresses' },
-  '/object/services': { icon: IService, caption: 'Services' },
-  '/service/dhcp_servers': { icon: IDHCPServer, caption: 'DHCP Server' },
-  '/service/dns_servers': { icon: IDNSServer, caption: 'DNS Server' },
-  '/service/ntp_servers': { icon: ITimeServer, caption: 'NTP Server' },
-  '/vpn/wireguard_status': { icon: IWireguard, caption: 'Wireguard Status' },
-  '/vpn/wireguard_interfaces': { icon: IWireguard, caption: 'Wireguard Interfaces' },
-  '/vpn/wireguard_peers': { icon: IWireguard, caption: 'Wireguard Peers' },
-  '/system/users': { icon: IUser, caption: 'Users' },
-  '/config/config': { icon: IConfig, caption: 'Config' },
-};
+
+const navRoutesNew = [
+  { caption: 'Dashboard', icon: IDashboard, href: '/' },
+  { caption: 'Firewall', icon: IFirewall, children: [
+    { caption: 'Rules', icon: IRule, href: '/firewall/forward_rules' },
+    { caption: 'SNAT', icon: ISNAT, href: '/firewall/source_nat_rules' },
+    { caption: 'DNAT', icon: IDNAT, href: '/firewall/destination_nat_rules' },
+  ]},
+  { caption: 'Network', icon: INetwork, children: [
+    { caption: 'Interfaces', icon: IEthernet, href: '/network/interfaces' },
+    { caption: 'Static Routes', icon: IStaticRoutes, href: '/network/static_routes' },
+  ] },
+  { caption: 'Objects', icon: IList, children: [
+    { caption: 'Addresses', icon: IAddress, href: '/object/addresses' },
+    { caption: 'Services', icon: IService, href: '/object/services' },
+  ] },
+  { caption: 'Services', icon: IServer, children: [
+    { caption: 'DHCP', icon: IDHCPServer, href: '/service/dhcp_servers' },
+    { caption: 'DNS', icon: IDNSServer, href: '/service/dns_servers' },
+    { caption: 'NTP', icon: ITimeServer, href: '/service/ntp_servers' },
+    { caption: 'Wireguard', icon: IWireguard, children: [
+      { caption: 'Status', icon: IDashboard, href: '/vpn/wireguard_status' },
+      { caption: 'Interfaces', icon: IEthernet, href: '/vpn/wireguard_interfaces' },
+      { caption: 'Peers', icon: INodes, href: '/vpn/wireguard_peers' },
+    ]},
+  ] },
+  { caption: 'Users', icon: IUser, href: '/system/users' },
+  { caption: 'Config', icon: IConfig, href: '/config/config' },
+];
 
 enum AuthState { Unauthenticated, MfaRequired, Authenticated };
 let authState = $ref(AuthState.Unauthenticated);
@@ -130,12 +146,7 @@ onMounted(async() => {
 
     <div class="nav-body cl-secondary cl-force-dark">
       <div>
-        <template v-for="(options, route) in navRoutes" :key="route">
-          <router-link :to="route" class="button" @click="collapseNavIfMobile">
-            <component :is="options.icon"/>
-            {{ options.caption }}
-          </router-link>
-        </template>
+        <NavElements :routes="navRoutesNew" :click-handler="collapseNavIfMobile"/>
       </div>
       <div class="flex-row">
         <router-link class="button" to="/help"><i-material-symbols-help-outline/></router-link>
@@ -190,7 +201,7 @@ onMounted(async() => {
 .page-header { grid-area: PH; }
 .page-content { grid-area: PC; }
 
-.nav-head { font-weight: bold; }
+.nav-head { font-weight: bold; text-align: center; }
 .nav-head > svg { display: none; }
 .nav-head > h1 { flex-grow: 1; }
 

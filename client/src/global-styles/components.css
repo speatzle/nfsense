@@ -1,6 +1,11 @@
 /* CSS Components */
 button, .button {
-  all: unset;
+  text-decoration: unset;
+  border: unset;
+  text-align: unset;
+  font-weight: unset;
+  line-height: unset;
+  font: unset;
 
   display: flex;
   flex-flow: row nowrap;

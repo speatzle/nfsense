@@ -129,13 +129,14 @@ onMounted(async() => {
     <Portal from="page-header" class="page-header pad gap"/>
 
     <div class="nav-body cl-secondary cl-force-dark">
-      <template v-for="(options, route) in navRoutes" :key="route">
-        <router-link :to="route" class="button" @click="collapseNavIfMobile">
-          <component :is="options.icon"/>
-          {{ options.caption }}
-        </router-link>
-      </template>
-      <div class="flex-grow"/>
+      <div>
+        <template v-for="(options, route) in navRoutes" :key="route">
+          <router-link :to="route" class="button" @click="collapseNavIfMobile">
+            <component :is="options.icon"/>
+            {{ options.caption }}
+          </router-link>
+        </template>
+      </div>
       <div class="flex-row">
         <router-link class="button" to="/help"><i-material-symbols-help-outline/></router-link>
         <router-link class="button" to="/settings"><i-material-symbols-settings/></router-link>
@@ -195,6 +196,27 @@ onMounted(async() => {
 
 .nav-body .button { justify-content: left; }
 .nav-body .flex-row * { flex: 1; }
+
+.nav-body {
+  display: grid;
+  grid-template: 1fr auto/ 1fr;
+}
+
+.nav-body > :first-child, .page-content { overflow-y: auto; }
+.nav-body > :first-child::-webkit-scrollbar { display: none; }
+.nav-body > :first-child { scrollbar-width: none; }
+
+.nav-body .button:not(:hover) { background: transparent; }
+.nav-body > :first-child {
+  background:
+    linear-gradient(var(--cl-bg) 30%, rgba(0, 0, 0, 0)) center top, /* Top Cover */
+    linear-gradient(rgba(0, 0, 0, 0), var(--cl-bg) 70%) center bottom, /* Bottom Cover */
+    linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0)) center top, /* Top Shadow */
+    linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.5)) center bottom; /* Bottom Shadow */
+  background-repeat: no-repeat;
+  background-size: 100% 40px, 100% 40px, 100% 14px, 100% 14px;
+  background-attachment: local, local, scroll, scroll;
+}
 
 /* Page */
 .page-header {

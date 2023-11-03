@@ -15,17 +15,18 @@ export function setup(_UnauthorizedCallback: () => void) {
 }
 
 export async function apiCall(method: string, params: Record<string, any>): Promise<any>{
-  console.debug('Starting API Call...');
   try {
-    const result = await jrpc.call(method, params);
-    console.debug('api call result', result);
+    const pResult = jrpc.call(method, params);
+    console.debug('[API] Calling ', method, params, pResult);
+    const result = await pResult;
+    console.debug('[API] Response', method, result);
     return { Data: result, Error: null};
   } catch (ex: any){
     if (ex.code === 401) {
       UnauthorizedCallback();
     } else {
       $toast.error(`${method }: ${  ex.message}`);
-      console.debug('api call epic fail', ex);
+      console.debug('[API] Error   ', method, ex);
     }
     return { Data: null, Error: ex};
   }
@@ -62,7 +63,7 @@ export async function checkAuthentication() {
       if (last_hash !== response.data.commit_hash) {
         console.log('Detected New Backend Version, Reloading...');
         window.localStorage.removeItem('commit_hash');
-        window.location.reload();
+        // window.location.reload();
       }
     } else window.localStorage.setItem('commit_hash', response.data.commit_hash);
     return {auth: 2, error: null};

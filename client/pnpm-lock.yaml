@@ -30,6 +30,7 @@ specifiers:
   vee-validate: ^4.11.8
   vite: ^4.5.0
   vite-plugin-pages: ^0.31.0
+  vite-tsconfig-paths: ^4.2.1
   vue: ^3.3.7
   vue-i18n: ^9.6.2
   vue-router: ^4.2.5
@@ -76,6 +77,7 @@ devDependencies:
   unplugin-vue-macros: 2.6.2_q64zeehrg4w2rr4xbfppgk6lgq
   vite: 4.5.0
   vite-plugin-pages: 0.31.0_vite@4.5.0
+  vite-tsconfig-paths: 4.2.1_cnaluuumdmttzz4zpr3jp6tchm
   vue-tsc: 1.8.22_typescript@5.2.2
 
 packages:
@@ -2036,6 +2038,10 @@ packages:
       slash: 3.0.0
     dev: true
 
+  /globrex/0.1.2:
+    resolution: {integrity: sha512-uHJgbwAMwNFf5mLst7IWLNg14x1CkeqglJb/K3doi4dw6q2IvAAmM/Y81kevy83wP+Sst+nutFTYOGg3d1lsxg==}
+    dev: true
+
   /gopd/1.0.1:
     resolution: {integrity: sha512-d65bNlIadxvpb/A2abVdlqKqV563juRnZ1Wtk6s1sIR8uNsXR70xqIzVqxVf1eTqDunwT2MkczEeaezCKTZhwA==}
     dependencies:
@@ -3015,6 +3021,19 @@ packages:
       typescript: 5.2.2
     dev: true
 
+  /tsconfck/2.1.2_typescript@5.2.2:
+    resolution: {integrity: sha512-ghqN1b0puy3MhhviwO2kGF8SeMDNhEbnKxjK7h6+fvY9JAxqvXi8y5NAHSQv687OVboS2uZIByzGd45/YxrRHg==}
+    engines: {node: ^14.13.1 || ^16 || >=18}
+    hasBin: true
+    peerDependencies:
+      typescript: ^4.3.5 || ^5.0.0
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+    dependencies:
+      typescript: 5.2.2
+    dev: true
+
   /tslib/2.6.2:
     resolution: {integrity: sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==}
     dev: false
@@ -3310,6 +3329,23 @@ packages:
       yaml: 2.3.3
     transitivePeerDependencies:
       - supports-color
+    dev: true
+
+  /vite-tsconfig-paths/4.2.1_cnaluuumdmttzz4zpr3jp6tchm:
+    resolution: {integrity: sha512-GNUI6ZgPqT3oervkvzU+qtys83+75N/OuDaQl7HmOqFTb0pjZsuARrRipsyJhJ3enqV8beI1xhGbToR4o78nSQ==}
+    peerDependencies:
+      vite: '*'
+    peerDependenciesMeta:
+      vite:
+        optional: true
+    dependencies:
+      debug: 4.3.4
+      globrex: 0.1.2
+      tsconfck: 2.1.2_typescript@5.2.2
+      vite: 4.5.0
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
     dev: true
 
   /vite/4.5.0:

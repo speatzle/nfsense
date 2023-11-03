@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import TSConfigPaths from 'vite-tsconfig-paths';
 import Vue from '@vitejs/plugin-vue';
 import Pages from 'vite-plugin-pages';
 import Markdown from 'unplugin-vue-markdown/vite';
@@ -28,6 +29,7 @@ export default defineConfig({
     },
   },
   plugins: [
+    TSConfigPaths(),
     Macros({
       plugins: {
         vue: Vue({

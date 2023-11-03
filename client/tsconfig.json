@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
     "module": "ESNext",
     "target": "ESNext",
     "lib": ["DOM", "ESNext"],
@@ -20,8 +19,10 @@
       "vite-plugin-pages/client",
       "unplugin-vue-macros/macros-global"
     ],
+    "baseUrl": ".",
     "paths": {
-      "~/*": ["src/*"]
+      "~/*": ["src/*"],
+      "@/*": ["src/components/*"]
     }
   },
   "vueCompilerOptions": {

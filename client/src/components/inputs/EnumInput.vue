@@ -83,5 +83,9 @@ watchEffect(() => {
   gap: 0.25rem;
 }
 .pillbar > button { padding: 0.25rem; gap: 0.25rem; }
-.pillbar > .selected { background-color: var(--cl-bg-sl); }
+.pillbar > .selected {
+  background-color: var(--cl-bg-sl);
+  border: 1px solid var(--cl-fg);
+  padding: calc(0.25rem - 1px);
+}
 </style>

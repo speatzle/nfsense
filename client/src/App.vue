@@ -25,6 +25,7 @@ import INetwork from '~icons/mdi/lan';
 enum NavState { Open, Reduced, Collapsed };
 const NavStateCount = 3;
 let navState = $ref(NavState.Open);
+let reducedDynamicWidth = $ref(2.5);
 
 const navRoutesNew = [
   { caption: 'Dashboard', icon: IDashboard, href: '/' },
@@ -131,7 +132,7 @@ onMounted(async() => {
 </script>
 
 <template>
-  <div v-if="authState === AuthState.Authenticated" :class="{
+  <div v-if="authState === AuthState.Authenticated" :style="`--reduced-dynamic-width: ${reducedDynamicWidth}rem;`" :class="{
     'layout': 1,
     'nav-state-open': navState === NavState.Open,
     'nav-state-collapsed': navState === NavState.Collapsed,
@@ -146,7 +147,9 @@ onMounted(async() => {
 
     <div class="nav-body cl-secondary cl-force-dark">
       <div>
-        <NavElements :routes="navRoutesNew" :click-handler="collapseNavIfMobile"/>
+        <div>
+          <NavElements :routes="navRoutesNew" :click-handler="collapseNavIfMobile" @update:expanded-depth="(val) => reducedDynamicWidth = 2.5 + 0.5 * val"/>
+        </div>
       </div>
       <div class="flex-row">
         <router-link class="button" to="/help"><i-material-symbols-help-outline/></router-link>
@@ -194,6 +197,8 @@ onMounted(async() => {
     "NH PH"
     "NB PC";
 }
+.layout:not(.nav-state-open) { --reduced-width: var(--reduced-dynamic-width); }
+.nav-state-open { --reduced-width: 3.5rem; }
 .login { place-items: center; }
 
 .nav-head { grid-area: NH; }
@@ -202,6 +207,8 @@ onMounted(async() => {
 .page-content { grid-area: PC; }
 
 .nav-head { font-weight: bold; text-align: center; }
+.nav-head:focus { background: var(--cl-bg); }
+.nav-head:hover { background: var(--cl-bg-el); }
 .nav-head > svg { display: none; }
 .nav-head > h1 { flex-grow: 1; }
 
@@ -228,6 +235,22 @@ onMounted(async() => {
   background-size: 100% 40px, 100% 40px, 100% 14px, 100% 14px;
   background-attachment: local, local, scroll, scroll;
 }
+.nav-body > :first-child > * {
+  display: grid;
+  grid-template-columns: calc(var(--reduced-width) - 0.25rem) 1fr; /* -0.25rem adjustment is for halved 0.5rem padding */
+  place-self: start;
+  transition: grid-template-columns 0.2s ease-out;
+  width: 100%;
+}
+.nav-body > :first-child > * > *, .nav-dropdown > *, .nav-dropdown > :first-child, .nav-dropdown-body > * {
+  grid-column: 1 / 3;
+  display: grid;
+  grid-template-columns: subgrid;
+}
+
+:is(.nav-body > :first-child > * > *, .nav-dropdown > *, .nav-dropdown > :first-child, .nav-dropdown-body > *) > svg {
+  place-self: center;
+}
 
 /* Page */
 .page-header {
@@ -242,7 +265,6 @@ onMounted(async() => {
   left: 0%;
   width: 100%;
   transition: left 0.2s ease-out, width 0.2s ease-out;
-  --reduced-width: 2.5rem;
 }
 .nav-state-reduced .nav-body { width: calc(0% + var(--reduced-width)); }
 .nav-state-reduced .page-content {
@@ -259,6 +281,8 @@ onMounted(async() => {
   align-items: start;
 }
 
+.nav-state-reduced > .nav-body > .flex-row > * { width: var(--reduced-width); }
+
 /* Mobile Layout */
 @media only screen and (max-width: 768px) {
   .layout {
@@ -270,9 +294,8 @@ onMounted(async() => {
       "NB PC";
   }
 
-  .nav-head > svg {
-    display: initial;
-  }
+  .nav-head > svg { display: initial; }
+  .nav-head > h1 { text-align: left; }
 
   .nav-state-collapsed .page-header {
     left: calc(-100vw + 100%);

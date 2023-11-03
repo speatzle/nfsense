@@ -1,19 +1,34 @@
 <script setup lang="ts">
 import { NavRoute } from './NavElements.vue';
 
-withDefaults(defineProps<{
+let props = withDefaults(defineProps<{
+  // Two-Way Bindings
+  expanded?: boolean,
+
+  // One-Way Bindings
   icon?: string | Component,
   caption?: string,
   children: NavRoute[],
   clickHandler?: () => void,
 }>(), {
+  // Two-Way Bindings
+  expanded: false,
+
+  // One-Way Bindings
   icon: '',
   caption: '',
   children: () => [],
   clickHandler: () => {},
 });
 
-let expanded = $ref(false);
+const emit = defineEmits<{ (e: 'update:expandedDepth', value: number): void }>();
+
+// Local Variables for Two-Way Binding
+let expanded = $ref(props.expanded ?? false);
+let lowerDepth = $ref(0);
+
+// Sync to v-model
+watchEffect(() => emit('update:expandedDepth', expanded ? (lowerDepth || 0) + 1 : 0));
 
 function tallyChildren(routes: NavRoute[]) {
   let count = routes.length;
@@ -25,39 +40,38 @@ function tallyChildren(routes: NavRoute[]) {
 
 </script>
 <template>
-  <div :class="{'nav-dropdown-expanded': expanded}" :style="`--predicted-height: ${2.5 * tallyChildren(children)}rem;`">
+  <div :class="{'nav-dropdown': 1, 'nav-dropdown-expanded': expanded}" :style="`--predicted-height: ${2.5 * tallyChildren(children)}rem;`">
     <div class="button" @click="expanded = !expanded">
       <component v-if="(typeof icon !== 'string')" :is="icon"/>
       <template v-else>{{ icon }}</template>
-      <span v-text="caption"/>
-      <i-material-symbols-expand-more class="nav-dropdown-expand-icon" width="1em" height="1em"/>
+      <span>
+        {{ caption }}
+        <i-material-symbols-expand-more class="nav-dropdown-expand-icon" width="1em" height="1em"/>
+      </span>
     </div>
     <div class="nav-dropdown-body">
-      <NavElements :routes="children" :click-handler="clickHandler"/>
+      <NavElements :routes="children" :click-handler="clickHandler" @update:expanded-depth="(val) => lowerDepth = val"/>
     </div>
   </div>
 </template>
-<style>
-span {
-  flex-grow: 1;
-}
-.nav-dropdown-body > :is(button, .button) {
+<style scoped>
+.nav-dropdown-body {
+  max-height: 0px;
+  border-left: 1px solid white;
   padding-left: calc(0.5rem - 1px);
 }
 
-.nav-dropdown-body {
-  transition: all 0.1s ease-out;
-  max-height: 0px;
-  border-left: 1px solid white;
-}
-.nav-dropdown-expanded > .nav-dropdown-body {
-  max-height: var(--predicted-height);
+span {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.nav-dropdown-expand-icon {
-  transition: all 0.1s ease-out;
-}
-.nav-dropdown-expanded > div > .nav-dropdown-expand-icon {
-  transform: rotate(180deg);
-}
+.nav-dropdown-expand-icon { min-width: 1.5rem; min-height: 1.5rem; }
+
+/* Expanded State with Transitions */
+.nav-dropdown-expand-icon, .nav-dropdown-body { transition: all 0.1s ease-out; }
+.nav-dropdown-expanded > div > span > .nav-dropdown-expand-icon { transform: rotate(180deg); }
+.nav-dropdown-expanded > .nav-dropdown-body { max-height: var(--predicted-height); }
 </style>

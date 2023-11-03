@@ -1,32 +1,16 @@
 /* --- YACS --- */
 :root {
   /* Light/Dark-Agnostic Base Tints, defined as HSL */
-  --cl-base-0-h: 260; /* Color 0 Base Hue */
-  --cl-base-0-s: 20%; /* Color 0 Base Saturation */
-  --cl-base-0-l: 100%; /* Color 0 Base Lightness (Only usefull for darkening really) */
-  --cl-base-1-h: 260; /* Same definitions for another tint */
-  --cl-base-1-s: 50%;
-  --cl-base-1-l: 100%;
+  --cl-base-1-h: 260; /* Color 0 Base Hue */
+  --cl-base-1-s: 50%; /* Color 0 Base Saturation */
+  --cl-base-1-l: 100%; /* Color 0 Base Lightness (Only usefull for darkening really) */
 
   /* --- Linear Scaling with buffer --- */
-  --lin-0-buf: 5%; /* Edge-Buffer for lightness spectrum, reduces contrast */
-  --lin-0-flux: calc(var(--cl-base-0-l) - var(--lin-0-buf) * 2); /* Variable Lightness Space */
-  --lin-0-step: calc(var(--lin-0-flux) / 7);
-  /* Increment per Step, 8 steps - 1 = 7 increments */
+  /* Increment per Step, 16 steps - 1 = 15 increments */
   /* Actual color steps */
-  --cl-base-0-1: hsl(var(--cl-base-0-h), var(--cl-base-0-s), calc(var(--lin-0-buf) + var(--lin-0-step) * 0));
-  --cl-base-0-2: hsl(var(--cl-base-0-h), var(--cl-base-0-s), calc(var(--lin-0-buf) + var(--lin-0-step) * 1));
-  --cl-base-0-3: hsl(var(--cl-base-0-h), var(--cl-base-0-s), calc(var(--lin-0-buf) + var(--lin-0-step) * 2));
-  --cl-base-0-4: hsl(var(--cl-base-0-h), var(--cl-base-0-s), calc(var(--lin-0-buf) + var(--lin-0-step) * 3));
-  --cl-base-0-5: hsl(var(--cl-base-0-h), var(--cl-base-0-s), calc(var(--lin-0-buf) + var(--lin-0-step) * 4));
-  --cl-base-0-6: hsl(var(--cl-base-0-h), var(--cl-base-0-s), calc(var(--lin-0-buf) + var(--lin-0-step) * 5));
-  --cl-base-0-7: hsl(var(--cl-base-0-h), var(--cl-base-0-s), calc(var(--lin-0-buf) + var(--lin-0-step) * 6));
-  --cl-base-0-8: hsl(var(--cl-base-0-h), var(--cl-base-0-s), calc(var(--lin-0-buf) + var(--lin-0-step) * 7));
-
-  /* Repeated for another Tint */
-  --lin-1-buf: 5%;
-  --lin-1-flux: calc(var(--cl-base-1-l) - var(--lin-1-buf) * 2);
-  --lin-1-step: calc(var(--lin-1-flux) / 7);
+  --lin-1-buf: 5%; /* Edge-Buffer for lightness spectrum, reduces contrast */
+  --lin-1-flux: calc(var(--cl-base-1-l) - var(--lin-1-buf) * 2); /* Variable Lightness Space */
+  --lin-1-step: calc(var(--lin-1-flux) / 15);
   --cl-base-1-1: hsl(var(--cl-base-1-h), var(--cl-base-1-s), calc(var(--lin-1-buf) + var(--lin-1-step) * 0));
   --cl-base-1-2: hsl(var(--cl-base-1-h), var(--cl-base-1-s), calc(var(--lin-1-buf) + var(--lin-1-step) * 1));
   --cl-base-1-3: hsl(var(--cl-base-1-h), var(--cl-base-1-s), calc(var(--lin-1-buf) + var(--lin-1-step) * 2));
@@ -35,89 +19,47 @@
   --cl-base-1-6: hsl(var(--cl-base-1-h), var(--cl-base-1-s), calc(var(--lin-1-buf) + var(--lin-1-step) * 5));
   --cl-base-1-7: hsl(var(--cl-base-1-h), var(--cl-base-1-s), calc(var(--lin-1-buf) + var(--lin-1-step) * 6));
   --cl-base-1-8: hsl(var(--cl-base-1-h), var(--cl-base-1-s), calc(var(--lin-1-buf) + var(--lin-1-step) * 7));
+  --cl-base-1-9: hsl(var(--cl-base-1-h), var(--cl-base-1-s), calc(var(--lin-1-buf) + var(--lin-1-step) * 8));
+  --cl-base-1-10: hsl(var(--cl-base-1-h), var(--cl-base-1-s), calc(var(--lin-1-buf) + var(--lin-1-step) * 9));
+  --cl-base-1-11: hsl(var(--cl-base-1-h), var(--cl-base-1-s), calc(var(--lin-1-buf) + var(--lin-1-step) * 10));
+  --cl-base-1-12: hsl(var(--cl-base-1-h), var(--cl-base-1-s), calc(var(--lin-1-buf) + var(--lin-1-step) * 11));
+  --cl-base-1-13: hsl(var(--cl-base-1-h), var(--cl-base-1-s), calc(var(--lin-1-buf) + var(--lin-1-step) * 12));
+  --cl-base-1-14: hsl(var(--cl-base-1-h), var(--cl-base-1-s), calc(var(--lin-1-buf) + var(--lin-1-step) * 13));
+  --cl-base-1-15: hsl(var(--cl-base-1-h), var(--cl-base-1-s), calc(var(--lin-1-buf) + var(--lin-1-step) * 14));
+  --cl-base-1-16: hsl(var(--cl-base-1-h), var(--cl-base-1-s), calc(var(--lin-1-buf) + var(--lin-1-step) * 15));
 
-  /* Dark Mode Colors*/
-  --cl-0-1: var(--cl-base-0-1);
-  --cl-0-2: var(--cl-base-0-2);
-  --cl-0-3: var(--cl-base-0-3);
-  --cl-0-4: var(--cl-base-0-4);
-  --cl-0-5: var(--cl-base-0-5);
-  --cl-0-6: var(--cl-base-0-6);
-  --cl-0-7: var(--cl-base-0-7);
-  --cl-0-8: var(--cl-base-0-8);
-
+  /* Dark mode spectrum */
   --cl-1-1: var(--cl-base-1-1);
-  --cl-1-2: var(--cl-base-1-2);
-  --cl-1-3: var(--cl-base-1-3);
-  --cl-1-4: var(--cl-base-1-4);
-  --cl-1-5: var(--cl-base-1-5);
-  --cl-1-6: var(--cl-base-1-6);
-  --cl-1-7: var(--cl-base-1-7);
-  --cl-1-8: var(--cl-base-1-8);
+  --cl-1-2: var(--cl-base-1-3);
+  --cl-1-3: var(--cl-base-1-5);
+  --cl-1-4: var(--cl-base-1-7);
+  --cl-1-5: var(--cl-base-1-9);
+  --cl-1-6: var(--cl-base-1-11);
+  --cl-1-7: var(--cl-base-1-13);
+  --cl-1-8: var(--cl-base-1-15);
 }
-
 @media only screen and (prefers-color-scheme: light) {
-
-  /* Light Mode Colors, simply inverts the spectrum */
   :root {
-    --cl-0-1: var(--cl-base-0-8);
-    --cl-0-2: var(--cl-base-0-7);
-    --cl-0-3: var(--cl-base-0-6);
-    --cl-0-4: var(--cl-base-0-5);
-    --cl-0-5: var(--cl-base-0-4);
-    --cl-0-6: var(--cl-base-0-3);
-    --cl-0-7: var(--cl-base-0-2);
-    --cl-0-8: var(--cl-base-0-1);
-
-    --cl-1-1: var(--cl-base-1-8);
-    --cl-1-2: var(--cl-base-1-7);
-    --cl-1-3: var(--cl-base-1-6);
-    --cl-1-4: var(--cl-base-1-5);
-    --cl-1-5: var(--cl-base-1-4);
-    --cl-1-6: var(--cl-base-1-3);
-    --cl-1-7: var(--cl-base-1-2);
-    --cl-1-8: var(--cl-base-1-1);
+    --cl-1-1: var(--cl-base-1-16);
+    --cl-1-2: var(--cl-base-1-15);
+    --cl-1-3: var(--cl-base-1-14);
+    --cl-1-4: var(--cl-base-1-13);
+    --cl-1-5: var(--cl-base-1-12);
+    --cl-1-6: var(--cl-base-1-11);
+    --cl-1-7: var(--cl-base-1-4);
+    --cl-1-8: var(--cl-base-1-2);
   }
-}
 
-.cl-force-dark {
-  --cl-0-1: var(--cl-base-0-1);
-  --cl-0-2: var(--cl-base-0-2);
-  --cl-0-3: var(--cl-base-0-3);
-  --cl-0-4: var(--cl-base-0-4);
-  --cl-0-5: var(--cl-base-0-5);
-  --cl-0-6: var(--cl-base-0-6);
-  --cl-0-7: var(--cl-base-0-7);
-  --cl-0-8: var(--cl-base-0-8);
-
-  --cl-1-1: var(--cl-base-1-1);
-  --cl-1-2: var(--cl-base-1-2);
-  --cl-1-3: var(--cl-base-1-3);
-  --cl-1-4: var(--cl-base-1-4);
-  --cl-1-5: var(--cl-base-1-5);
-  --cl-1-6: var(--cl-base-1-6);
-  --cl-1-7: var(--cl-base-1-7);
-  --cl-1-8: var(--cl-base-1-8);
-}
-
-.cl-force-light {
-  --cl-0-1: var(--cl-base-0-8);
-  --cl-0-2: var(--cl-base-0-7);
-  --cl-0-3: var(--cl-base-0-6);
-  --cl-0-4: var(--cl-base-0-5);
-  --cl-0-5: var(--cl-base-0-4);
-  --cl-0-6: var(--cl-base-0-3);
-  --cl-0-7: var(--cl-base-0-2);
-  --cl-0-8: var(--cl-base-0-1);
-
-  --cl-1-1: var(--cl-base-1-8);
-  --cl-1-2: var(--cl-base-1-7);
-  --cl-1-3: var(--cl-base-1-6);
-  --cl-1-4: var(--cl-base-1-5);
-  --cl-1-5: var(--cl-base-1-4);
-  --cl-1-6: var(--cl-base-1-3);
-  --cl-1-7: var(--cl-base-1-2);
-  --cl-1-8: var(--cl-base-1-1);
+  .cl-force-dark { /* Copied from above */
+    --cl-1-1: var(--cl-base-1-2);
+    --cl-1-2: var(--cl-base-1-4);
+    --cl-1-3: var(--cl-base-1-6);
+    --cl-1-4: var(--cl-base-1-8);
+    --cl-1-5: var(--cl-base-1-10);
+    --cl-1-6: var(--cl-base-1-12);
+    --cl-1-7: var(--cl-base-1-14);
+    --cl-1-8: var(--cl-base-1-16);
+  }
 }
 
 /* --- Color Contexts --- */
@@ -143,7 +85,6 @@
   color: var(--cl-fg);
 }
 
-/* Secondary Color Context, in this case for the sidebar */
 .cl-secondary {
   /* You can replace the base-tint on a per-assignment basis, though one tint per context is usual */
   /* Just shift up all non-fg colors to create a lower-contrast/importance context */

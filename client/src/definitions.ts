@@ -294,43 +294,51 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
     'dhcp_servers': {
       name: 'DHCP Server',
       idType: 'Number',
-      validationSchema: toFormValidator(
-        zod.object({
-        }),
-      ),
-      sections: [
-        {
-          fields: [
-            { key: 'interface', label: 'Interface', as: 'SingleSelect', props: { searchProvider: GetInterfaces } },
-            { key: 'pool', label: 'Pool', as: 'MultiSelect', props: { searchProvider: GetAddresses } },
-            { key: 'gateway_mode', label: 'Gateway Mode', as: 'PillBar', props: { options: { none: { display: 'None' }, interface: { display: 'Interface' }, specify: { display: 'Specify' } } } },
-            { key: 'gateway', label: 'Gateway', as: 'SingleSelect', enabled: (values: any) => (values['gateway_mode'] == 'specify'), props: { searchProvider: GetAddresses } },
-            { key: 'dns_server_mode', label: 'DNS Server Mode', as: 'PillBar', props: { options: { none: { display: 'None' }, interface: { display: 'Interface' }, specify: { display: 'Specify' } } } },
-            { key: 'dns_servers', label: 'DNS Servers', as: 'MultiSelect', enabled: (values: any) => (values['dns_server_mode'] == 'specify'), props: { searchProvider: GetAddresses } },
-            { key: 'ntp_server_mode', label: 'NTP Server Mode', as: 'PillBar', props: { options: { none: { display: 'None' }, interface: { display: 'Interface' }, specify: { display: 'Specify' } } } },
-            { key: 'ntp_servers', label: 'NTP Servers', as: 'MultiSelect', enabled: (values: any) => (values['ntp_server_mode'] == 'specify'), props: { searchProvider: GetAddresses } },
-            { key: 'default_lease_time', label: 'Default Lease Time', as: 'NumberBox' },
-            { key: 'max_lease_time', label: 'Max Lease Time', as: 'NumberBox' },
-            { key: 'comment', label: 'Comment', as: 'MultilineTextBox' },
-          ],
-        },
-      ],
+      fields: {
+        interface: { is: 'SingleSelect', label: 'Interface', props: { searchProvider: GetInterfaces} },
+        pool: { is: 'MultiSelect', label: 'Pool', props: { searchProvider: GetAddresses} },
+        gateway_mode: { is: 'EnumInput', label: 'Gateway Mode', props: { variants: {
+          'none': { display: 'None' },
+          'interface': { display: 'Interface' },
+          'specify': {
+            display: 'Specify',
+            fields: {
+              gateway: { is: 'SingleSelect', label: 'Gateway', props: { searchProvider: GetAddresses} },
+            },
+          },
+        }}},
+        dns_server_mode: { is: 'EnumInput', label: 'DNS Server Mode', props: { variants: {
+          'none': { display: 'None' },
+          'interface': { display: 'Interface' },
+          'specify': {
+            display: 'Specify',
+            fields: {
+              servers: { is: 'MultiSelect', label: 'DNS Servers', props: { searchProvider: GetAddresses} },
+            },
+          },
+        }}},
+        ntp_server_mode: { is: 'EnumInput', label: 'NTP Server Mode', props: { variants: {
+          'none': { display: 'None' },
+          'interface': { display: 'Interface' },
+          'specify': {
+            display: 'Specify',
+            fields: {
+              servers: { is: 'MultiSelect', label: 'NTP Servers', props: { searchProvider: GetAddresses} },
+            },
+          },
+        }}},
+        default_lease_time: { is: 'NumberBox', label: 'Default Lease Time'},
+        max_lease_time: { is: 'NumberBox', label: 'Max Lease Time'},
+        comment: { is: 'MultilineTextBox', label: 'Comment'},
+      },
     },
     'ntp_servers': {
       name: 'NTP Server',
       idType: 'Number',
-      validationSchema: toFormValidator(
-        zod.object({
-        }),
-      ),
-      sections: [
-        {
-          fields: [
-            { key: 'interface', label: 'Interface', as: 'SingleSelect', props: { searchProvider: GetInterfaces } },
-            { key: 'comment', label: 'Comment', as: 'MultilineTextBox' },
-          ],
-        },
-      ],
+      fields: {
+        interface: { is: 'SingleSelect', label: 'Interface', props: { searchProvider: GetInterfaces} },
+        comment: { is: 'MultilineTextBox', label: 'Comment'},
+      },
     },
     'dns_servers': {
       name: 'DNS Server',
@@ -339,14 +347,10 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
         zod.object({
         }),
       ),
-      sections: [
-        {
-          fields: [
-            { key: 'interface', label: 'Interface', as: 'SingleSelect', props: { searchProvider: GetInterfaces } },
-            { key: 'comment', label: 'Comment', as: 'MultilineTextBox' },
-          ],
-        },
-      ],
+      fields: {
+        interface: { is: 'SingleSelect', label: 'Interface', props: { searchProvider: GetInterfaces} },
+        comment: { is: 'MultilineTextBox', label: 'Comment'},
+      },
     },
   },
   'vpn': {

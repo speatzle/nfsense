@@ -208,17 +208,13 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
     'static_routes': {
       name: 'Static Route',
       idType: 'Number',
-      validationSchema: toFormValidator(
-        zod.object({
-          name: zod.string(),
-        }),
-      ),
       fields: {
         name: { is: 'TextBox', label: 'Name'},
         interface: { is: 'SingleSelect', label: 'Interface', props: { searchProvider: GetInterfaces} },
         gatway: { is: 'TextBox', label: 'Gateway'},
         destination: { is: 'TextBox', label: 'Destination'},
         metric: { is: 'NumberBox', label: 'Metric'},
+        comment: { is: 'TextBox', label: 'Comment'},
       },
     },
   },

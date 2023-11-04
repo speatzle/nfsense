@@ -41,4 +41,5 @@ pub struct StaticRoute {
     pub gateway: IpAddr,
     pub destination: IpNet,
     pub metric: u64,
+    pub comment: String,
 }

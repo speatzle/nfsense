@@ -45,7 +45,7 @@ pub enum ServiceType {
         code: u8,
     },
     Group {
-        children: Vec<String>,
+        members: Vec<String>,
     },
 }
 

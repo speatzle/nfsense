@@ -58,12 +58,11 @@ export async function checkAuthentication() {
   try {
     const response = await pResponse;
     const last_hash = window.localStorage.getItem('commit_hash');
-
     if (last_hash) {
       if (last_hash !== response.data.commit_hash) {
-        console.log('Detected New Backend Version, Reloading...');
+        console.log(`Detected New Backend Version ${response.data.commit_hash}, Reloading...`);
         window.localStorage.removeItem('commit_hash');
-        // window.location.reload();
+        window.location.reload();
       }
     } else window.localStorage.setItem('commit_hash', response.data.commit_hash);
     return {auth: 2, error: null};

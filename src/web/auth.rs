@@ -1,12 +1,13 @@
 use std::collections::HashMap;
 
+use rbtag::BuildInfo;
 use std::sync::{Arc, RwLock};
 use uuid::Uuid;
 
 use super::super::AppState;
 use axum::routing::post;
 use axum::{Json, Router};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use tower_cookies::{Cookie, Cookies};
 
 use axum::{
@@ -130,11 +131,32 @@ fn get_session(cookies: Cookies, state: SessionState) -> Result<Session, AuthErr
     }
 }
 
+#[derive(BuildInfo)]
+struct BuildTag;
+
+#[derive(Serialize)]
+pub struct SessionResponse {
+    pub commit_hash: String,
+}
+
 async fn session_handler(cookies: Cookies, State(state): State<AppState>) -> impl IntoResponse {
     match get_session(cookies, state.session_state) {
-        // TODO Return build git commit hash as json result for frontend reloading
-        Ok(_) => return StatusCode::OK,
-        Err(_) => return StatusCode::UNAUTHORIZED,
+        Ok(_) => {
+            return (
+                StatusCode::OK,
+                Json(SessionResponse {
+                    commit_hash: BuildTag {}.get_build_commit().to_string(),
+                }),
+            )
+        }
+        Err(_) => {
+            return (
+                StatusCode::UNAUTHORIZED,
+                Json(SessionResponse {
+                    commit_hash: BuildTag {}.get_build_commit().to_string(),
+                }),
+            )
+        }
     }
 }
 

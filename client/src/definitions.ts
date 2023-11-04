@@ -1,5 +1,3 @@
-import { toFormValidator } from '@vee-validate/zod';
-import * as zod from 'zod';
 import { SearchProvider, Options } from '~/components/input/DropdownInput.vue';
 import { apiCall } from './api';
 
@@ -343,10 +341,6 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
     'dns_servers': {
       name: 'DNS Server',
       idType: 'Number',
-      validationSchema: toFormValidator(
-        zod.object({
-        }),
-      ),
       fields: {
         interface: { is: 'SingleSelect', label: 'Interface', props: { searchProvider: GetInterfaces} },
         comment: { is: 'MultilineTextBox', label: 'Comment'},

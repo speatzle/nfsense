@@ -27,8 +27,8 @@ pub struct DestinationNATRule {
     pub destination_addresses: Vec<String>,
     pub comment: String,
     pub counter: bool,
-    pub dnat_address: String,
-    pub dnat_service: String,
+    pub dnat_address: Option<String>,
+    pub dnat_service: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]

@@ -357,42 +357,26 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
     name: 'VPN',
     'wireguard_interfaces': {
       name: 'Wireguard Interface',
-      validationSchema: toFormValidator(
-        zod.object({
-        }),
-      ),
-      sections: [
-        {
-          fields: [
-            { key: 'name', label: 'Name', as: 'TextBox', default: 'placeholder' },
-            { key: 'public_key', label: 'Public Key', as: 'TextBox', default: 'placeholder' },
-            { key: 'private_key', label: 'Private Key', as: 'TextBox', default: 'placeholder' },
-            { key: 'listen_port', label: 'Listen Port', as: 'NumberBox' },
-            { key: 'peers', label: 'Peers', as: 'MultiSelect', props: { searchProvider: GetPeers } },
-            { key: 'comment', label: 'Comment', as: 'MultilineTextBox' },
-          ],
-        },
-      ],
+      fields: {
+        name: { is: 'TextBox', label: 'Name'},
+        public_key: { is: 'TextBox', label: 'Public Key'},
+        private_key: { is: 'TextBox', label: 'Private Key'},
+        listen_port: { is: 'NumberBox', label: 'Listen Port'},
+        peers: { is: 'MutliSelect', label: 'Peers', props: { searchProvider: GetPeers} },
+        comment: { is: 'MultilineTextBox', label: 'Comment'},
+      },
     },
     'wireguard_peers': {
       name: 'Wireguard Peer',
-      validationSchema: toFormValidator(
-        zod.object({
-        }),
-      ),
-      sections: [
-        {
-          fields: [
-            { key: 'name', label: 'Name', as: 'TextBox', default: 'placeholder' },
-            { key: 'public_key', label: 'Public Key', as: 'TextBox', default: 'placeholder' },
-            { key: 'preshared_key', label: 'Preshared Key', as: 'TextBox', default: 'placeholder' },
-            { key: 'allowed_ips', label: 'Allowed IPs', as: 'MultiSelect', props: { searchProvider: GetAddresses } },
-            { key: 'endpoint', label: 'Endpoint', as: 'TextBox', default: 'placeholder' },
-            { key: 'persistent_keepalive', label: 'Persistent Keepalive', as: 'NumberBox' },
-            { key: 'comment', label: 'Comment', as: 'MultilineTextBox' },
-          ],
-        },
-      ],
+      fields: {
+        name: { is: 'TextBox', label: 'Name'},
+        public_key: { is: 'TextBox', label: 'Public Key'},
+        preshared_key: { is: 'TextBox', label: 'Preshared Key'},
+        allowed_ips: { is: 'MutliSelect', label: 'Allowed IPs', props: { searchProvider: GetAddresses} },
+        endpoint: { is: 'TextBox', label: 'Endpoint'},
+        persistent_keepalive: { is: 'NumberBox', label: 'Persistent Keepalive'},
+        comment: { is: 'MultilineTextBox', label: 'Comment'},
+      },
     },
   },
   'system': {

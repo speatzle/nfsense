@@ -127,10 +127,9 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
         source_addresses: { is: 'MultiSelect', label: 'Source', props: { searchProvider: GetAddresses}},
         destination_addresses: { is: 'MultiSelect', label: 'Destination', props: { searchProvider: GetAddresses}},
         services: { is: 'MultiSelect', label: 'Services', props: { searchProvider: GetServices}},
-        // TODO section DNAT
+        dnat_heading: { is: 'Heading', props: { caption: 'DNAT' }},
         dnat_address: { is: 'SingleSelect', label: 'Destination', props: { searchProvider: GetAddresses}},
         dnat_service: { is: 'SingleSelect', label: 'Service', props: { searchProvider: GetServices}},
-
         counter: { is: 'CheckBox', label: 'Counter'},
         comment: { is: 'TextBox', label: 'Comment'},
       },
@@ -143,7 +142,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
         source_addresses: { is: 'MultiSelect', label: 'Source', props: { searchProvider: GetAddresses}},
         destination_addresses: { is: 'MultiSelect', label: 'Destination', props: { searchProvider: GetAddresses}},
         services: { is: 'MultiSelect', label: 'Services', props: { searchProvider: GetServices}},
-        // TODO section SNAT
+        snat_heading: { is: 'Heading', props: { caption: 'SNAT' }},
         snat_type: { is: 'EnumInput', label: 'Type', props: { variants: {
           'masquerade': { display: 'Masquerade' },
           'snat': {
@@ -154,7 +153,6 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
             },
           },
         }}},
-
         counter: { is: 'CheckBox', label: 'Counter'},
         comment: { is: 'TextBox', label: 'Comment'},
       },

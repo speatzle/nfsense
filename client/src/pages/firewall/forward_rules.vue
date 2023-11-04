@@ -9,9 +9,9 @@ let selection = $ref([] as number[]);
 
 const columns = [
   {heading: 'Name', path: 'name'},
-  {heading: 'Source', path: 'match.source_addresses'},
-  {heading: 'Destination', path: 'match.destination_addresses'},
-  {heading: 'Service', path: 'match.services'},
+  {heading: 'Source', path: 'source_addresses'},
+  {heading: 'Destination', path: 'destination_addresses'},
+  {heading: 'Service', path: 'services'},
   {heading: 'Verdict', path: 'verdict'},
   {heading: 'Counter', path: 'counter'},
   {heading: 'Comment', path: 'comment'},

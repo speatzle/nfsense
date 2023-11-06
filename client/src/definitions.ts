@@ -16,13 +16,7 @@ const GetInterfaces: SearchProvider = async (o) => {
   let res = await apiCall('network.interfaces.list', {});
   if (res.Error === null) {
     console.debug('interfaces', res.Data);
-    let obj = {} as Options;
-    Object.keys(res.Data).forEach(function (key, index) {
-      obj[key] = {
-        display: key,
-      };
-    });
-    return obj;
+    return Object.fromEntries(res.Data.map(r => [r.name, { display: r.name }]));
   } else {
     console.debug('error', res);
     return {} as Options;
@@ -33,13 +27,7 @@ const GetAddresses: SearchProvider = async (o) => {
   let res = await apiCall('object.addresses.list', {});
   if (res.Error === null) {
     console.debug('addresses', res.Data);
-    let obj = {} as Options;
-    Object.keys(res.Data).forEach(function (key, index) {
-      obj[key] = {
-        display: key,
-      };
-    });
-    return obj;
+    return Object.fromEntries(res.Data.map(r => [r.name, { display: r.name }]));
   } else {
     console.debug('error', res);
     return {} as Options;
@@ -50,13 +38,7 @@ const GetServices: SearchProvider = async (o) => {
   let res = await apiCall('object.services.list', {});
   if (res.Error === null) {
     console.debug('services', res.Data);
-    let obj = {} as Options;
-    Object.keys(res.Data).forEach(function (key, index) {
-      obj[key] = {
-        display: key,
-      };
-    });
-    return obj;
+    return Object.fromEntries(res.Data.map(r => [r.name, { display: r.name }]));
   } else {
     console.debug('error', res);
     return {} as Options;
@@ -67,13 +49,7 @@ const GetPeers: SearchProvider = async (o) => {
   let res = await apiCall('vpn.wireguard.peers.list', {});
   if (res.Error === null) {
     console.debug('peers', res.Data);
-    let obj = {} as Options;
-    Object.keys(res.Data).forEach(function (key, index) {
-      obj[key] = {
-        display: key,
-      };
-    });
-    return obj;
+    return Object.fromEntries(res.Data.map(r => [r.name, { display: r.name }]));
   } else {
     console.debug('error', res);
     return {} as Options;

@@ -123,6 +123,7 @@ macro_rules! create_thing {
             tx.commit(crate::config_manager::Change {
                 action: crate::config_manager::ChangeAction::Create,
                 path: stringify!($($sub_system).+),
+                // TODO use name for named ones?
                 id,
             })
             .map_err(ApiError::ConfigError)

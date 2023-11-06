@@ -29,12 +29,12 @@ async function load(){
 const displayData = $computed(() => {
   let data: any;
   data = [];
-  for (const name in addresses) {
+  for (const index in addresses) {
     data.push({
-      name,
-      value: getAddressValue(addresses[name]),
-      type: addresses[name].type,
-      comment: addresses[name].comment,
+      name: addresses[index].name,
+      value: getAddressValue(addresses[index]),
+      type: addresses[index].type,
+      comment: addresses[index].comment,
     });
   }
   return data;

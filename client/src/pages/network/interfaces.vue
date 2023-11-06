@@ -18,13 +18,13 @@ const columns = [
 const displayData = $computed(() => {
   let data: any;
   data = [];
-  for (const name in interfaces) {
+  for (const index in interfaces) {
     data.push({
-      name,
-      type: interfaces[name].type,
-      addressing_mode: interfaces[name].addressing_mode,
-      address: interfaces[name].address,
-      comment: interfaces[name].comment,
+      name: interfaces[index].name,
+      type: interfaces[index].type,
+      addressing_mode: interfaces[index].addressing_mode,
+      address: interfaces[nindexame].address,
+      comment: interfaces[index].comment,
     });
   }
   return data;

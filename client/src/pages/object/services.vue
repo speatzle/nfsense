@@ -17,12 +17,12 @@ const columns = [
 const displayData = $computed(() => {
   let data: any;
   data = [];
-  for (const name in services) {
+  for (const index in services) {
     data.push({
-      name,
-      value: getServiceValue(services[name]),
-      type: services[name].type,
-      comment: services[name].comment,
+      name: services[index].name,
+      value: getServiceValue(services[index]),
+      type: services[index].type,
+      comment: services[index].comment,
     });
   }
   return data;

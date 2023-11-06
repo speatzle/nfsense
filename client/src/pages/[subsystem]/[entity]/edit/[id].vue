@@ -7,37 +7,35 @@ const p = getPlugins();
 const props = $defineProps<{subsystem: string, entity: string, id: string | number}>();
 const { subsystem, entity, id } = $(props);
 
-let initialValues = $ref({} as {});
+let vm = $ref({});
 let loading = $ref(true);
 
 async function load(){
   loading = true;
   let res: any;
   if (editTypes[subsystem][entity].idType == 'Number') {
-    res = await apiCall(`${subsystem}.${entity}.get`, {id: id as number - 0});
+    res = await apiCall(`${subsystem}.${entity}.get`, {index: id as number - 0});
   } else {
-    res = await apiCall(`${subsystem}.${entity}.get`, {id: id});
+    res = await apiCall(`${subsystem}.${entity}.get`, {name: id});
   }
 
   if (res.Error === null) {
     console.debug('update data', res.Data);
-    initialValues = res.Data;
+    vm = res.Data;
   } else {
     console.debug('error', res);
   }
   loading = false;
 }
 
-async function update(value: any) {
-  console.debug('value', value);
+async function update() {
+  console.debug('value', vm);
   let res: any;
 
   if (editTypes[subsystem][entity].idType == 'Number') {
-    res = await apiCall(`${subsystem}.${entity}.update`, {id: id as number - 0, thing: value});
+    res = await apiCall(`${subsystem}.${entity}.update`, {index: id as number - 0, thing: vm});
   } else {
-    // TODO dont have name in value at all, see create (index.vue)
-    delete value.name;
-    res = await apiCall(`${subsystem}.${entity}.update`, {id: id, thing: value});
+    res = await apiCall(`${subsystem}.${entity}.update`, {name: id, thing: vm});
   }
 
   if (res.Error === null) {
@@ -56,15 +54,22 @@ onMounted(async() => {
 
 </script>
 <template>
-  <div v-if="editTypes[subsystem][entity]">
+  <p v-if="loading">Loading...</p>
+  <div v-else-if="editTypes[subsystem][entity]">
     <PageHeader :title="'Update ' + editTypes[subsystem][entity].name">
     </PageHeader>
-    <NiceForm v-if="!loading" class="scroll cl-secondary" :submit="update" :discard="() => $router.go(-1)" :sections="editTypes[subsystem][entity].sections" :initial-values="initialValues"/>
-    <p v-else>Loading...</p>
+    <NicerForm class="scroll cl-secondary" :fields="editTypes[subsystem][entity].fields" v-model="vm"/>
+    <div class="actions">
+      <div class="flex-grow"/>
+      <button @click="update">Submit</button>
+      <div class="space"/>
+      <button @click="$router.go(-1)">Discard</button>
+      <div class="flex-grow"/>
+    </div>
+    <p>{{ vm }}</p>
   </div>
   <div v-else>
     <PageHeader title="Error"/>
     No editType for this Entity
   </div>
 </template>
-

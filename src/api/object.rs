@@ -1,21 +1,20 @@
 use super::ApiError;
 use crate::{
-    create_map_thing,
+    create_thing,
     definitions::object::{Address, Service},
-    delete_map_thing, get_map_thing, list_things,
+    delete_thing_by_name, get_thing_by_name, list_things,
     state::RpcState,
-    update_map_thing,
+    update_thing_by_name,
 };
 use jsonrpsee::RpcModule;
-use std::collections::HashMap;
 
 pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
-        .register_method("object.services.get", get_map_thing!(object.services))
+        .register_method("object.services.get", get_thing_by_name!(object.services))
         .unwrap();
 
     module
-        .register_method::<Result<HashMap<String, Service>, ApiError>, _>(
+        .register_method::<Result<Vec<Service>, ApiError>, _>(
             "object.services.list",
             list_things!(object.services),
         )
@@ -24,27 +23,30 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method(
             "object.services.create",
-            create_map_thing!(object.services, Service),
+            create_thing!(object.services, Service),
         )
         .unwrap();
 
     module
         .register_method(
             "object.services.update",
-            update_map_thing!(object.services, Service),
+            update_thing_by_name!(object.services, Service),
         )
         .unwrap();
 
     module
-        .register_method("object.services.delete", delete_map_thing!(object.services))
+        .register_method(
+            "object.services.delete",
+            delete_thing_by_name!(object.services),
+        )
         .unwrap();
 
     module
-        .register_method("object.addresses.get", get_map_thing!(object.addresses))
+        .register_method("object.addresses.get", get_thing_by_name!(object.addresses))
         .unwrap();
 
     module
-        .register_method::<Result<HashMap<String, Address>, ApiError>, _>(
+        .register_method::<Result<Vec<Address>, ApiError>, _>(
             "object.addresses.list",
             list_things!(object.addresses),
         )
@@ -53,21 +55,21 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method(
             "object.addresses.create",
-            create_map_thing!(object.addresses, Address),
+            create_thing!(object.addresses, Address),
         )
         .unwrap();
 
     module
         .register_method(
             "object.addresses.update",
-            update_map_thing!(object.addresses, Address),
+            update_thing_by_name!(object.addresses, Address),
         )
         .unwrap();
 
     module
         .register_method(
             "object.addresses.delete",
-            delete_map_thing!(object.addresses),
+            delete_thing_by_name!(object.addresses),
         )
         .unwrap();
 }

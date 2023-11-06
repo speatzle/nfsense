@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use validator::Validate;
+
+use crate::get_thing;
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
 pub struct VPN {
@@ -9,12 +10,13 @@ pub struct VPN {
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
 pub struct Wireguard {
-    pub interfaces: HashMap<String, WireguardInterface>,
-    pub peers: HashMap<String, WireguardPeer>,
+    pub interfaces: Vec<WireguardInterface>,
+    pub peers: Vec<WireguardPeer>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
 pub struct WireguardInterface {
+    pub name: String,
     pub public_key: String,
     pub private_key: String,
     pub listen_port: u64,
@@ -22,8 +24,11 @@ pub struct WireguardInterface {
     pub comment: String,
 }
 
+get_thing!(WireguardInterface, get_wireguard_interface);
+
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
 pub struct WireguardPeer {
+    pub name: String,
     pub public_key: String,
     pub preshared_key: Option<String>,
     pub allowed_ips: Vec<String>,
@@ -31,3 +36,5 @@ pub struct WireguardPeer {
     pub persistent_keepalive: Option<u64>,
     pub comment: String,
 }
+
+get_thing!(WireguardPeer, get_wireguard_peer);

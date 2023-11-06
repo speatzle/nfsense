@@ -1,13 +1,11 @@
-use crate::config_manager::{
-    Change, ChangeAction::Create, ChangeAction::Delete, ChangeAction::Update,
-};
+use crate::config_manager::{Change, ChangeAction::Create, ChangeAction::Update};
+use crate::delete_thing_by_name;
 use crate::{definitions::system::User, state::RpcState};
 use jsonrpsee::types::Params;
 use jsonrpsee::RpcModule;
 use pwhash::sha512_crypt;
 use serde::{Deserialize, Serialize};
 
-use ApiError::AlreadyExists;
 use ApiError::ConfigError;
 use ApiError::HashError;
 use ApiError::NotFound;
@@ -35,7 +33,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method("system.users.delete", delete_user)
+        .register_method("system.users.delete", delete_thing_by_name!(system.users))
         .unwrap();
 }
 
@@ -47,22 +45,28 @@ pub struct GetUserResult {
 
 #[derive(Deserialize)]
 pub struct GetUser {
-    id: String,
+    name: String,
 }
 
 pub fn get_user(p: Params, state: &RpcState) -> Result<GetUserResult, ApiError> {
     let u: GetUser = p.parse().map_err(ParameterDeserialize)?;
 
-    match state
+    let index = state
         .config_manager
         .get_pending_config()
         .system
         .users
-        .get(&u.id)
-    {
-        Some(user) => Ok(GetUserResult {
-            name: u.id,
-            comment: user.comment.clone(),
+        .iter()
+        .position(|e| *e.name == u.name);
+
+    match index {
+        Some(i) => Ok(GetUserResult {
+            name: state.config_manager.get_pending_config().system.users[i]
+                .name
+                .clone(),
+            comment: state.config_manager.get_pending_config().system.users[i]
+                .comment
+                .clone(),
         }),
         None => Err(NotFound),
     }
@@ -78,8 +82,8 @@ pub fn get_users(_: Params, state: &RpcState) -> Result<Vec<GetUserResult>, ApiE
         .iter()
     {
         res.push(GetUserResult {
-            name: u.0.to_string(),
-            comment: u.1.comment.clone(),
+            name: u.name.clone(),
+            comment: u.comment.clone(),
         })
     }
 
@@ -101,39 +105,27 @@ pub fn create_user(p: Params, state: &RpcState) -> Result<(), ApiError> {
     let mut cm = state.config_manager.clone();
     let mut tx = cm.start_transaction();
 
-    if tx
-        .config
-        .system
-        .users
-        .insert(
-            u.name.clone(),
-            User {
-                comment: match u.comment {
-                    Some(c) => c,
-                    None => "".to_string(),
-                },
-                hash: hash,
-            },
-        )
-        .is_none()
-    {
-        tx.commit(Change {
-            action: Create,
-            path: USER_CHANGE_PATH,
-            id: u.name,
-        })
-        .map_err(ConfigError)
-    } else {
-        tx.revert();
-        Err(AlreadyExists)
-    }
+    tx.config.system.users.push(User {
+        name: u.name.clone(),
+        comment: match u.comment {
+            Some(c) => c,
+            None => "".to_string(),
+        },
+        hash: hash,
+    });
+
+    tx.commit(Change {
+        action: Create,
+        path: USER_CHANGE_PATH,
+        id: u.name,
+    })
+    .map_err(ConfigError)
 }
 
 #[derive(Deserialize)]
 struct UpdateUser {
     name: String,
-    password: String,
-    comment: Option<String>,
+    thing: CreateUser,
 }
 
 pub fn update_user(p: Params, state: &RpcState) -> Result<(), ApiError> {
@@ -142,25 +134,32 @@ pub fn update_user(p: Params, state: &RpcState) -> Result<(), ApiError> {
     let mut cm = state.config_manager.clone();
     let mut tx = cm.start_transaction();
 
-    match tx.config.system.users.get(&u.name) {
-        Some(user) => {
-            // Only Update Password if field is not empty
-            let hash = if u.password == "" {
+    let index = tx
+        .config
+        .system
+        .users
+        .iter()
+        .position(|e| *e.name == u.name);
+
+    match index {
+        Some(i) => {
+            let user = &tx.config.system.users[i];
+
+            let hash = if u.thing.password == "" {
                 user.hash.clone()
             } else {
-                sha512_crypt::hash(u.password).map_err(HashError)?
+                sha512_crypt::hash(u.thing.password).map_err(HashError)?
             };
 
-            tx.config.system.users.insert(
-                u.name.clone(),
-                User {
-                    comment: match u.comment {
-                        Some(c) => c,
-                        None => "".to_string(),
-                    },
-                    hash,
+            tx.config.system.users[i] = User {
+                name: u.thing.name,
+                comment: match u.thing.comment {
+                    Some(c) => c,
+                    None => "".to_string(),
                 },
-            );
+                hash,
+            };
+
             tx.commit(Change {
                 action: Update,
                 path: USER_CHANGE_PATH,
@@ -169,31 +168,5 @@ pub fn update_user(p: Params, state: &RpcState) -> Result<(), ApiError> {
             .map_err(ConfigError)
         }
         None => Err(NotFound),
-    }
-}
-
-#[derive(Deserialize)]
-struct DeleteUser {
-    name: String,
-}
-
-pub fn delete_user(p: Params, state: &RpcState) -> Result<(), ApiError> {
-    let u: DeleteUser = p.parse().map_err(ParameterDeserialize)?;
-
-    let mut cm = state.config_manager.clone();
-    let mut tx = cm.start_transaction();
-
-    match tx.config.system.users.remove(&u.name) {
-        Some(_) => tx
-            .commit(Change {
-                action: Delete,
-                path: USER_CHANGE_PATH,
-                id: u.name,
-            })
-            .map_err(ConfigError),
-        None => {
-            tx.revert();
-            Err(NotFound)
-        }
     }
 }

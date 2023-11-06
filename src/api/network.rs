@@ -1,19 +1,19 @@
 use super::ApiError;
 use crate::{
-    create_map_thing, create_vec_thing,
+    create_thing,
     definitions::network::{NetworkInterface, StaticRoute},
-    delete_map_thing, delete_vec_thing, get_map_thing, get_vec_thing, list_things,
+    delete_thing_by_index, delete_thing_by_name, get_thing_by_index, get_thing_by_name,
+    list_things,
     state::RpcState,
-    update_map_thing, update_vec_thing,
+    update_thing_by_index, update_thing_by_name,
 };
 use jsonrpsee::RpcModule;
-use std::collections::HashMap;
 
 pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method(
             "network.static_routes.get",
-            get_vec_thing!(network.static_routes),
+            get_thing_by_index!(network.static_routes),
         )
         .unwrap();
 
@@ -27,30 +27,33 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method(
             "network.static_routes.create",
-            create_vec_thing!(network.static_routes, StaticRoute),
+            create_thing!(network.static_routes, StaticRoute),
         )
         .unwrap();
 
     module
         .register_method(
             "network.static_routes.update",
-            update_vec_thing!(network.static_routes, StaticRoute),
+            update_thing_by_index!(network.static_routes, StaticRoute),
         )
         .unwrap();
 
     module
         .register_method(
             "network.static_routes.delete",
-            delete_vec_thing!(network.static_routes),
+            delete_thing_by_index!(network.static_routes),
         )
         .unwrap();
 
     module
-        .register_method("network.interfaces.get", get_map_thing!(network.interfaces))
+        .register_method(
+            "network.interfaces.get",
+            get_thing_by_name!(network.interfaces),
+        )
         .unwrap();
 
     module
-        .register_method::<Result<HashMap<String, NetworkInterface>, ApiError>, _>(
+        .register_method::<Result<Vec<NetworkInterface>, ApiError>, _>(
             "network.interfaces.list",
             list_things!(network.interfaces),
         )
@@ -59,21 +62,21 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method(
             "network.interfaces.create",
-            create_map_thing!(network.interfaces, NetworkInterface),
+            create_thing!(network.interfaces, NetworkInterface),
         )
         .unwrap();
 
     module
         .register_method(
             "network.interfaces.update",
-            update_map_thing!(network.interfaces, NetworkInterface),
+            update_thing_by_name!(network.interfaces, NetworkInterface),
         )
         .unwrap();
 
     module
         .register_method(
             "network.interfaces.delete",
-            delete_map_thing!(network.interfaces),
+            delete_thing_by_name!(network.interfaces),
         )
         .unwrap();
 }

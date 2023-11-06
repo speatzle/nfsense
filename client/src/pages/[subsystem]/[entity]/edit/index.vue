@@ -12,14 +12,7 @@ let vm: any = $ref({});
 async function create() {
   console.debug('value', vm);
   let res: any;
-  if (editTypes[subsystem][entity].idType == 'Number') {
-    res = await apiCall(`${subsystem }.${entity}.create`, vm);
-  } else {
-    // TODO find way to only have a name/id field in the form on create and not put it into the value
-    let id = vm.name;
-    delete vm.name;
-    res = await apiCall(`${subsystem }.${entity}.create`, {id: id, thing: vm});
-  }
+  res = await apiCall(`${subsystem }.${entity}.create`, vm);
 
   if (res.Error === null) {
     p.toast.success(`Created ${  editTypes[subsystem][entity].name}`);

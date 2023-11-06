@@ -1,10 +1,10 @@
 use super::ApiError;
 use crate::{
-    create_vec_thing,
+    create_thing,
     definitions::firewall::{DestinationNATRule, ForwardRule, SourceNATRule},
-    delete_vec_thing, get_vec_thing, list_things,
+    delete_thing_by_index, get_thing_by_index, list_things,
     state::RpcState,
-    update_vec_thing,
+    update_thing_by_index,
 };
 use jsonrpsee::RpcModule;
 
@@ -12,7 +12,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method(
             "firewall.forward_rules.get",
-            get_vec_thing!(firewall.forward_rules),
+            get_thing_by_index!(firewall.forward_rules),
         )
         .unwrap();
 
@@ -26,28 +26,28 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method(
             "firewall.forward_rules.create",
-            create_vec_thing!(firewall.forward_rules, ForwardRule),
+            create_thing!(firewall.forward_rules, ForwardRule),
         )
         .unwrap();
 
     module
         .register_method(
             "firewall.forward_rules.update",
-            update_vec_thing!(firewall.forward_rules, ForwardRule),
+            update_thing_by_index!(firewall.forward_rules, ForwardRule),
         )
         .unwrap();
 
     module
         .register_method(
             "firewall.forward_rules.delete",
-            delete_vec_thing!(firewall.forward_rules),
+            delete_thing_by_index!(firewall.forward_rules),
         )
         .unwrap();
 
     module
         .register_method(
             "firewall.destination_nat_rules.get",
-            get_vec_thing!(firewall.destination_nat_rules),
+            get_thing_by_index!(firewall.destination_nat_rules),
         )
         .unwrap();
 
@@ -61,28 +61,28 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method(
             "firewall.destination_nat_rules.create",
-            create_vec_thing!(firewall.destination_nat_rules, DestinationNATRule),
+            create_thing!(firewall.destination_nat_rules, DestinationNATRule),
         )
         .unwrap();
 
     module
         .register_method(
             "firewall.destination_nat_rules.update",
-            update_vec_thing!(firewall.destination_nat_rules, DestinationNATRule),
+            update_thing_by_index!(firewall.destination_nat_rules, DestinationNATRule),
         )
         .unwrap();
 
     module
         .register_method(
             "firewall.destination_nat_rules.delete",
-            delete_vec_thing!(firewall.destination_nat_rules),
+            delete_thing_by_index!(firewall.destination_nat_rules),
         )
         .unwrap();
 
     module
         .register_method(
             "firewall.source_nat_rules.get",
-            get_vec_thing!(firewall.source_nat_rules),
+            get_thing_by_index!(firewall.source_nat_rules),
         )
         .unwrap();
 
@@ -96,21 +96,21 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method(
             "firewall.source_nat_rules.create",
-            create_vec_thing!(firewall.source_nat_rules, SourceNATRule),
+            create_thing!(firewall.source_nat_rules, SourceNATRule),
         )
         .unwrap();
 
     module
         .register_method(
             "firewall.source_nat_rules.update",
-            update_vec_thing!(firewall.source_nat_rules, SourceNATRule),
+            update_thing_by_index!(firewall.source_nat_rules, SourceNATRule),
         )
         .unwrap();
 
     module
         .register_method(
             "firewall.source_nat_rules.delete",
-            delete_vec_thing!(firewall.source_nat_rules),
+            delete_thing_by_index!(firewall.source_nat_rules),
         )
         .unwrap();
 }

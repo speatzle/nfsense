@@ -19,9 +19,8 @@ pub enum ApiError {
     #[error("Not Found")]
     NotFound,
 
-    #[error("Already Exists")]
-    AlreadyExists,
-
+    //#[error("Already Exists")]
+    //AlreadyExists,
     #[error("Hash Error")]
     HashError(#[from] pwhash::error::Error),
 
@@ -44,50 +43,53 @@ impl Into<ErrorObject<'static>> for ApiError {
 }
 
 #[macro_export]
-macro_rules! get_map_thing {
+macro_rules! get_thing_by_name {
     ($( $sub_system:ident ).+) => {
         |params, state| {
             use serde::Deserialize;
 
             #[derive(Deserialize)]
-            struct GetStringID {
-                id: String,
+            struct GetByName {
+                name: String,
             }
 
-            let t: GetStringID = params.parse().map_err(ApiError::ParameterDeserialize)?;
+            let t: GetByName = params.parse().map_err(ApiError::ParameterDeserialize)?;
 
-            match state
-                .config_manager
-                .get_pending_config()
-                .$($sub_system).+
-                .get(&t.id)
-            {
-                Some(thing) => Ok(thing.clone()),
-                None => Err(ApiError::NotFound),
+            let index = state
+            .config_manager
+            .get_pending_config()
+            .$($sub_system).+.iter().position(|e| *e.name == t.name);
+
+            match index {
+                Some(i) => Ok(state
+                        .config_manager
+                        .get_pending_config()
+                        .$($sub_system).+[i].clone()),
+                None => Err(ApiError::NotFound)
             }
         }
     };
 }
 
 #[macro_export]
-macro_rules! get_vec_thing {
+macro_rules! get_thing_by_index {
     ($( $sub_system:ident ).+) => {
         |params, state| {
             use serde::{Deserialize, Serialize};
 
             #[derive(Deserialize, Serialize)]
-            struct GetIntID {
-                id: i64,
+            struct GetByIndex {
+                index: i64,
             }
 
-            let t: GetIntID = params.parse().map_err(ApiError::ParameterDeserialize)?;
+            let t: GetByIndex = params.parse().map_err(ApiError::ParameterDeserialize)?;
             let things = state
             .config_manager
             .get_pending_config()
             .$($sub_system).+;
 
-            if things.len() > t.id as usize {
-                Ok(things[t.id as usize].clone())
+            if things.len() > t.index as usize {
+                Ok(things[t.index as usize].clone())
             } else {
                 Err(ApiError::NotFound)
             }
@@ -108,38 +110,7 @@ macro_rules! list_things {
 }
 
 #[macro_export]
-macro_rules! create_map_thing {
-    ($( $sub_system:ident ).+, $typ:ty) => {
-        |params, state| {
-            use serde::{Deserialize, Serialize};
-
-            #[derive(Deserialize, Serialize)]
-            struct CreateThing {
-                id: String,
-                thing: $typ
-            }
-
-            let t: CreateThing = params.parse().map_err(ApiError::ParameterDeserialize)?;
-            let mut cm = state.config_manager.clone();
-            let mut tx = cm.start_transaction();
-
-            if tx.config.$($sub_system).+.insert(t.id.clone(), t.thing).is_none() {
-                tx.commit(crate::config_manager::Change {
-                    action: crate::config_manager::ChangeAction::Create,
-                    path: stringify!($($sub_system).+),
-                    id: t.id,
-                })
-                .map_err(ApiError::ConfigError)
-            } else {
-                tx.revert();
-                Err(ApiError::AlreadyExists)
-            }
-        }
-    };
-}
-
-#[macro_export]
-macro_rules! create_vec_thing {
+macro_rules! create_thing {
     ($( $sub_system:ident ).+, $typ:ty) => {
         |params, state| {
             let t: $typ = params.parse().map_err(ApiError::ParameterDeserialize)?;
@@ -160,93 +131,34 @@ macro_rules! create_vec_thing {
 }
 
 #[macro_export]
-macro_rules! update_map_thing {
+macro_rules! update_thing_by_name {
     ($( $sub_system:ident ).+, $typ:ty) => {
         |params, state| {
             use serde::{Deserialize, Serialize};
 
             #[derive(Deserialize, Serialize)]
-            struct CreateThing {
-                id: String,
+            struct UpdateByName {
+                name: String,
                 thing: $typ
             }
 
-            let t: CreateThing = params.parse().map_err(ApiError::ParameterDeserialize)?;
+            let t: UpdateByName = params.parse().map_err(ApiError::ParameterDeserialize)?;
             let mut cm = state.config_manager.clone();
             let mut tx = cm.start_transaction();
 
-            if tx.config.$($sub_system).+.insert(t.id.clone(), t.thing).is_none() {
-                tx.revert();
-                Err(ApiError::NotFound)
-            } else {
-                tx.commit(crate::config_manager::Change {
-                    action: crate::config_manager::ChangeAction::Update,
-                    path: stringify!($($sub_system).+),
-                    id: t.id,
-                })
-                .map_err(ApiError::ConfigError)
-            }
-        }
-    };
-}
+            let index = tx.config.$($sub_system).+.iter().position(|e| *e.name == t.name);
 
-#[macro_export]
-macro_rules! update_vec_thing {
-    ($( $sub_system:ident ).+, $typ:ty) => {
-        |params, state| {
-            use serde::{Deserialize, Serialize};
+            match index {
+                Some(i) => {
+                    tx.config.$($sub_system).+[i] = t.thing;
 
-            #[derive(Deserialize, Serialize)]
-            struct CreateThing {
-                id: i64,
-                thing: $typ
-            }
-
-            let t: CreateThing = params.parse().map_err(ApiError::ParameterDeserialize)?;
-            let mut cm = state.config_manager.clone();
-            let mut tx = cm.start_transaction();
-
-            if tx.config.$($sub_system).+.len() > t.id as usize {
-                tx.config.$($sub_system).+[t.id as usize] = t.thing;
-
-                tx.commit(crate::config_manager::Change {
-                    action: crate::config_manager::ChangeAction::Update,
-                    path: stringify!($($sub_system).+),
-                    id: t.id.to_string(),
-                })
-                .map_err(ApiError::ConfigError)
-            } else {
-                tx.revert();
-                Err(ApiError::NotFound)
-            }
-        }
-    };
-}
-
-#[macro_export]
-macro_rules! delete_map_thing {
-    ($( $sub_system:ident ).+) => {
-        |params, state| {
-            use serde::{Deserialize, Serialize};
-
-            #[derive(Deserialize, Serialize)]
-            struct GetStringID {
-                id: String,
-            }
-
-            let t: GetStringID = params.parse().map_err(ApiError::ParameterDeserialize)?;
-
-            let mut cm = state.config_manager.clone();
-            let mut tx = cm.start_transaction();
-
-            match tx.config.$($sub_system).+.remove(&t.id) {
-                Some(_) => tx
-                    .commit(crate::config_manager::Change {
-                        action: crate::config_manager::ChangeAction::Delete,
+                    tx.commit(crate::config_manager::Change {
+                        action: crate::config_manager::ChangeAction::Update,
                         path: stringify!($($sub_system).+),
-                        id: t.id,
+                        id: t.name,
                     })
-                    .map_err(ApiError::ConfigError),
+                    .map_err(ApiError::ConfigError)
+                }
                 None => {
                     tx.revert();
                     Err(ApiError::NotFound)
@@ -257,27 +169,98 @@ macro_rules! delete_map_thing {
 }
 
 #[macro_export]
-macro_rules! delete_vec_thing {
+macro_rules! update_thing_by_index {
+    ($( $sub_system:ident ).+, $typ:ty) => {
+        |params, state| {
+            use serde::{Deserialize, Serialize};
+
+            #[derive(Deserialize, Serialize)]
+            struct UpdateByIndex {
+                index: i64,
+                thing: $typ
+            }
+
+            let t: UpdateByIndex = params.parse().map_err(ApiError::ParameterDeserialize)?;
+            let mut cm = state.config_manager.clone();
+            let mut tx = cm.start_transaction();
+
+            if tx.config.$($sub_system).+.len() > t.index as usize {
+                tx.config.$($sub_system).+[t.index as usize] = t.thing;
+
+                tx.commit(crate::config_manager::Change {
+                    action: crate::config_manager::ChangeAction::Update,
+                    path: stringify!($($sub_system).+),
+                    id: t.index.to_string(),
+                })
+                .map_err(ApiError::ConfigError)
+            } else {
+                tx.revert();
+                Err(ApiError::NotFound)
+            }
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! delete_thing_by_name {
     ($( $sub_system:ident ).+) => {
         |params, state| {
             use serde::{Deserialize, Serialize};
 
             #[derive(Deserialize, Serialize)]
-            struct GetIntID {
-                id: i64,
+            struct DeleteByName {
+                name: String,
             }
 
-            let t: GetIntID = params.parse().map_err(ApiError::ParameterDeserialize)?;
+            let t: DeleteByName = params.parse().map_err(ApiError::ParameterDeserialize)?;
 
             let mut cm = state.config_manager.clone();
             let mut tx = cm.start_transaction();
 
-            if tx.config.$($sub_system).+.len() > t.id as usize {
-                tx.config.$($sub_system).+.remove(t.id as usize);
+            let index = tx.config.$($sub_system).+.iter().position(|e| *e.name == t.name);
+
+            match index {
+                Some(i) => {
+                    tx.config.$($sub_system).+.remove(i);
+
+                    tx.commit(crate::config_manager::Change {
+                        action: crate::config_manager::ChangeAction::Delete,
+                        path: stringify!($($sub_system).+),
+                        id: t.name,
+                    })
+                    .map_err(ApiError::ConfigError)
+                }
+                None => {
+                    tx.revert();
+                    Err(ApiError::NotFound)
+                }
+            }
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! delete_thing_by_index {
+    ($( $sub_system:ident ).+) => {
+        |params, state| {
+            use serde::{Deserialize, Serialize};
+
+            #[derive(Deserialize, Serialize)]
+            struct DeleteByIndex {
+                index: i64,
+            }
+
+            let t: DeleteByIndex = params.parse().map_err(ApiError::ParameterDeserialize)?;
+
+            let mut cm = state.config_manager.clone();
+            let mut tx = cm.start_transaction();
+
+            if tx.config.$($sub_system).+.len() > t.index as usize {
+                tx.config.$($sub_system).+.remove(t.index as usize);
                 tx.commit(crate::config_manager::Change {
                     action: crate::config_manager::ChangeAction::Delete,
                     path: stringify!($($sub_system).+),
-                    id: t.id.to_string(),
+                    id: t.index.to_string(),
                 })
                 .map_err(ApiError::ConfigError)
             } else {

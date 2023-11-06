@@ -151,12 +151,10 @@ pub fn generate_default_config(path: &str) -> Result<(), ConfigError> {
     let mut conf = Config::default();
     let hash = sha512_crypt::hash("nfsense")?;
     conf.config_version = 1;
-    conf.system.users.insert(
-        "admin".to_string(),
-        crate::definitions::system::User {
-            comment: "Default Admin".to_string(),
-            hash: hash,
-        },
-    );
+    conf.system.users.push(crate::definitions::system::User {
+        name: "admin".to_string(),
+        comment: "Default Admin".to_string(),
+        hash: hash,
+    });
     write_config_to_file(path, conf)
 }

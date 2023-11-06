@@ -1,19 +1,24 @@
 use ipnet::IpNet;
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, net::IpAddr};
+use std::net::IpAddr;
 use validator::Validate;
+
+use crate::get_thing;
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
 pub struct Object {
-    pub addresses: HashMap<String, Address>,
-    pub services: HashMap<String, Service>,
+    pub addresses: Vec<Address>,
+    pub services: Vec<Service>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
 pub struct Address {
+    pub name: String,
     pub address_type: AddressType,
     pub comment: String,
 }
+
+get_thing!(Address, get_address);
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "snake_case")]
@@ -26,9 +31,12 @@ pub enum AddressType {
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
 pub struct Service {
+    pub name: String,
     pub service_type: ServiceType,
     pub comment: String,
 }
+
+get_thing!(Service, get_service);
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "lowercase")]

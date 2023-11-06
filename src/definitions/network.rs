@@ -1,21 +1,26 @@
 use ipnet::IpNet;
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, net::IpAddr};
+use std::net::IpAddr;
 use validator::Validate;
+
+use crate::get_thing;
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
 pub struct Network {
-    pub interfaces: HashMap<String, NetworkInterface>,
+    pub interfaces: Vec<NetworkInterface>,
     pub static_routes: Vec<StaticRoute>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
 pub struct NetworkInterface {
+    pub name: String,
     pub alias: String,
     pub comment: String,
     pub interface_type: NetworkInterfaceType,
     pub addressing_mode: AddressingMode,
 }
+
+get_thing!(NetworkInterface, get_network_interface);
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "snake_case")]

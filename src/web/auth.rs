@@ -4,6 +4,8 @@ use rbtag::BuildInfo;
 use std::sync::{Arc, RwLock};
 use uuid::Uuid;
 
+use crate::definitions::system::get_user;
+
 use super::super::AppState;
 use axum::routing::post;
 use axum::{Json, Router};
@@ -64,13 +66,10 @@ async fn login_handler(
     State(state): State<AppState>,
     Json(payload): Json<LoginParameters>,
 ) -> impl IntoResponse {
-    if let Some(user) = state
-        .config_manager
-        .get_current_config()
-        .system
-        .users
-        .get(&payload.username.to_string())
-    {
+    if let Some(user) = get_user(
+        state.config_manager.get_current_config().system.users,
+        payload.username.to_string(),
+    ) {
         if sha512_crypt::verify(payload.password, &user.hash) {
             let mut sessions = state.session_state.sessions.write().unwrap();
             let id = Uuid::new_v4().to_string();

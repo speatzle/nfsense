@@ -23,3 +23,11 @@ These libraries aren't mandatory to be able to work on the nfSense web client, t
 - ESLint: The standard JS linter, which we also use to enforce some code style choices.
 - Iconify: Icons (Could be replaced with custom ones)
 - Markdown-It: We prefer markdown for informational texts, and use this to render it on the frontend.
+
+### High-Level choices
+We are currently not using a component library to maintain full control over our styling and keep the bundle small and dependencies few.
+
+We do not use JavaScript-Based layouting and animations. Components simply render out DOM nodes that are styled and animated with CSS alone.
+
+## Building
+We use pnpm as our package manager please follow their documentation to set up a working development environment on the latest stable release of Node. Run `pnpm run dev` to start a development server, or `pnpm run build` to generate distribution files. We're working on including launch tasks to allow seamless debugging within VSCodium.

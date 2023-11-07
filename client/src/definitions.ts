@@ -5,7 +5,7 @@ const GetHardwareInterfaces: SearchProvider = async (o) => {
   let res = await apiCall('network.links.list', {});
   if (res.Error === null) {
     console.debug('links', res.Data);
-    return Object.fromEntries(res.Data.map(r => [r.name, { display: r.name }]));
+    return Object.fromEntries(res.Data.map((r: any) => [r.name, { display: r.name }]));
   } else {
     console.debug('error', res);
     return {} as Options;

@@ -16,10 +16,7 @@ pub struct Network {
     pub static_routes: Vec<StaticRoute>,
 }
 
-type NetworkInterfaces = Vec<NetworkInterface>;
 impl_referenceable_trait!(NetworkInterfaces, NetworkInterface);
-
-pub type NetworkInterfaceReference = String;
 impl_references_trait!(
     NetworkInterfaceReference,
     NetworkInterface,

@@ -15,7 +15,9 @@ pub trait Referenceable<T> {
 
 #[macro_export]
 macro_rules! impl_referenceable_trait {
-    ($typ:ty, $ele:ty) => {
+    ($typ:ident, $ele:ty) => {
+        pub type $typ = Vec<$ele>;
+
         impl Referenceable<$ele> for $typ {
             fn named_get(&self, name: String) -> $ele {
                 let index = self.iter().position(|e| *e.name == name);
@@ -42,14 +44,34 @@ pub trait References<T> {
 
 #[macro_export]
 macro_rules! impl_references_trait {
-    ($thing:ty, $referenced:ty, $( $path:ident ).+) => {
+    ($thing:ident, $referenced:ty, $( $path:ident ).+) => {
+
+        #[derive(Serialize, Deserialize, Clone, Default, Debug)]
+        #[serde(from = "String")]
+        #[serde(into = "String")]
+        pub struct $thing {
+            pub name: String,
+        }
+
+        impl Into<String> for $thing {
+            fn into(self) -> String {
+                self.name
+            }
+        }
+
+        impl From<String> for $thing {
+            fn from(value: String) -> Self {
+                $thing { name: value }
+            }
+        }
+
         impl References<$referenced> for $thing {
             fn get_ref(&self, config: Config) -> $referenced {
-                config.$($path).+.named_get(self.clone())
+                config.$($path).+.named_get(self.clone().into())
             }
 
             fn ref_exists(&self, config: Config) -> bool {
-                config.$($path).+.named_exists(self.clone())
+                config.$($path).+.named_exists(self.clone().into())
             }
         }
     };

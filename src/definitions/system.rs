@@ -12,10 +12,7 @@ pub struct System {
     pub users: Vec<User>,
 }
 
-type Users = Vec<User>;
 impl_referenceable_trait!(Users, User);
-
-pub type UserReference = String;
 impl_references_trait!(UserReference, User, system.users);
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]

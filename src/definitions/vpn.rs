@@ -18,10 +18,7 @@ pub struct Wireguard {
     pub peers: WireguardPeers,
 }
 
-type WireguardInterfaces = Vec<WireguardInterface>;
 impl_referenceable_trait!(WireguardInterfaces, WireguardInterface);
-
-pub type WireguardInterfaceReference = String;
 impl_references_trait!(
     WireguardInterfaceReference,
     WireguardInterface,
@@ -38,10 +35,7 @@ pub struct WireguardInterface {
     pub comment: String,
 }
 
-pub type WireguardPeers = Vec<WireguardPeer>;
 impl_referenceable_trait!(WireguardPeers, WireguardPeer);
-
-type WireguardPeerReference = String;
 impl_references_trait!(WireguardPeerReference, WireguardPeer, vpn.wireguard.peers);
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]

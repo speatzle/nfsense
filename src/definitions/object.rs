@@ -15,10 +15,7 @@ pub struct Object {
     pub services: Services,
 }
 
-type Addresses = Vec<Address>;
 impl_referenceable_trait!(Addresses, Address);
-
-pub type AddressReference = String;
 impl_references_trait!(AddressReference, Address, object.addresses);
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
@@ -37,10 +34,7 @@ pub enum AddressType {
     Group { members: Vec<AddressReference> },
 }
 
-type Services = Vec<Service>;
 impl_referenceable_trait!(Services, Service);
-
-pub type ServiceReference = String;
 impl_references_trait!(ServiceReference, Service, object.services);
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]

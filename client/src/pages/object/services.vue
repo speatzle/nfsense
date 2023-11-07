@@ -21,7 +21,7 @@ const displayData = $computed(() => {
     data.push({
       name: services[index].name,
       value: getServiceValue(services[index]),
-      type: services[index].type,
+      type: Object.keys(services[index].service_type)[0],
       comment: services[index].comment,
     });
   }
@@ -29,11 +29,12 @@ const displayData = $computed(() => {
 });
 
 function getServiceValue(s: any): string {
+  console.debug('test', Object.keys(s.service_type)[0]);
   let value: string;
-  switch (s.type) {
+  switch (Object.keys(s.service_type)[0]) {
   case 'tcp':
   case 'udp':
-    value = getServicePortRange(s);
+    value = getServicePortRange(s.service_type[Object.keys(s.service_type)[0]]);
     break;
   case 'icmp':
     value = 'icmp';
@@ -48,10 +49,7 @@ function getServiceValue(s: any): string {
 }
 
 function getServicePortRange(s:any): string {
-  if (s.dport_end) {
-    return `${s.dport_start  }-${  s.dport_end}`;
-  }
-  return s.dport_start;
+  return `${s.source}-${s.destination}`;
 }
 
 async function load(){

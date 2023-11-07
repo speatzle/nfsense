@@ -3,13 +3,23 @@ use serde::{Deserialize, Serialize};
 use std::net::IpAddr;
 use validator::Validate;
 
-use crate::get_thing;
+// Referencing
+use crate::definitions::config::Config;
+use crate::definitions::Referenceable;
+use crate::definitions::References;
+use crate::{impl_referenceable_trait, impl_references_trait};
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
 pub struct Object {
-    pub addresses: Vec<Address>,
-    pub services: Vec<Service>,
+    pub addresses: Addresses,
+    pub services: Services,
 }
+
+type Addresses = Vec<Address>;
+impl_referenceable_trait!(Addresses, Address);
+
+pub type AddressReference = String;
+impl_references_trait!(AddressReference, Address, object.addresses);
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
 pub struct Address {
@@ -18,16 +28,20 @@ pub struct Address {
     pub comment: String,
 }
 
-get_thing!(Address, get_address);
-
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum AddressType {
-    Host { address: String },
+    Host { address: IpAddr },
     Range { range: IpAddr },
     Network { network: IpNet },
-    Group { members: Vec<String> },
+    Group { members: Vec<AddressReference> },
 }
+
+type Services = Vec<Service>;
+impl_referenceable_trait!(Services, Service);
+
+pub type ServiceReference = String;
+impl_references_trait!(ServiceReference, Service, object.services);
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
 pub struct Service {
@@ -35,8 +49,6 @@ pub struct Service {
     pub service_type: ServiceType,
     pub comment: String,
 }
-
-get_thing!(Service, get_service);
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "lowercase")]
@@ -53,7 +65,7 @@ pub enum ServiceType {
         code: u8,
     },
     Group {
-        members: Vec<String>,
+        members: Vec<ServiceReference>,
     },
 }
 

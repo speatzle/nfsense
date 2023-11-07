@@ -1,7 +1,11 @@
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
-use crate::get_thing;
+// Referencing
+use crate::definitions::config::Config;
+use crate::definitions::Referenceable;
+use crate::definitions::References;
+use crate::{impl_referenceable_trait, impl_references_trait};
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
 pub struct VPN {
@@ -10,9 +14,19 @@ pub struct VPN {
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
 pub struct Wireguard {
-    pub interfaces: Vec<WireguardInterface>,
-    pub peers: Vec<WireguardPeer>,
+    pub interfaces: WireguardInterfaces,
+    pub peers: WireguardPeers,
 }
+
+type WireguardInterfaces = Vec<WireguardInterface>;
+impl_referenceable_trait!(WireguardInterfaces, WireguardInterface);
+
+pub type WireguardInterfaceReference = String;
+impl_references_trait!(
+    WireguardInterfaceReference,
+    WireguardInterface,
+    vpn.wireguard.interfaces
+);
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
 pub struct WireguardInterface {
@@ -20,11 +34,15 @@ pub struct WireguardInterface {
     pub public_key: String,
     pub private_key: String,
     pub listen_port: u64,
-    pub peers: Vec<String>,
+    pub peers: Vec<WireguardPeerReference>,
     pub comment: String,
 }
 
-get_thing!(WireguardInterface, get_wireguard_interface);
+pub type WireguardPeers = Vec<WireguardPeer>;
+impl_referenceable_trait!(WireguardPeers, WireguardPeer);
+
+type WireguardPeerReference = String;
+impl_references_trait!(WireguardPeerReference, WireguardPeer, vpn.wireguard.peers);
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
 pub struct WireguardPeer {
@@ -36,5 +54,3 @@ pub struct WireguardPeer {
     pub persistent_keepalive: Option<u64>,
     pub comment: String,
 }
-
-get_thing!(WireguardPeer, get_wireguard_peer);

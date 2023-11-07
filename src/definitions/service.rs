@@ -1,8 +1,9 @@
 use core::time;
 use macaddr::MacAddr8;
 use serde::{Deserialize, Serialize};
-use std::net::IpAddr;
 use validator::Validate;
+
+use super::{network::NetworkInterfaceReference, object::AddressReference};
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
 pub struct Service {
@@ -13,8 +14,8 @@ pub struct Service {
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
 pub struct DHCPServer {
-    pub interface: String,
-    pub pool: Vec<String>,
+    pub interface: NetworkInterfaceReference,
+    pub pool: Vec<AddressReference>,
     pub lease_time: time::Duration,
     pub gateway_mode: GatewayMode,
     pub dns_server_mode: DNSServerMode,
@@ -25,13 +26,13 @@ pub struct DHCPServer {
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
 pub struct DNSServer {
-    pub interface: String,
+    pub interface: NetworkInterfaceReference,
     pub comment: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
 pub struct NTPServer {
-    pub interface: String,
+    pub interface: NetworkInterfaceReference,
     pub comment: String,
 }
 
@@ -40,7 +41,7 @@ pub struct NTPServer {
 pub enum GatewayMode {
     None,
     Interface,
-    Specify { gateway: String },
+    Specify { gateway: AddressReference },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -48,7 +49,7 @@ pub enum GatewayMode {
 pub enum DNSServerMode {
     None,
     Interface,
-    Specify { dns_servers: Vec<String> },
+    Specify { dns_servers: Vec<AddressReference> },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -56,12 +57,12 @@ pub enum DNSServerMode {
 pub enum NTPServerMode {
     None,
     Interface,
-    Specify { ntp_servers: Vec<String> },
+    Specify { ntp_servers: Vec<AddressReference> },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Reservation {
-    pub ip_address: IpAddr,
+    pub ip_address: AddressReference,
     pub hardware_address: MacAddr8,
     pub comment: String,
 }

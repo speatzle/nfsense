@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
+use super::object::{AddressReference, ServiceReference};
+
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
 pub struct Firewall {
     pub forward_rules: Vec<ForwardRule>,
@@ -11,9 +13,9 @@ pub struct Firewall {
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
 pub struct ForwardRule {
     pub name: String,
-    pub services: Vec<String>,
-    pub source_addresses: Vec<String>,
-    pub destination_addresses: Vec<String>,
+    pub services: Vec<ServiceReference>,
+    pub source_addresses: Vec<AddressReference>,
+    pub destination_addresses: Vec<AddressReference>,
     pub comment: String,
     pub counter: bool,
     pub verdict: Verdict,
@@ -22,21 +24,21 @@ pub struct ForwardRule {
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
 pub struct DestinationNATRule {
     pub name: String,
-    pub services: Vec<String>,
-    pub source_addresses: Vec<String>,
-    pub destination_addresses: Vec<String>,
+    pub services: Vec<ServiceReference>,
+    pub source_addresses: Vec<AddressReference>,
+    pub destination_addresses: Vec<AddressReference>,
     pub comment: String,
     pub counter: bool,
-    pub dnat_address: Option<String>,
-    pub dnat_service: Option<String>,
+    pub dnat_address: Option<AddressReference>,
+    pub dnat_service: Option<ServiceReference>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
 pub struct SourceNATRule {
     pub name: String,
-    pub services: Vec<String>,
-    pub source_addresses: Vec<String>,
-    pub destination_addresses: Vec<String>,
+    pub services: Vec<ServiceReference>,
+    pub source_addresses: Vec<AddressReference>,
+    pub destination_addresses: Vec<AddressReference>,
     pub comment: String,
     pub counter: bool,
     pub snat_type: SNATType,
@@ -54,8 +56,8 @@ pub enum Verdict {
 #[serde(rename_all = "lowercase")]
 pub enum SNATType {
     SNAT {
-        address: Option<String>,
-        service: Option<String>,
+        address: Option<AddressReference>,
+        service: Option<ServiceReference>,
     },
     Masquerade,
 }

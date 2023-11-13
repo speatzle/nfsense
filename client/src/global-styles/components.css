@@ -43,7 +43,7 @@ input {
   padding: 0px; /* To keep alignment, no padding is needed for those descendants */
 }
 :is(form, .form) :is(form, .form) > .inner-form { /* Soft-Nesting for Subform and EnumInput */
-  border-left: 1px solid var(--cl-fg);
+  border-left: 2px solid var(--cl-fg);
   padding-left: 0.5rem;
 }
 :is(form, .form) > :is(button, .button, h1, h2, h3, h4, h5, h6) {

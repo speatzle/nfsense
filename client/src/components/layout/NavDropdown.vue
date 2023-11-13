@@ -57,8 +57,9 @@ function tallyChildren(routes: NavRoute[]) {
 <style scoped>
 .nav-dropdown-body {
   max-height: 0px;
-  border-left: 1px solid white;
-  padding-left: calc(0.5rem - 1px);
+  border-left: 2px solid var(--cl-fg);
+  backdrop-filter: brightness(75%);
+  padding-left: calc(0.5rem - 2px);
 }
 
 span {

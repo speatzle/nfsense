@@ -8,15 +8,15 @@ const props = defineModels<{
   columns?: {
     heading: string,
     path: string,
-    component?: Component,
-  }[],
+    component?: string,
+  }[], // -
   data?: Record<string, any>[],
   sort?: boolean,
-  sortSelf?: boolean,
+  sortSelf?: boolean, // -
   sortBy?: string,
   sortDesc?: boolean,
   selection?: number[],
-  draggable?: boolean,
+  draggable?: boolean, // -
 }>();
 let { columns, data, sort, sortSelf, sortBy, sortDesc, selection, draggable } = $(props);
 
@@ -26,7 +26,10 @@ const emit = defineEmits<{
   (event: 'draggedRow', draggedRow: number, draggedOverRow: number): void,
 }>();
 
-if (!selection) selection = [];
+const componentProp: Record<string, string> = {
+  "EnumDisplay": "data",
+};
+
 
 const displayData = $computed(() => (sortSelf && sortBy !== '')
   ? data?.sort((a, b) => {
@@ -44,52 +47,26 @@ const displayData = $computed(() => (sortSelf && sortBy !== '')
 function toggleSorting(columnName: string) {
   if (!sort) return;
   if (columnName === sortBy) sortDesc = !sortDesc;
-  else {
-    sortDesc = false;
-    sortBy = columnName;
-  }
+  else [sortDesc, sortBy] = [false, columnName];
 }
 
-function rowSelection(index: number) {
-  if (!selection) selection = [];
-  if (shiftState) {
-    if (!selection?.length) {
-      selection = [index];
-    } else {
-      let last = selection[selection.length-1];
-      let start = index;
-      let end = last;
-      if (last < start) {
-        start = last;
-        end = index;
-      }
-      for (let i = start; i <= end; i++ ) {
-        if (!selection.includes(i)) {
-          selection =  [...selection, i];
-        }
-      }
-    }
-  } else if (ctrlState) {
-    if (selection.includes(index)) {
-      // remove if already exists
-      selection.splice(selection.indexOf(index), 1);
-    } else {
-      selection =  [...selection, index];
-    }
-  } else {
-    if (selection.includes(index)) {
-      selection = [];
-    } else {
-      selection = [index];
-    }
-  }
+function toggleRowSelection(index: number) {
+  if (!selection || !selection.length) selection = [index];
+  else if (shiftState) { // Selection becomes a range including the highest, lowest and clicked row
+    const points = [Math.max(...selection), Math.min(...selection), index];
+    const [max, min] = [Math.max(...points), Math.min(...points)];
+    selection = Array.from({length: max - min + 1}, (_, i) => i + min);
+  } else if (ctrlState) // Toggle the presence of the row in the selection
+    selection = selection.includes(index)
+      ? selection.filter(i => i !== index)
+      : selection =  [...selection, index];
+  else selection = selection.includes(index) ? [] : [index]; // Toggle between selection of none and this row
   emit('selectionChanged');
 }
 
 function atPath(value: any, path: string): any {
-  for (const segment of path.split('.')) {
-    value = value[segment];
-  }
+  for (const segment of path.split('.'))
+    value = (value ?? {} as any)[segment];
   return value;
 }
 
@@ -104,10 +81,9 @@ function dragDropRow() {
     emit('draggedRow', draggedRow, draggedOverRow);
   }
 
-  // Reset drag data
+  // Reset Drag & Remove Selection
   draggedRow = 0;
   draggedOverRow = 0;
-  // Kill selection
   selection = [];
 }
 </script>
@@ -130,7 +106,7 @@ function dragDropRow() {
     <tbody>
       <tr v-for="(row, index) in displayData" :key="index"
           :draggable="draggable"
-          @click="() => rowSelection(index)"
+          @click="() => toggleRowSelection(index)"
           @dblclick="() => emit('rowAction', index)"
           @dragstart="() => draggedRow = index"
           @dragenter="() => draggedOverRow = index"
@@ -141,8 +117,8 @@ function dragDropRow() {
             'dragged-over-after': index === draggedOverRow && draggedOverRow > draggedRow,
           }">
         <td v-for="{path, component} of columns" :key="path">
-          {{ component ? "" : atPath(row, path) }}
-          <component v-if="component" :is="component"/>
+          <component v-if="component" :is="component" v-bind="{[componentProp[component]]: atPath(row, path)}"/>
+          <template v-else>{{ atPath(row, path) }}</template>
         </td>
       </tr>
     </tbody>
@@ -150,14 +126,8 @@ function dragDropRow() {
 </template>
 
 <style scoped>
-.dragged-over-before {
-  border-top: 0.25rem solid var(--cl-fg);
-}
-.dragged-over-after {
-  border-bottom: 0.25rem solid var(--cl-fg);
-}
+.dragged-over-before { border-top: 0.25rem solid var(--cl-fg); }
+.dragged-over-after { border-bottom: 0.25rem solid var(--cl-fg); }
 
-tr {
-  cursor: grab;
-}
+tr { cursor: grab; }
 </style>

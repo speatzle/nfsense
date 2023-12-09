@@ -1,4 +1,4 @@
-use crate::definitions::Referenceable;
+use crate::definitions::system::User;
 use std::collections::HashMap;
 
 use rbtag::BuildInfo;
@@ -60,25 +60,24 @@ pub fn routes() -> Router<AppState> {
         .route("/session", post(session_handler))
 }
 
+fn get_user(name: String, users: Vec<User>) -> Option<User> {
+    for u in users {
+        if u.name == name {
+            return Some(u);
+        }
+    }
+    return None;
+}
+
 async fn login_handler(
     cookies: Cookies,
     State(state): State<AppState>,
     Json(payload): Json<LoginParameters>,
 ) -> impl IntoResponse {
-    if state
-        .config_manager
-        .get_current_config()
-        .system
-        .users
-        .named_exists(payload.username.to_string())
-    {
-        let user = state
-            .config_manager
-            .get_current_config()
-            .system
-            .users
-            .named_get(payload.username.to_string());
-
+    if let Some(user) = get_user(
+        payload.username.to_string(),
+        state.config_manager.get_current_config().system.users,
+    ) {
         if sha512_crypt::verify(payload.password, &user.hash) {
             let mut sessions = state.session_state.sessions.write().unwrap();
             let id = Uuid::new_v4().to_string();

@@ -3,8 +3,6 @@ use macaddr::MacAddr8;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
-use super::{network::NetworkInterfaceReference, object::AddressReference};
-
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
 pub struct Service {
     pub dhcp_servers: Vec<DHCPServer>,
@@ -14,8 +12,9 @@ pub struct Service {
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
 pub struct DHCPServer {
-    pub interface: NetworkInterfaceReference,
-    pub pool: Vec<AddressReference>,
+    pub name: String,
+    pub interface: String,
+    pub pool: Vec<String>,
     pub lease_time: time::Duration,
     pub gateway_mode: GatewayMode,
     pub dns_server_mode: DNSServerMode,
@@ -26,13 +25,15 @@ pub struct DHCPServer {
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
 pub struct DNSServer {
-    pub interface: NetworkInterfaceReference,
+    pub name: String,
+    pub interface: String,
     pub comment: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
 pub struct NTPServer {
-    pub interface: NetworkInterfaceReference,
+    pub name: String,
+    pub interface: String,
     pub comment: String,
 }
 
@@ -41,7 +42,7 @@ pub struct NTPServer {
 pub enum GatewayMode {
     None,
     Interface,
-    Specify { gateway: AddressReference },
+    Specify { gateway: String },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -49,7 +50,7 @@ pub enum GatewayMode {
 pub enum DNSServerMode {
     None,
     Interface,
-    Specify { dns_servers: Vec<AddressReference> },
+    Specify { dns_servers: Vec<String> },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -57,12 +58,12 @@ pub enum DNSServerMode {
 pub enum NTPServerMode {
     None,
     Interface,
-    Specify { ntp_servers: Vec<AddressReference> },
+    Specify { ntp_servers: Vec<String> },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Reservation {
-    pub ip_address: AddressReference,
+    pub ip_address: String,
     pub hardware_address: MacAddr8,
     pub comment: String,
 }

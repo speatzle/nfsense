@@ -6,10 +6,7 @@ add function to change name of referenced and update all references
 
 # Missing link types
 link_opt -> link from option
-link_single -> link source parent is not a vec
-
 link_enum_opt -> link from option in an enum
-link_enum_multi -> link where source is in an enum and is multiple
 */
 
 use serde::{Deserialize, Serialize};
@@ -88,6 +85,7 @@ macro_rules! macro_db {
                                 $enum_variant:ident,
                                 $fn_name:ident )
                             ) => {
+                                /* Temporarly Commented since this crashes rust-analyzer but compiles fine...
                                 for e in config.$($path_referencing).+.clone() {
                                     if let $enum_type::$enum_variant { $field_name, .. } = e.$enum_name {
                                         if &self.name == &$field_name {
@@ -98,6 +96,29 @@ macro_rules! macro_db {
                                         }
                                     }
                                 }
+                                */
+                            };
+                            (EM
+                                ($enum_name:ident,
+                                $enum_type:ident,
+                                $enum_variant:ident,
+                                $fn_name:ident )
+                            ) => {
+                                /* Temporarly Commented since this crashes rust-analyzer but compiles fine...
+                                for e in config.$($path_referencing).+.clone() {
+                                    if let $enum_type::$enum_variant { $field_name, .. } = e.$enum_name {
+                                        for reference in &$field_name {
+                                            if &self.name == reference {
+                                                by.push(ReferencedBy{
+                                                    name: e.name.clone(),
+                                                    path: stringify!(config.$($path_referencing).+).to_string(),
+                                                });
+                                            }
+                                        }
+                                    }
+
+                                }
+                                */
                             };
                         }
 
@@ -147,13 +168,11 @@ macro_rules! macro_db_link {
             fn $field_name(&self, config: Config) -> Vec<$thing_referenced> {
                 let mut res = Vec::<$thing_referenced>::new();
 
-                for r in self.$field_name.clone() {
-                    let index = config.$($path_referenced).+.iter().position(|e| *e.name == r);
-
-                    match index {
-                        Some(i) => res.push(config.$($path_referenced).+[i].clone()),
-                        // This is fine since the config always has to validated before commiting
-                        None => panic!("Referenced Thing: '{:?}' does not exist ", self.$field_name),
+                for reference in self.$field_name.clone() {
+                    for referenced in config.$($path_referenced).+.clone() {
+                        if reference == referenced.name {
+                            res.push(referenced);
+                        }
                     }
                 }
                 return res
@@ -189,6 +208,35 @@ macro_rules! macro_db_link {
                     None => panic!("Referenced Thing: does not exist (from Enum)"),
                 }
 
+            }
+        }
+    };
+    (   EM,
+        $field_name:ident,
+        $thing_referencing:ty,
+        $thing_referenced:ty,
+        $( $path_referenced:ident ).+
+        ($enum_name:ident,
+        $enum_type:ident,
+        $enum_variant:ident,
+        $fn_name:ident )
+    ) => {
+        // Unfortunetly Enum Variants are not Types, which is why we can't impl on the Variant and need seperate function names (since multiple variant could have the same field name)
+        impl $enum_type {
+            #[allow(dead_code)]
+            fn $fn_name(&self, config: Config) -> Vec<$thing_referenced> {
+                let mut res = Vec::<$thing_referenced>::new();
+
+                if let $enum_type::$enum_variant { $field_name, .. } = self {
+                    for reference in $field_name.clone() {
+                        for referenced in config.$($path_referenced).+.clone() {
+                            if reference == referenced.name {
+                                res.push(referenced);
+                            }
+                        }
+                    }
+                }
+                return res
             }
         }
     };

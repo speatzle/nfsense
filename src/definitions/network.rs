@@ -1,6 +1,4 @@
-use ipnet::IpNet;
 use serde::{Deserialize, Serialize};
-use std::net::IpAddr;
 use validator::Validate;
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
@@ -40,9 +38,8 @@ pub enum AddressingMode {
 pub struct StaticRoute {
     pub name: String,
     pub interface: String,
-    // TODO make this a Address Object Reference?
-    pub gateway: IpAddr,
-    pub destination: IpNet,
+    pub gateway: String,
+    pub destination: String,
     pub metric: u64,
     pub comment: String,
 }

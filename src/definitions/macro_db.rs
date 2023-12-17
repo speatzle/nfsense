@@ -121,6 +121,7 @@ macro_rules! macro_db_link {
         ()
     ) => {
         impl $thing_referencing {
+            #[allow(dead_code)]
             fn $field_name(&self, config: Config) -> $thing_referenced {
 
                 let index = config.$($path_referenced).+.iter().position(|e| *e.name == self.$field_name);

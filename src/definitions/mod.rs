@@ -1,5 +1,3 @@
-use self::config::Config;
-
 pub mod config;
 pub mod firewall;
 pub mod macro_db;

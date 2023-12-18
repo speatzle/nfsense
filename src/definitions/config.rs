@@ -2,7 +2,6 @@ use serde::{Deserialize, Serialize};
 use validator::Validate;
 
 use super::firewall;
-use super::firewall::SNATType;
 use super::network;
 use super::network::AddressingMode;
 use super::network::NetworkInterfaceType;

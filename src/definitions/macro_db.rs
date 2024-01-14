@@ -63,7 +63,7 @@ macro_rules! macro_db {
         $(
             impl $thing_referenced {
                 #[allow(dead_code)]
-                fn referenced_by(&self, config: Config) -> Vec<ReferencedBy> {
+                pub fn referenced_by(&self, config: Config) -> Vec<ReferencedBy> {
                     let mut by = Vec::<ReferencedBy>::new();
                     $(
                         macro_rules! macro_db_back_link {
@@ -143,7 +143,7 @@ macro_rules! macro_db_link {
     ) => {
         impl $thing_referencing {
             #[allow(dead_code)]
-            fn $field_name(&self, config: Config) -> $thing_referenced {
+            pub fn $field_name(&self, config: Config) -> $thing_referenced {
 
                 let index = config.$($path_referenced).+.iter().position(|e| *e.name == self.$field_name);
 
@@ -165,7 +165,7 @@ macro_rules! macro_db_link {
     ) => {
         impl $thing_referencing {
             #[allow(dead_code)]
-            fn $field_name(&self, config: Config) -> Vec<$thing_referenced> {
+            pub fn $field_name(&self, config: Config) -> Vec<$thing_referenced> {
                 let mut res = Vec::<$thing_referenced>::new();
 
                 for reference in self.$field_name.clone() {
@@ -192,7 +192,7 @@ macro_rules! macro_db_link {
         // Unfortunetly Enum Variants are not Types, which is why we can't impl on the Variant and need seperate function names (since multiple variant could have the same field name)
         impl $enum_type {
             #[allow(dead_code)]
-            fn $fn_name(&self, config: Config) -> $thing_referenced {
+            pub fn $fn_name(&self, config: Config) -> $thing_referenced {
                 let index = config.$($path_referenced).+.iter().position(
                     |e| {
                         if let $enum_type::$enum_variant { $field_name, .. } = self.clone() {
@@ -224,7 +224,7 @@ macro_rules! macro_db_link {
         // Unfortunetly Enum Variants are not Types, which is why we can't impl on the Variant and need seperate function names (since multiple variant could have the same field name)
         impl $enum_type {
             #[allow(dead_code)]
-            fn $fn_name(&self, config: Config) -> Vec<$thing_referenced> {
+            pub fn $fn_name(&self, config: Config) -> Vec<$thing_referenced> {
                 let mut res = Vec::<$thing_referenced>::new();
 
                 if let $enum_type::$enum_variant { $field_name, .. } = self {

@@ -149,8 +149,8 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
           'vlan': {
             display: 'VLAN',
             fields: {
-              vlan_parent: { is: 'SingleSelect', label: 'VLAN Parent', props: { searchProvider: GetInterfaces}},
-              vlan_id: { is: 'NumberBox', label: 'VLAN ID', props: { min: 1, max: 4094 }},
+              parent: { is: 'SingleSelect', label: 'VLAN Parent', props: { searchProvider: GetInterfaces}},
+              id: { is: 'NumberBox', label: 'VLAN ID', props: { min: 1, max: 4094 }},
             },
           },
           'bond': {
@@ -185,7 +185,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
       fields: {
         name: { is: 'TextBox', label: 'Name'},
         interface: { is: 'SingleSelect', label: 'Interface', props: { searchProvider: GetInterfaces} },
-        gatway: { is: 'TextBox', label: 'Gateway'},
+        gateway: { is: 'TextBox', label: 'Gateway'},
         destination: { is: 'TextBox', label: 'Destination'},
         metric: { is: 'NumberBox', label: 'Metric'},
         comment: { is: 'MultilineTextBox', label: 'Comment'},

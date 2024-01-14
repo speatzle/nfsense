@@ -16,10 +16,15 @@ use tracing::info;
 use tracing_subscriber;
 use web::auth::SessionState;
 
+#[macro_use]
+extern crate lazy_static;
+
 mod api;
+mod apply;
 mod config_manager;
 mod definitions;
 mod state;
+mod templates;
 mod web;
 
 #[tokio::main]

@@ -23,7 +23,7 @@ const displayData = $computed(() => {
       name: interfaces[index].name,
       type: interfaces[index].type,
       addressing_mode: interfaces[index].addressing_mode,
-      address: interfaces[nindexame].address,
+      address: interfaces[index].address,
       comment: interfaces[index].comment,
     });
   }

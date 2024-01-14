@@ -43,3 +43,8 @@ pub struct StaticRoute {
     pub metric: u64,
     pub comment: String,
 }
+
+#[derive(Serialize, Deserialize, Clone, Validate, Debug)]
+pub struct Link {
+    pub name: String,
+}

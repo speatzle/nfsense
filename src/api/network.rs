@@ -1,13 +1,13 @@
 use super::ApiError;
 use crate::{
     create_thing,
-    definitions::network::{NetworkInterface, StaticRoute},
+    definitions::network::{Link, NetworkInterface, StaticRoute},
     delete_thing_by_index, delete_thing_by_name, get_thing_by_index, get_thing_by_name,
     list_things,
     state::RpcState,
     update_thing_by_index, update_thing_by_name,
 };
-use jsonrpsee::RpcModule;
+use jsonrpsee::{types::Params, RpcModule};
 
 pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
@@ -79,4 +79,13 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
             delete_thing_by_name!(network.interfaces),
         )
         .unwrap();
+    module
+        .register_method("network.links.list", list_network_links)
+        .unwrap();
+}
+
+pub fn list_network_links(_: Params, state: &RpcState) -> Result<Vec<Link>, ApiError> {
+    Ok(vec![Link {
+        name: "test1".to_string(),
+    }])
 }

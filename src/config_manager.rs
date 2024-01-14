@@ -1,13 +1,11 @@
-use serde::Serialize;
-use validator::Validate;
-
 use super::definitions::config::Config;
+use pwhash::sha512_crypt;
+use serde::Serialize;
 use std::fs;
 use std::sync::{Arc, Mutex, MutexGuard};
-
-use pwhash::sha512_crypt;
-
 use thiserror::Error;
+use tracing::{error, info};
+use validator::Validate;
 
 #[derive(Error, Debug)]
 pub enum ConfigError {
@@ -33,6 +31,11 @@ pub enum ConfigError {
 
 pub const CURRENT_CONFIG_PATH: &str = "config.json";
 pub const PENDING_CONFIG_PATH: &str = "pending.json";
+
+static APPLY_FUNCTIONS: &'static [fn(
+    pending_config: Config,
+    current_config: Config,
+) -> Result<(), super::apply::ApplyError>] = &[super::apply::networkd::apply_networkd];
 
 #[derive(Clone)]
 pub struct ConfigManager {
@@ -93,8 +96,36 @@ impl ConfigManager {
 
     pub fn apply_pending_changes(&mut self) -> Result<(), ConfigError> {
         let mut data = self.shared_data.lock().unwrap();
-        // TODO run Apply functions
-        // TODO Revert on Apply Failure and Return
+
+        // TODO Improve Error Handling
+        for apply_function in APPLY_FUNCTIONS {
+            match (apply_function)(data.pending_config.clone(), data.current_config.clone()) {
+                Ok(_) => info!("Applied"),
+                Err(e) => {
+                    error!("Applying function, Reverting to current config...");
+
+                    for apply_function in APPLY_FUNCTIONS {
+                        match (apply_function)(
+                            // These are swapped for revert
+                            data.current_config.clone(),
+                            data.pending_config.clone(),
+                        ) {
+                            Ok(_) => info!("Applied"),
+                            Err(e) => {
+                                error!("Reverting failed, giving up.");
+                                return Err(ConfigError::ApplyError(e));
+                            }
+                        }
+                    }
+
+                    info!("Revert Done.");
+                    return Err(ConfigError::ApplyError(e));
+                }
+            }
+        }
+
+        info!("Apply Done.");
+
         write_config_to_file(CURRENT_CONFIG_PATH, data.pending_config.clone())?;
         // TODO revert if config save fails
         // TODO Remove Pending Config File

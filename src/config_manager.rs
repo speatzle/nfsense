@@ -23,6 +23,9 @@ pub enum ConfigError {
     #[error("Unsupported config version")]
     UnsupportedVersionError,
 
+    #[error("Apply Error")]
+    ApplyError(#[from] super::apply::ApplyError),
+
     /// Represents all other cases of `std::io::Error`.
     #[error(transparent)]
     IOError(#[from] std::io::Error),

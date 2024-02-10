@@ -8,6 +8,7 @@ use crate::{
     update_thing_by_index, update_thing_by_name,
 };
 use jsonrpsee::{types::Params, RpcModule};
+use std::process::Command;
 
 pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
@@ -85,7 +86,24 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
 }
 
 pub fn list_network_links(_: Params, _state: &RpcState) -> Result<Vec<Link>, ApiError> {
-    Ok(vec![Link {
-        name: "test1".to_string(),
-    }])
+    match Command::new("ls")
+        .arg("-w")
+        .arg("1")
+        .arg("/sys/class/net")
+        .output()
+    {
+        Ok(out) => {
+            let mut links = vec![];
+            let output = String::from_utf8_lossy(&out.stdout).to_string();
+
+            for l in output.split("\n") {
+                links.push(Link {
+                    name: l.to_string(),
+                })
+            }
+
+            Ok(links)
+        }
+        Err(err) => Err(ApiError::IOError(err)),
+    }
 }

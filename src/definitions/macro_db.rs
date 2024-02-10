@@ -63,6 +63,7 @@ macro_rules! macro_db {
         $(
             impl $thing_referenced {
                 #[allow(dead_code)]
+                // TODO Allow filtering by type, generic function?
                 pub fn referenced_by(&self, config: Config) -> Vec<ReferencedBy> {
                     let mut by = Vec::<ReferencedBy>::new();
                     $(

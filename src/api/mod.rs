@@ -29,6 +29,9 @@ pub enum ApiError {
 
     #[error(transparent)]
     ConfigError(#[from] crate::config_manager::ConfigError),
+
+    #[error(transparent)]
+    IOError(#[from] std::io::Error),
 }
 
 impl Into<ErrorObject<'static>> for ApiError {

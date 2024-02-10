@@ -6,6 +6,7 @@ use crate::{
 };
 use jsonrpsee::types::Params;
 use jsonrpsee::RpcModule;
+use std::process::Command;
 
 pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
@@ -84,5 +85,8 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
 }
 
 pub fn wireguard_status(_: Params, _: &RpcState) -> Result<String, ApiError> {
-    Ok("ok".to_string())
+    match Command::new("wg").output() {
+        Ok(out) => Ok(String::from_utf8_lossy(&out.stdout).to_string()),
+        Err(err) => Err(ApiError::IOError(err)),
+    }
 }

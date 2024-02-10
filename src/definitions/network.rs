@@ -30,7 +30,10 @@ pub enum NetworkInterfaceType {
 #[serde(rename_all = "snake_case")]
 pub enum AddressingMode {
     None,
-    Static { address: String },
+    Static {
+        address: String,
+    },
+    #[serde(rename(serialize = "dhcp", deserialize = "dhcp"))]
     DHCP,
 }
 

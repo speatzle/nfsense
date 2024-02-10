@@ -21,6 +21,7 @@ import INodes from '~icons/fa6-solid/share-nodes';
 import IList from '~icons/material-symbols/format-list-bulleted';
 import IFirewall from '~icons/mdi/wall-fire';
 import INetwork from '~icons/mdi/lan';
+import IVPN from '~icons/mdi/vpn';
 
 enum NavState { Open, Reduced, Collapsed };
 const NavStateCount = 3;
@@ -47,7 +48,7 @@ const navRoutesNew = [
     { caption: 'DNS', icon: IDNSServer, href: '/service/dns_servers' },
     { caption: 'NTP', icon: ITimeServer, href: '/service/ntp_servers' },
   ] },
-  { caption: 'VPN', icon: IList, children: [
+  { caption: 'VPN', icon: IVPN, children: [
     { caption: 'Wireguard', icon: IWireguard, children: [
       { caption: 'Status', icon: IDashboard, href: '/vpn/wireguard_status' },
       { caption: 'Interfaces', icon: IEthernet, href: '/vpn/wireguard.interfaces' },

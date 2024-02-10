@@ -84,7 +84,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 }
 
-pub fn list_network_links(_: Params, state: &RpcState) -> Result<Vec<Link>, ApiError> {
+pub fn list_network_links(_: Params, _state: &RpcState) -> Result<Vec<Link>, ApiError> {
     Ok(vec![Link {
         name: "test1".to_string(),
     }])

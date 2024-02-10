@@ -46,10 +46,12 @@ const navRoutesNew = [
     { caption: 'DHCP', icon: IDHCPServer, href: '/service/dhcp_servers' },
     { caption: 'DNS', icon: IDNSServer, href: '/service/dns_servers' },
     { caption: 'NTP', icon: ITimeServer, href: '/service/ntp_servers' },
+  ] },
+  { caption: 'VPN', icon: IList, children: [
     { caption: 'Wireguard', icon: IWireguard, children: [
       { caption: 'Status', icon: IDashboard, href: '/vpn/wireguard_status' },
-      { caption: 'Interfaces', icon: IEthernet, href: '/vpn/wireguard_interfaces' },
-      { caption: 'Peers', icon: INodes, href: '/vpn/wireguard_peers' },
+      { caption: 'Interfaces', icon: IEthernet, href: '/vpn/wireguard.interfaces' },
+      { caption: 'Peers', icon: INodes, href: '/vpn/wireguard.peers' },
     ]},
   ] },
   { caption: 'Users', icon: IUser, href: '/system/users' },

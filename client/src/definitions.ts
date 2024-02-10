@@ -325,24 +325,24 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
   },
   'vpn': {
     name: 'VPN',
-    'wireguard_interfaces': {
+    'wireguard.interfaces': {
       name: 'Wireguard Interface',
       fields: {
         name: { is: 'TextBox', label: 'Name'},
         public_key: { is: 'TextBox', label: 'Public Key'},
         private_key: { is: 'TextBox', label: 'Private Key'},
         listen_port: { is: 'NumberBox', label: 'Listen Port'},
-        peers: { is: 'MutliSelect', label: 'Peers', props: { searchProvider: GetPeers} },
+        peers: { is: 'MultiSelect', label: 'Peers', props: { searchProvider: GetPeers} },
         comment: { is: 'MultilineTextBox', label: 'Comment'},
       },
     },
-    'wireguard_peers': {
+    'wireguard.peers': {
       name: 'Wireguard Peer',
       fields: {
         name: { is: 'TextBox', label: 'Name'},
         public_key: { is: 'TextBox', label: 'Public Key'},
         preshared_key: { is: 'TextBox', label: 'Preshared Key'},
-        allowed_ips: { is: 'MutliSelect', label: 'Allowed IPs', props: { searchProvider: GetAddresses} },
+        allowed_ips: { is: 'MultiSelect', label: 'Allowed IPs', props: { searchProvider: GetAddresses} },
         endpoint: { is: 'TextBox', label: 'Endpoint'},
         persistent_keepalive: { is: 'NumberBox', label: 'Persistent Keepalive'},
         comment: { is: 'MultilineTextBox', label: 'Comment'},

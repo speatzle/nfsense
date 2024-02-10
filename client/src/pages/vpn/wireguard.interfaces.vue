@@ -18,12 +18,12 @@ const columns = [
 const displayData = $computed(() => {
   let data: any;
   data = [];
-  for (const name in interfaces) {
+  for (const index in interfaces) {
     data.push({
-      name,
-      listen_port: interfaces[name].listen_port,
-      peers: interfaces[name].peers,
-      comment: interfaces[name].comment,
+      name: interfaces[index].name,
+      listen_port: interfaces[index].listen_port,
+      peers: interfaces[index].peers,
+      comment: interfaces[index].comment,
     });
   }
   return data;
@@ -52,7 +52,7 @@ async function deleteInterface(){
 }
 
 async function editInterface() {
-  p.router.push(`/vpn/wireguard_interfaces/edit/${  displayData[selection[0]].name}`);
+  p.router.push(`/vpn/wireguard.interfaces/edit/${  displayData[selection[0]].name}`);
 }
 
 onMounted(async() => {
@@ -64,7 +64,7 @@ onMounted(async() => {
 <template>
   <TableView title="Wireguard Interfaces" :columns="columns" :loading="loading" v-model:selection="selection" v-model:data="displayData" :table-props="{sort:true, sortSelf: true}">
     <button @click="load">Refresh</button>
-    <router-link class="button" to="/vpn/wireguard_interfaces/edit">Create</router-link>
+    <router-link class="button" to="/vpn/wireguard.interfaces/edit">Create</router-link>
     <button @click="editInterface" :disabled="selection.length != 1">Edit</button>
     <button @click="deleteInterface" :disabled="selection.length != 1">Delete</button>
   </TableView>

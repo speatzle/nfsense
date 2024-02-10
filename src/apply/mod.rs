@@ -6,4 +6,10 @@ pub mod networkd;
 pub enum ApplyError {
     #[error("Template Error")]
     TemplateError(#[from] tera::Error),
+
+    #[error(transparent)]
+    IOError(#[from] std::io::Error),
+
+    #[error("Service Restart Failed")]
+    ServiceRestartFailed,
 }

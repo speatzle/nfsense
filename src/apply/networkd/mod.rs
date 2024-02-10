@@ -3,7 +3,8 @@ use crate::{
     definitions::{config::Config, network::NetworkInterfaceType},
     templates,
 };
-use std::error::Error;
+use std::process::Command;
+use std::{error::Error, io::Write};
 use tera::Context;
 use tracing::{error, info};
 
@@ -12,14 +13,57 @@ pub struct File {
     pub content: String,
 }
 
+pub fn delete_files_in_folder(path: &str) -> std::io::Result<()> {
+    for entry in std::fs::read_dir(path)? {
+        let entry = entry?;
+        std::fs::remove_file(entry.path())?;
+    }
+    Ok(())
+}
+
+pub fn create_files_in_folder(path: &str, files: Vec<File>) -> std::io::Result<()> {
+    for file in files {
+        let mut f = std::fs::File::create(path.to_string() + "/" + &file.name)?;
+        f.write_all(file.content.as_bytes())?;
+    }
+    Ok(())
+}
+
 pub fn apply_networkd(pending_config: Config, current_config: Config) -> Result<(), ApplyError> {
     let files = generate_networkd_config_files(pending_config, current_config)?;
     info!("Got Files");
-    for file in files {
+    for file in &files {
         info!("Conf File {}", file.name);
         info!("\n{}", file.content);
     }
-    Ok(())
+
+    info!("Deleting old Networkd Configs");
+    match delete_files_in_folder("/etc/systemd/network") {
+        Ok(_) => (),
+        Err(err) => return Err(ApplyError::IOError(err)),
+    }
+
+    info!("Writing new Networkd Configs");
+    match create_files_in_folder("/etc/systemd/network", files) {
+        Ok(_) => (),
+        Err(err) => return Err(ApplyError::IOError(err)),
+    }
+
+    info!("Restarting Networkd");
+    match Command::new("systemctl")
+        .arg("restart")
+        .arg("systemd-networkd")
+        .output()
+    {
+        Ok(out) => {
+            if out.status.success() {
+                Ok(())
+            } else {
+                Err(ApplyError::ServiceRestartFailed)
+            }
+        }
+        Err(err) => Err(ApplyError::IOError(err)),
+    }
 }
 
 pub fn generate_networkd_config_files(

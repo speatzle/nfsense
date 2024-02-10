@@ -1,0 +1,24 @@
+[NetDev]
+Name={{ interface.name }}
+Kind=wireguard
+
+[WireGuard]
+ListenPort={{ interface.listen_port }}
+PrivateKey={{ interface.private_key }}
+
+{% for peer in peers -%}
+[WireGuardPeer]
+PublicKey={{ peer.public_key }}
+{% if peer.preshared_key -%}
+PresharedKey={{ peer.preshared_key }}
+{% endif -%}
+{% for allowed_ip in peer.allowed_ips -%}
+AllowedIPs={{ allowed_ip }}
+{% endfor -%}
+{% if peer.endpoint -%}
+Endpoint={{ peer.endpoint }}
+{% endif -%}
+{% if peer.persistent_keepalive -%}
+PersistentKeepalive={{ peer.persistent_keepalive }}
+{% endif %}
+{% endfor %}

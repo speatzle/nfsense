@@ -17,7 +17,7 @@ pub fn apply_networkd(pending_config: Config, current_config: Config) -> Result<
     info!("Got Files");
     for file in files {
         info!("Conf File {}", file.name);
-        info!("{}", file.content);
+        info!("\n{}", file.content);
     }
     Ok(())
 }
@@ -114,39 +114,60 @@ pub fn generate_networkd_config_files(
     }
 
     // Step 4 Generate wireguard netdev files
-    /* TODO
-    for interface in &pending_config.network.interfaces {
-        if let NetworkInterfaceType::Bridge { .. } = interface.interface_type {
-            let mut context = Context::new();
-            context.insert("name", &interface.name);
+    for interface in &pending_config.vpn.wireguard.interfaces {
+        let mut context = Context::new();
+        context.insert("interface", &interface);
+        context.insert("peers", &interface.peers(pending_config.clone()));
 
-            files.push(generate_config_file(
-                context,
-                "networkd/create-wireguard.netdev",
-                format!("40-create-wireguard-{}.netdev", &interface.name),
-            )?);
-        }
+        files.push(generate_config_file(
+            context,
+            "networkd/create-wireguard.netdev",
+            format!("40-create-wireguard-{}.netdev", &interface.name),
+        )?);
     }
-    */
 
     // Step 5 Generate Addressing network files
-    /*
     for interface in &pending_config.network.interfaces {
-        if let NetworkInterfaceType::Vlan { id, .. } = &interface.interface_type {
-            let mut context = Context::new();
-            match &interface.interface_type {
-                NetworkInterfaceType::Hardware { device } => context.insert("name", &device),
-                _ => context.insert("name", &member.name),
-            };
+        let mut context = Context::new();
+        match &interface.interface_type {
+            NetworkInterfaceType::Hardware { device } => context.insert("name", &device),
+            _ => context.insert("name", &interface.name),
+        };
 
-            files.push(generate_config_file(
-                context,
-                "networkd/config-addressing.network",
-                format!("70-config-addressing-{}.network", &interface.name),
-            )?);
+        context.insert("interface", &interface);
+
+        // List of all vlans that have this interface as a parent
+        let mut vlans = Vec::new();
+        // TODO Use Backreferenceing instead of loop and if
+        for vlan in &pending_config.network.interfaces {
+            match &vlan.interface_type {
+                NetworkInterfaceType::Vlan { parent, .. } => {
+                    if parent == &interface.name {
+                        vlans.push(vlan.name.clone());
+                    }
+                }
+                _ => (),
+            };
         }
+        context.insert("vlans", &vlans);
+
+        // List all Static Routes for this interface
+        let mut static_routes = Vec::new();
+        // TODO Use Backreferenceing instead of loop and if
+        for static_route in &pending_config.network.static_routes {
+            if static_route.interface == interface.name {
+                static_routes.push(static_route);
+            }
+        }
+        context.insert("static_routes", &static_routes);
+
+        files.push(generate_config_file(
+            context,
+            "networkd/config-addressing.network",
+            format!("70-config-addressing-{}.network", &interface.name),
+        )?);
     }
-    */
+
     Ok(files)
 }
 

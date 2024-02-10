@@ -1,0 +1,22 @@
+[Match]
+Name={{ name }}
+
+[Network]
+LLMNR=no
+{% if interface.addressing_mode is containing("static") -%}
+Address={{ interface.addressing_mode.static.address }}
+{% elif interface.addressing_mode is containing("dhcp") -%}
+DHCP=yes
+{% endif -%}
+{% for vlan in vlans -%}
+VLAN={{ vlan }}
+{% endfor -%}
+
+{% for static_route in static_routes %}
+[Route]
+Destination={{ static_route.destination }}
+Gateway={{ static_route.gateway }}
+{% if static_route.metric != 0 -%}
+Metric={{ static_route.metric }}
+{% endif -%}
+{% endfor -%}

@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use validator::Validate;
 
 use super::firewall;
+use super::firewall::SNATType;
 use super::network;
 use super::network::AddressingMode;
 use super::network::NetworkInterfaceType;
@@ -36,12 +37,12 @@ macro_db!(
         // DestinationNATRule
         [ M: source_addresses, firewall::DestinationNATRule, object.addresses; firewall.destination_nat_rules ()],
         [ M: destination_addresses, firewall::DestinationNATRule, object.addresses; firewall.destination_nat_rules ()],
-        //[ O: dnat_address, firewall::DestinationNATRule, object.addresses; firewall.destination_nat_rules ()],
+        [ O: dnat_address, firewall::DestinationNATRule, object.addresses; firewall.destination_nat_rules ()],
 
         // SourceNATRule
         [ M: source_addresses, firewall::SourceNATRule, object.addresses; firewall.source_nat_rules ()],
         [ M: destination_addresses, firewall::SourceNATRule, object.addresses; firewall.source_nat_rules ()],
-        //[ EO: address, firewall::SourceNATRule, object.addresses; firewall.source_nat_rules (snat_type, SNATType, SNAT, address)],
+        [ EO: address, firewall::SourceNATRule, object.addresses; firewall.source_nat_rules (snat_type, SNATType, SNAT, address)],
 
         // StaticRoutes
         [ S: gateway, network::StaticRoute, object.addresses; network.static_routes ()],
@@ -61,7 +62,7 @@ macro_db!(
 
         // WireguardPeer
         [ M: allowed_ips, vpn::WireguardPeer, object.addresses; vpn.wireguard.peers ()],
-        //[ O: endpoint, vpn::WireguardPeer, object.addresses; vpn.wireguard.peers ()],
+        [ O: endpoint, vpn::WireguardPeer, object.addresses; vpn.wireguard.peers ()],
 
         ->
         object::Address
@@ -72,11 +73,11 @@ macro_db!(
 
         // DestinationNATRule
         [ M: services, firewall::DestinationNATRule, object.services; firewall.destination_nat_rules ()],
-        //[ O: dnat_service, firewall::DestinationNATRule, object.services; firewall.destination_nat_rules ()],
+        [ O: dnat_service, firewall::DestinationNATRule, object.services; firewall.destination_nat_rules ()],
 
         // SourceNATRule
         [ M: services, firewall::SourceNATRule, object.services; firewall.source_nat_rules ()],
-        //[ EO: service, firewall::SourceNATRule, object.servics; firewall.source_nat_rules (snat_type, SNATType, SNAT, service)],
+        [ EO: service, firewall::SourceNATRule, object.services; firewall.source_nat_rules (snat_type, SNATType, SNAT, service)],
         [ EM: members, object::Service, object.services; object.services (service_type, ServiceType, Group, members)],
         ->
         object::Service

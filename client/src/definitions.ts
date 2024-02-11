@@ -310,6 +310,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
       name: 'NTP Server',
       idType: 'Number',
       fields: {
+        name: { is: 'TextBox', label: 'Name'},
         interface: { is: 'SingleSelect', label: 'Interface', props: { searchProvider: GetInterfaces} },
         comment: { is: 'MultilineTextBox', label: 'Comment'},
       },

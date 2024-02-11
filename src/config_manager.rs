@@ -35,7 +35,10 @@ pub const PENDING_CONFIG_PATH: &str = "pending.json";
 static APPLY_FUNCTIONS: &'static [fn(
     pending_config: Config,
     current_config: Config,
-) -> Result<(), super::apply::ApplyError>] = &[super::apply::networkd::apply_networkd];
+) -> Result<(), super::apply::ApplyError>] = &[
+    super::apply::networkd::apply_networkd,
+    super::apply::chrony::apply_chrony,
+];
 
 #[derive(Clone)]
 pub struct ConfigManager {

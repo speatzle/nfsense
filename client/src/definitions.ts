@@ -122,7 +122,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
           'snat': {
             display: 'SNAT',
             fields: {
-              address: { is: 'SingleSelect', label: 'Destination', props: { searchProvider: GetAddresses}},
+              address: { is: 'SingleSelect', label: 'Source', props: { searchProvider: GetAddresses}},
               service: { is: 'SingleSelect', label: 'Service', props: { searchProvider: GetServices}},
             },
           },

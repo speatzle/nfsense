@@ -33,11 +33,6 @@ pub fn create_files_in_folder(path: &str, files: Vec<File>) -> std::io::Result<(
 
 pub fn apply_networkd(pending_config: Config, current_config: Config) -> Result<(), ApplyError> {
     let files = generate_networkd_config_files(pending_config, current_config)?;
-    info!("Got Files");
-    for file in &files {
-        info!("Conf File {}", file.name);
-        info!("\n{}", file.content);
-    }
 
     info!("Deleting old Networkd Configs");
     match delete_files_in_folder(NETWORKD_CONFIG_PATH) {

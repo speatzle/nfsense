@@ -74,6 +74,11 @@ macro_rules! macro_db {
                                     path: stringify!(config.$($path_referencing).+).to_string(),
                                 }));
                             };
+                            (O ()) => {
+                                /*
+                                TODO
+                                */
+                            };
                             (M ()) => {
                                 config.$($path_referencing).+.iter().filter(|e| e.$field_name.contains(&self.name)).for_each(|e| by.push(ReferencedBy{
                                     name: e.name.clone(),
@@ -97,6 +102,16 @@ macro_rules! macro_db {
                                         }
                                     }
                                 }
+                                */
+                            };
+                            (EO
+                                ($enum_name:ident,
+                                $enum_type:ident,
+                                $enum_variant:ident,
+                                $fn_name:ident )
+                            ) => {
+                                /*
+                                TODO
                                 */
                             };
                             (EM
@@ -157,6 +172,32 @@ macro_rules! macro_db_link {
             }
         }
     };
+    (   O,
+        $field_name:ident,
+        $thing_referencing:ty,
+        $thing_referenced:ty,
+        $( $path_referenced:ident ).+
+        ()
+    ) => {
+        impl $thing_referencing {
+            #[allow(dead_code)]
+            pub fn $field_name(&self, config: Config) -> Option<$thing_referenced> {
+
+                match self.$field_name.clone() {
+                    None => None,
+                    Some(s) => {
+                        let index = config.$($path_referenced).+.iter().position(|e| *e.name == s);
+
+                        match index {
+                            Some(i) => Some(config.$($path_referenced).+[i].clone()),
+                            // This is fine since the config always has to validated before commiting
+                            None => panic!("Referenced Thing: '{:?}' does not exist ", self.$field_name),
+                        }
+                    }
+                }
+            }
+        }
+    };
     (   M,
         $field_name:ident,
         $thing_referencing:ty,
@@ -194,21 +235,58 @@ macro_rules! macro_db_link {
         impl $enum_type {
             #[allow(dead_code)]
             pub fn $fn_name(&self, config: Config) -> $thing_referenced {
-                let index = config.$($path_referenced).+.iter().position(
-                    |e| {
-                        if let $enum_type::$enum_variant { $field_name, .. } = self.clone() {
-                            return *e.name == $field_name;
-                        }
-                        return false;
-                    }
-                );
+                if let $enum_type::$enum_variant { $field_name, .. } = self.clone() {
+                            let index = config.$($path_referenced).+.iter().position(
+                                |e| {
+                                    return *e.name == $field_name;
+                                }
+                            );
 
-                match index {
-                    Some(i) => config.$($path_referenced).+[i].clone(),
-                    // This is fine since the config always has to validated before commiting
-                    None => panic!("Referenced Thing: does not exist (from Enum)"),
+                            match index {
+                                Some(i) => config.$($path_referenced).+[i].clone(),
+                                // This is fine since the config always has to validated before commiting
+                                None => panic!("Referenced Thing: does not exist (from Enum)"),
+                            }
+                } else {
+                    panic!("Called Referenced for wrong Enum Variant")
                 }
+            }
+        }
+    };
+    (   EO,
+        $field_name:ident,
+        $thing_referencing:ty,
+        $thing_referenced:ty,
+        $( $path_referenced:ident ).+
+        ($enum_name:ident,
+        $enum_type:ident,
+        $enum_variant:ident,
+        $fn_name:ident )
+    ) => {
+        // Unfortunetly Enum Variants are not Types, which is why we can't impl on the Variant and need seperate function names (since multiple variant could have the same field name)
+        impl $enum_type {
+            #[allow(dead_code)]
+            pub fn $fn_name(&self, config: Config) -> Option<$thing_referenced> {
+                if let $enum_type::$enum_variant { $field_name, .. } = self.clone() {
+                    match $field_name {
+                        None => None,
+                        Some(f) => {
+                            let index = config.$($path_referenced).+.iter().position(
+                                |e| {
+                                    return *e.name == f;
+                                }
+                            );
 
+                            match index {
+                                Some(i) => Some(config.$($path_referenced).+[i].clone()),
+                                // This is fine since the config always has to validated before commiting
+                                None => panic!("Referenced Thing: does not exist (from Enum)"),
+                            }
+                        }
+                    }
+                } else {
+                    panic!("Called Referenced for wrong Enum Variant")
+                }
             }
         }
     };

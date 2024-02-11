@@ -8,6 +8,8 @@ use std::{error::Error, io::Write};
 use tera::Context;
 use tracing::{error, info};
 
+const NETWORKD_CONFIG_PATH: &str = "/etc/systemd/network";
+
 pub struct File {
     pub name: String,
     pub content: String,
@@ -38,13 +40,13 @@ pub fn apply_networkd(pending_config: Config, current_config: Config) -> Result<
     }
 
     info!("Deleting old Networkd Configs");
-    match delete_files_in_folder("/etc/systemd/network") {
+    match delete_files_in_folder(NETWORKD_CONFIG_PATH) {
         Ok(_) => (),
         Err(err) => return Err(ApplyError::IOError(err)),
     }
 
     info!("Writing new Networkd Configs");
-    match create_files_in_folder("/etc/systemd/network", files) {
+    match create_files_in_folder(NETWORKD_CONFIG_PATH, files) {
         Ok(_) => (),
         Err(err) => return Err(ApplyError::IOError(err)),
     }

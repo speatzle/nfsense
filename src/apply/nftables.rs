@@ -145,18 +145,41 @@ fn generate_service_matchers(services: Vec<Service>) -> Result<Vec<String>, Appl
     Ok(list)
 }
 
-fn generate_destination_nat_action(
-    dnat_address: Option<Address>,
-    dnat_service: Option<Service>,
+fn generate_nat_action(
+    address: Option<Address>,
+    service: Option<Service>,
 ) -> Result<String, ApplyError> {
-    Ok("".to_string())
-}
+    let mut action;
+    match address {
+        Some(a) => {
+            action = "ip to ".to_string()
+                + &match a.address_type {
+                    AddressType::Host { address } => address.to_string(),
+                    _ => panic!("Invalid AddressType as Nat Action"),
+                }
+        }
+        None => match service {
+            Some(_) => action = "to ".to_string(),
+            None => panic!("Address and Service can't both be None for Nat Action"),
+        },
+    }
 
-fn generate_source_nat_action(
-    snat_address: Option<Address>,
-    snat_service: Option<Service>,
-) -> Result<String, ApplyError> {
-    Ok("".to_string())
+    match service {
+        Some(s) => match s.service_type {
+            ServiceType::TCP { destination, .. } | ServiceType::UDP { destination, .. } => {
+                match destination {
+                    PortDefinition::Single { port } => {
+                        action += ":";
+                        action += &port.to_string()
+                    }
+                    _ => panic!("Destination Port Definition must be Single for Nat Action"),
+                }
+            }
+            _ => panic!("ServiceType must be TCP or UDP for Nat Action"),
+        },
+        None => (),
+    }
+    Ok(action)
 }
 
 pub fn apply_nftables(pending_config: Config, _current_config: Config) -> Result<(), ApplyError> {
@@ -197,10 +220,13 @@ pub fn apply_nftables(pending_config: Config, _current_config: Config) -> Result
             )?,
             services: generate_service_matchers(rule.services(pending_config.clone()))?,
             verdict: None,
-            destination_nat_action: Some(generate_destination_nat_action(
-                rule.dnat_address(pending_config.clone()),
-                rule.dnat_service(pending_config.clone()),
-            )?),
+            destination_nat_action: Some(
+                "dnat ".to_string()
+                    + &generate_nat_action(
+                        rule.dnat_address(pending_config.clone()),
+                        rule.dnat_service(pending_config.clone()),
+                    )?,
+            ),
             source_nat_action: None,
         })
     }
@@ -221,10 +247,13 @@ pub fn apply_nftables(pending_config: Config, _current_config: Config) -> Result
             destination_nat_action: None,
             source_nat_action: Some(match rule.snat_type.clone() {
                 SNATType::Masquerade => "masquerade".to_string(),
-                SNATType::SNAT { .. } => generate_source_nat_action(
-                    rule.snat_type.address(pending_config.clone()),
-                    rule.snat_type.service(pending_config.clone()),
-                )?,
+                SNATType::SNAT { .. } => {
+                    "snat ".to_string()
+                        + &generate_nat_action(
+                            rule.snat_type.address(pending_config.clone()),
+                            rule.snat_type.service(pending_config.clone()),
+                        )?
+                }
             }),
         })
     }

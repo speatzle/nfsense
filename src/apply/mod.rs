@@ -2,6 +2,7 @@ use thiserror::Error;
 
 pub mod chrony;
 pub mod networkd;
+pub mod unbound;
 
 #[derive(Error, Debug)]
 pub enum ApplyError {

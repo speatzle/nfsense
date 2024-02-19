@@ -1,3 +1,4 @@
+use ipnet::IpNet;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
@@ -31,7 +32,7 @@ pub enum NetworkInterfaceType {
 pub enum AddressingMode {
     None,
     Static {
-        address: String,
+        address: IpNet,
     },
     #[serde(rename(serialize = "dhcp", deserialize = "dhcp"))]
     DHCP,

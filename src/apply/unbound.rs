@@ -6,9 +6,7 @@ use crate::{
     },
     templates,
 };
-use ipnet::IpNet;
 use std::process::Command;
-use std::str::FromStr;
 use std::{error::Error, io::Write};
 use tera::Context;
 use tracing::{error, info};
@@ -33,7 +31,7 @@ pub fn apply_unbound(pending_config: Config, _current_config: Config) -> Result<
         if let AddressingMode::Static { address } =
             &server.interface(pending_config.clone()).addressing_mode
         {
-            subnets.push(IpNet::from_str(address)?.network().to_string());
+            subnets.push(address.network().to_string());
         }
     }
     context.insert("interfaces", &interfaces);

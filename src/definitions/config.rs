@@ -4,7 +4,6 @@ use validator::Validate;
 use super::firewall;
 use super::firewall::SNATType;
 use super::network;
-use super::network::AddressingMode;
 use super::network::NetworkInterfaceType;
 use super::object;
 use super::object::AddressType;
@@ -47,9 +46,6 @@ macro_db!(
         // StaticRoutes
         [ S: gateway, network::StaticRoute, object.addresses; network.static_routes ()],
         [ S: destination, network::StaticRoute, object.addresses; network.static_routes ()],
-
-        // NetworkInteface
-        [ E: address, network::NetworkInterface, object.addresses; network.interfaces (addressing_mode, AddressingMode, Static, address)],
 
         // Address
         [ EM: members, object::Address, object.addresses; object.addresses (address_type, AddressType, Group, members)],

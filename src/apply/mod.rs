@@ -1,6 +1,7 @@
 use thiserror::Error;
 
 pub mod chrony;
+pub mod kea;
 pub mod networkd;
 pub mod nftables;
 pub mod unbound;
@@ -15,6 +16,9 @@ pub enum ApplyError {
 
     #[error(transparent)]
     AddrParseError(#[from] ipnet::AddrParseError),
+
+    #[error(transparent)]
+    SerdeError(#[from] serde_json::Error),
 
     #[error("Service Restart Failed")]
     ServiceRestartFailed,

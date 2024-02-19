@@ -38,6 +38,7 @@ static APPLY_FUNCTIONS: &'static [fn(
 ) -> Result<(), super::apply::ApplyError>] = &[
     super::apply::networkd::apply_networkd,
     super::apply::nftables::apply_nftables,
+    super::apply::kea::apply_kea,
     super::apply::chrony::apply_chrony,
     super::apply::unbound::apply_unbound,
 ];

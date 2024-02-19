@@ -1,4 +1,3 @@
-use core::time;
 use macaddr::MacAddr8;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
@@ -15,11 +14,11 @@ pub struct DHCPServer {
     pub name: String,
     pub interface: String,
     pub pool: Vec<String>,
-    pub lease_time: time::Duration,
+    pub lease_time: u64,
     pub gateway_mode: GatewayMode,
     pub dns_server_mode: DNSServerMode,
     pub ntp_server_mode: NTPServerMode,
-    pub reservations: Vec<Reservation>,
+    // pub reservations: Vec<Reservation>,
     pub comment: String,
 }
 

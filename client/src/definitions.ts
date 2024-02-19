@@ -269,6 +269,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
       name: 'DHCP Server',
       idType: 'Number',
       fields: {
+        name: { is: 'TextBox', label: 'Name'},
         interface: { is: 'SingleSelect', label: 'Interface', props: { searchProvider: GetInterfaces} },
         pool: { is: 'MultiSelect', label: 'Pool', props: { searchProvider: GetAddresses} },
         gateway_mode: { is: 'EnumInput', label: 'Gateway Mode', props: { variants: {
@@ -287,7 +288,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
           'specify': {
             display: 'Specify',
             fields: {
-              servers: { is: 'MultiSelect', label: 'DNS Servers', props: { searchProvider: GetAddresses} },
+              dns_servers: { is: 'MultiSelect', label: 'DNS Servers', props: { searchProvider: GetAddresses} },
             },
           },
         }}},
@@ -297,12 +298,11 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
           'specify': {
             display: 'Specify',
             fields: {
-              servers: { is: 'MultiSelect', label: 'NTP Servers', props: { searchProvider: GetAddresses} },
+              ntp_servers: { is: 'MultiSelect', label: 'NTP Servers', props: { searchProvider: GetAddresses} },
             },
           },
         }}},
-        default_lease_time: { is: 'NumberBox', label: 'Default Lease Time'},
-        max_lease_time: { is: 'NumberBox', label: 'Max Lease Time'},
+        lease_time: { is: 'NumberBox', label: 'Lease Time'},
         comment: { is: 'MultilineTextBox', label: 'Comment'},
       },
     },

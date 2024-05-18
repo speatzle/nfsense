@@ -37,6 +37,10 @@ export default defineConfig({
           reactivityTransform: true,
         }),
       },
+
+      shortEmits: true,
+      reactivityTransform: true,
+      shortBind: true
     }),
     Pages({
       extensions: ['vue', 'md'],

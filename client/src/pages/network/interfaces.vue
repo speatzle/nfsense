@@ -63,10 +63,10 @@ onMounted(async() => {
 </script>
 
 <template>
-  <TableView title="Interfaces" :columns="columns" :loading="loading" v-model:selection="selection" v-model:data="displayData" :table-props="{sort:true, sortSelf: true}">
+  <TableView v-model:selection="selection" v-model:data="displayData" title="Interfaces" :columns="columns" :loading="loading" :table-props="{sort:true, sortSelf: true}">
     <button @click="load">Refresh</button>
     <router-link class="button" to="/network/interfaces/edit">Create</router-link>
-    <button @click="editInterface" :disabled="selection.length != 1">Edit</button>
-    <button @click="deleteInterface" :disabled="selection.length != 1">Delete</button>
+    <button :disabled="selection.length != 1" @click="editInterface">Edit</button>
+    <button :disabled="selection.length != 1" @click="deleteInterface">Delete</button>
   </TableView>
 </template>

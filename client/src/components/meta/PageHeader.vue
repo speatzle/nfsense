@@ -11,7 +11,7 @@ watchEffect(() => useTitle(`${title} - nfSense`));
 </script>
 <template>
   <Portal to="page-header">
-    <h1 v-if="title !== ''" v-text="title" :class="{'flex-grow': !noSpacer}"/>
+    <h1 v-if="title !== ''" :class="{'flex-grow': !noSpacer}" v-text="title"/>
     <slot/>
   </Portal>
 </template>

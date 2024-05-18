@@ -10,7 +10,7 @@ let { modelValue, min, max } = $(props);
 </script>
 
 <template>
-  <input type="number" v-model.number="modelValue" :min="min" :max="max">
+  <input v-model.number="modelValue" type="number" :min="min" :max="max">
 </template>
 
 <style scoped>

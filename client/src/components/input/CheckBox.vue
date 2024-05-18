@@ -8,11 +8,11 @@ watch($$(modelValue), (val) => emit('update:modelValue', val));
 </script>
 
 <template>
-  <div @click="() => modelValue = !modelValue" @keypress="() => modelValue = !modelValue" tabindex="0">
+  <div tabindex="0" @click="() => modelValue = !modelValue" @keypress="() => modelValue = !modelValue">
     <i-material-symbols-check-box-outline v-if="modelValue"/>
     <i-material-symbols-check-box-outline-blank v-else/>
   </div>
-</template>  
+</template>
 
 <style scoped>
 div { cursor: pointer; }

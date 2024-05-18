@@ -25,11 +25,11 @@ watch($$(lowerDepths), () => emit('update:expandedDepth', Math.max(...Object.ent
 <template>
   <template v-if="routes">
     <template v-for="[index, route] of routes.entries()" :key="route.href">
-      <router-link v-if="route.href" :to="route.href" class="button" @click="clickHandler" :title="route.caption">
+      <router-link v-if="route.href" :to="route.href" class="button" :title="route.caption" @click="clickHandler">
         <component :is="route.icon"/>
         {{ route.caption }}
       </router-link>
-      <NavDropdown v-else v-bind="route" @update:expanded-depth="(val) => lowerDepths[index] = val" :click-handler="clickHandler"/>
+      <NavDropdown v-else v-bind="route" :click-handler="clickHandler" @update:expanded-depth="(val) => lowerDepths[index] = val"/>
     </template>
   </template>
 </template>

@@ -42,7 +42,7 @@ function tallyChildren(routes: NavRoute[]) {
 <template>
   <div :class="{'nav-dropdown': 1, 'nav-dropdown-expanded': expanded}" :style="`--predicted-height: ${2.5 * tallyChildren(children)}rem;`">
     <div class="button" @click="expanded = !expanded">
-      <component v-if="(typeof icon !== 'string')" :is="icon"/>
+      <component :is="icon" v-if="(typeof icon !== 'string')"/>
       <template v-else>{{ icon }}</template>
       <span>
         {{ caption }}

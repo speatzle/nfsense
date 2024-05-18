@@ -161,7 +161,7 @@ onMounted(async() => {
       </div>
     </div>
 
-    <router-view v-slot="{ Component, route }" v-if="authState === AuthState.Authenticated">
+    <router-view v-if="authState === AuthState.Authenticated" v-slot="{ Component, route }">
       <Transition name="fade">
         <component :is="Component" :key="{route}" class="page-content pad gap"/>
       </Transition>
@@ -169,15 +169,15 @@ onMounted(async() => {
   </div>
 
   <Transition name="fade">
-    <div class="login" v-if="authState === AuthState.Unauthenticated">
+    <div v-if="authState === AuthState.Unauthenticated" class="login">
       <FocusTrap>
-        <form @submit="$event => $event.preventDefault()" :disabled="loginDisabled" class="cl-secondary">
+        <form :disabled="loginDisabled" class="cl-secondary" @submit="$event => $event.preventDefault()">
           <h1>nfSense Login</h1>
           <h2 :hidden="!loginDisabled">Logging in...</h2>
-          <label for="username" v-text="'Username'" :hidden="loginDisabled" />
-          <input name="username" v-model="username" :hidden="loginDisabled" :disabled="loginDisabled"/>
-          <label for="password" v-text="'Password'" :hidden="loginDisabled"/>
-          <input name="password" type="password" v-model="password" :hidden="loginDisabled" :disabled="loginDisabled"/>
+          <label for="username" :hidden="loginDisabled" v-text="'Username'" />
+          <input v-model="username" name="username" :hidden="loginDisabled" :disabled="loginDisabled"/>
+          <label for="password" :hidden="loginDisabled" v-text="'Password'"/>
+          <input v-model="password" name="password" type="password" :hidden="loginDisabled" :disabled="loginDisabled"/>
           <button @click="tryLogin">Login</button>
         </form>
       </FocusTrap>

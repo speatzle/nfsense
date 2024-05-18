@@ -65,7 +65,7 @@ onMounted(async() => {
   <div v-else-if="editTypes[subsystem][entity]">
     <PageHeader :title="'Update ' + editTypes[subsystem][entity].name">
     </PageHeader>
-    <NicerForm class="scroll cl-secondary" :fields="editTypes[subsystem][entity].fields" v-model="vm"/>
+    <NicerForm v-model="vm" class="scroll cl-secondary" :fields="editTypes[subsystem][entity].fields"/>
     <div class="actions">
       <div class="flex-grow"/>
       <button @click="update">Submit</button>

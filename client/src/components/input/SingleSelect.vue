@@ -38,5 +38,5 @@ watch($$(options), (val) => { if(!equals(val, props.options)) emit('update:optio
 
 </script>
 <template>
-  <DropdownInput :multiple="false" :options="options" :search-provider="searchProvider" v-model="modelValue"/>
+  <DropdownInput v-model="modelValue" :multiple="false" :options="options" :search-provider="searchProvider"/>
 </template>

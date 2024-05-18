@@ -22,7 +22,7 @@ function genSP(indexIsChar: boolean): SearchProvider {
 <template>
   <div>
     <PageHeader title="Test Page"/>
-    <NicerForm :fields="{
+    <NicerForm v-model="vm" :fields="{
       Single: { is: 'SingleSelect', label: 'SingleSelect', props: { options: testValues, searchProvider: genSP(true) } },
       Multiple: { is: 'MultiSelect', label: 'Multiselect', props: { options: testValues, searchProvider: genSP(false) } },
       adv: { is: 'Heading', props: { caption: 'Subsection' } },
@@ -42,7 +42,7 @@ function genSP(indexIsChar: boolean): SearchProvider {
           Text: { is: 'TextBox', label: 'Text' },
         } } },
       } } },
-    }" v-model="vm"/>
+    }"/>
     {{ vm }}
     <button @click="() => { vm.Multiple = [1]; }">Click me</button>
     <button @click="() => { vm.Multiple = [42]; }">Click me but EEEEVIL</button>

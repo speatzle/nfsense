@@ -50,7 +50,7 @@ watch($$(modelValue), (val) => {
 
 <template>
   <div class="form">
-    <component v-if="heading" :is="`h${headingLevel}`">{{ heading }}</component>
+    <component :is="`h${headingLevel}`" v-if="heading">{{ heading }}</component>
     <div class="form inner-form">
       <template v-for="[index, field] of Object.entries(fields)" :key="index">
         <label v-if="field.label && field.is !== 'EnumInput'" v-text="field.label"/>

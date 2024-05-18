@@ -41,11 +41,11 @@ onMounted(async() => {
 
 <template>
   <div>
-    <TableView title="DNS Servers" :columns="columns" :loading="loading" v-model:selection="selection" v-model:data="servers" :table-props="{sort:true, sortSelf: true}">
+    <TableView v-model:selection="selection" v-model:data="servers" title="DNS Servers" :columns="columns" :loading="loading" :table-props="{sort:true, sortSelf: true}">
       <button @click="load">Refresh</button>
       <router-link class="button" to="/service/dns_servers/edit">Create</router-link>
       <router-link class="button" :class="{ disabled: selection.length != 1 }" :to="'/service/dns_servers/edit/' + selection[0]">Edit</router-link>
-      <button @click="deleteRule" :disabled="selection.length != 1">Delete</button>
+      <button :disabled="selection.length != 1" @click="deleteRule">Delete</button>
     </TableView>
   </div>
 </template>

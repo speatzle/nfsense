@@ -70,11 +70,11 @@ watchEffect(() => {
     <label v-text="label"/>
     <div class="pillbar">
       <button v-for="[index, variant] of Object.entries(variants)" :key="index" :class="{selected: currentVariant === index}" @click="() => currentVariant = index">
-        <component v-if="variant.icon" :is="variant.icon"/>
+        <component :is="variant.icon" v-if="variant.icon"/>
         <template v-else>{{ variant.display }}</template>
       </button>
     </div>
-    <NicerForm v-if="currentVariant && variants[currentVariant]?.fields" :fields="variants[currentVariant].fields" v-model="formValue" :key="currentVariant"/>
+    <NicerForm v-if="currentVariant && variants[currentVariant]?.fields" :key="currentVariant" v-model="formValue" :fields="variants[currentVariant].fields"/>
   </div>
 </template>
 <style scoped>

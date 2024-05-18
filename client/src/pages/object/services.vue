@@ -85,10 +85,10 @@ onMounted(async() => {
 </script>
 
 <template>
-  <TableView title="Services" :columns="columns" :loading="loading" v-model:selection="selection" v-model:data="displayData" :table-props="{sort:true, sortSelf: true}">
+  <TableView v-model:selection="selection" v-model:data="displayData" title="Services" :columns="columns" :loading="loading" :table-props="{sort:true, sortSelf: true}">
     <button @click="load">Refresh</button>
     <router-link class="button" to="/object/services/edit">Create</router-link>
-    <button @click="editService" :disabled="selection.length != 1">Edit</button>
-    <button @click="deleteService" :disabled="selection.length != 1">Delete</button>
+    <button :disabled="selection.length != 1" @click="editService">Edit</button>
+    <button :disabled="selection.length != 1" @click="deleteService">Delete</button>
   </TableView>
 </template>

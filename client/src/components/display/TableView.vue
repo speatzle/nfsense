@@ -31,6 +31,6 @@ async function draggedRow(draggedRow: number, draggedOverRow: number) {
       <slot/>
     </PageHeader>
     <div v-if="loading" >Loading...</div>
-    <NiceTable v-else :columns="columns" v-model:selection="selection" @dragged-row="draggedRow" v-bind="tableProps" :data="data"/>
+    <NiceTable v-else v-model:selection="selection" :columns="columns" v-bind="tableProps" :data="data" @dragged-row="draggedRow"/>
   </div>
 </template>

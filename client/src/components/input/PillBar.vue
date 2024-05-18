@@ -23,7 +23,7 @@ watch($$(modelValue), (val) => emit('update:modelValue', val));
 </script>
 <template>
   <div>
-    <button class="option" v-for="[index, option] of Object.entries(options)" :key="index" :class="{selected: modelValue === index}" @click="() => modelValue = index">
+    <button v-for="[index, option] of Object.entries(options)" :key="index" class="option" :class="{selected: modelValue === index}" @click="() => modelValue = index">
       <component :is="option.icon"/>
       {{ option.display }}
     </button>

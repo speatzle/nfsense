@@ -184,26 +184,26 @@ function handleKeydown(e: KeyboardEvent) {
 }
 </script>
 <template>
-  <div :class="{'multiselect': 1, 'cl-secondary': 1, expanded}" ref="inputDiv"
+  <div ref="inputDiv" :class="{'multiselect': 1, 'cl-secondary': 1, expanded}"
        @keydown="handleKeydown"
        @focusin="$event => { if (!inputDiv?.contains($event.relatedTarget as HTMLElement)) focusIn(); }"
        @focusout="$event => expanded = inputDiv?.contains($event.relatedTarget as HTMLElement) ?? false">
     <div class="head">
-      <div class="selection" v-if="multiple">
-        <div v-for="(key, index) of modelValue as Index[]" :key="key" v-text="options[key].display" :class="{navigated: selCount + navigated === index}"
-             @click="() => toggle(key)"/>
+      <div v-if="multiple" class="selection">
+        <div v-for="(key, index) of modelValue as Index[]" :key="key" :class="{navigated: selCount + navigated === index}" @click="() => toggle(key)"
+             v-text="options[key].display"/>
       </div>
       <div class="searchbar">
         <div class="expand button" :tabindex="expanded ? undefined : -1">
           <i-material-symbols-expand-circle-down-outline width="1em" height="1em"/>
         </div>
-        <input v-if="multiple || modelValue === null" @click="expand" :placeholder="placeholder" v-model="search" ref="input"/>
-        <button v-else v-text="options[modelValue]?.display" ref="valueButton"
-                @click="() => toggle(modelValue)"/>
+        <input v-if="multiple || modelValue === null" ref="input" v-model="search" :placeholder="placeholder" @click="expand"/>
+        <button v-else ref="valueButton" @click="() => toggle(modelValue)"
+                v-text="options[modelValue]?.display"/>
       </div>
     </div>
     <Transition name="fade-fast">
-      <div tabindex="-1" class="dropdown" v-if="expanded">
+      <div v-if="expanded" tabindex="-1" class="dropdown">
         <div v-for="([key, option], index) in Object.entries(options)" :key="key"
              :class="{selected: multiple ? modelValue?.some((x: Index) => x == key) : key == modelValue, navigated: navigated === index + 1}"
              @click="() => toggle(key)">

@@ -42,10 +42,10 @@ onMounted(async() => {
 </script>
 
 <template>
-  <TableView title="Static Routes" :columns="columns" :loading="loading" v-model:selection="selection" v-model:data="staticRoutes" :table-props="{sort:true, sortSelf: true}">
+  <TableView v-model:selection="selection" v-model:data="staticRoutes" title="Static Routes" :columns="columns" :loading="loading" :table-props="{sort:true, sortSelf: true}">
     <button @click="load">Refresh</button>
     <router-link class="button" to="/network/static_routes/edit">Create</router-link>
     <router-link class="button" :class="{ disabled: selection.length != 1 }" :to="'/network/static_routes/edit/' + selection[0]">Edit</router-link>
-    <button @click="deleteStaticRoutes" :disabled="selection.length != 1">Delete</button>
+    <button :disabled="selection.length != 1" @click="deleteStaticRoutes">Delete</button>
   </TableView>
 </template>

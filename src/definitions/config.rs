@@ -17,6 +17,7 @@ use super::vpn;
 use crate::macro_db;
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
+#[garde(context(Config))]
 pub struct Config {
     #[garde(skip)]
     pub config_version: u64,

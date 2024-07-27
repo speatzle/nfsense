@@ -25,6 +25,7 @@ mod config_manager;
 mod definitions;
 mod state;
 mod templates;
+mod validation;
 mod web;
 
 #[tokio::main]

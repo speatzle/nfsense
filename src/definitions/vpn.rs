@@ -1,13 +1,17 @@
+use super::config::Config;
+use crate::validation;
 use garde::Validate;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
+#[garde(context(Config))]
 pub struct VPN {
     #[garde(dive)]
     pub wireguard: Wireguard,
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
+#[garde(context(Config))]
 pub struct Wireguard {
     #[garde(dive)]
     pub interfaces: Vec<WireguardInterface>,
@@ -16,8 +20,10 @@ pub struct Wireguard {
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
+#[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct WireguardInterface {
+    #[garde(custom(validation::validate_name))]
     pub name: String,
     pub public_key: String,
     pub private_key: String,
@@ -27,8 +33,10 @@ pub struct WireguardInterface {
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
+#[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct WireguardPeer {
+    #[garde(custom(validation::validate_name))]
     pub name: String,
     pub public_key: String,
     pub preshared_key: Option<String>,

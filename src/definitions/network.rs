@@ -1,8 +1,11 @@
+use super::config::Config;
+use crate::validation;
 use garde::Validate;
 use ipnet::IpNet;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
+#[garde(context(Config))]
 pub struct Network {
     #[garde(dive)]
     pub interfaces: Vec<NetworkInterface>,
@@ -11,8 +14,10 @@ pub struct Network {
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
+#[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct NetworkInterface {
+    #[garde(custom(validation::validate_name))]
     pub name: String,
     pub alias: String,
     pub comment: String,
@@ -42,8 +47,10 @@ pub enum AddressingMode {
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
+#[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct StaticRoute {
+    #[garde(custom(validation::validate_name))]
     pub name: String,
     pub interface: String,
     pub gateway: String,
@@ -53,6 +60,7 @@ pub struct StaticRoute {
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
+#[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct Link {
     pub name: String,

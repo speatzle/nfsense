@@ -1,9 +1,12 @@
+use super::config::Config;
+use crate::validation;
 use garde::Validate;
 use ipnet::IpNet;
 use serde::{Deserialize, Serialize};
 use std::net::IpAddr;
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
+#[garde(context(Config))]
 pub struct Object {
     #[garde(dive)]
     pub addresses: Vec<Address>,
@@ -12,8 +15,10 @@ pub struct Object {
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
+#[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct Address {
+    #[garde(custom(validation::validate_name))]
     pub name: String,
     pub address_type: AddressType,
     pub comment: String,
@@ -29,8 +34,10 @@ pub enum AddressType {
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
+#[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct Service {
+    #[garde(custom(validation::validate_name))]
     pub name: String,
     pub service_type: ServiceType,
     pub comment: String,

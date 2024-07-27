@@ -1,7 +1,9 @@
+use super::config::Config;
 use garde::Validate;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
+#[garde(context(Config))]
 pub struct Firewall {
     #[garde(dive)]
     pub forward_rules: Vec<ForwardRule>,
@@ -12,6 +14,7 @@ pub struct Firewall {
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
+#[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct ForwardRule {
     pub name: String,
@@ -24,6 +27,7 @@ pub struct ForwardRule {
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
+#[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct DestinationNATRule {
     pub name: String,
@@ -37,6 +41,7 @@ pub struct DestinationNATRule {
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
+#[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct SourceNATRule {
     pub name: String,

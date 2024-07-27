@@ -1,8 +1,10 @@
+use super::config::Config;
 use garde::Validate;
 use macaddr::MacAddr8;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
+#[garde(context(Config))]
 pub struct Service {
     #[garde(dive)]
     pub dhcp_servers: Vec<DHCPServer>,
@@ -13,6 +15,7 @@ pub struct Service {
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
+#[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct DHCPServer {
     pub name: String,
@@ -27,6 +30,7 @@ pub struct DHCPServer {
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
+#[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct DNSServer {
     pub name: String,
@@ -35,6 +39,7 @@ pub struct DNSServer {
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
+#[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct NTPServer {
     pub name: String,

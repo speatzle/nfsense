@@ -1,15 +1,18 @@
+use garde::Validate;
 use ipnet::IpNet;
 use serde::{Deserialize, Serialize};
 use std::net::IpAddr;
-use validator::Validate;
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
 pub struct Object {
+    #[garde(dive)]
     pub addresses: Vec<Address>,
+    #[garde(dive)]
     pub services: Vec<Service>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
+#[garde(allow_unvalidated)]
 pub struct Address {
     pub name: String,
     pub address_type: AddressType,
@@ -26,6 +29,7 @@ pub enum AddressType {
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
+#[garde(allow_unvalidated)]
 pub struct Service {
     pub name: String,
     pub service_type: ServiceType,

@@ -1,11 +1,11 @@
 use super::definitions::config::Config;
+use garde::Validate;
 use pwhash::sha512_crypt;
 use serde::Serialize;
 use std::fs;
 use std::sync::{Arc, Mutex, MutexGuard};
 use thiserror::Error;
 use tracing::{error, info};
-use validator::Validate;
 
 #[derive(Error, Debug)]
 pub enum ConfigError {
@@ -13,7 +13,7 @@ pub enum ConfigError {
     SerdeError(#[from] serde_json::Error),
 
     #[error("Validation Error")]
-    ValidatonError(#[from] validator::ValidationErrors),
+    ValidatonError(#[from] garde::Report),
 
     #[error("Hash Error")]
     HashError(#[from] pwhash::error::Error),

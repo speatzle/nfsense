@@ -1,15 +1,19 @@
+use garde::Validate;
 use macaddr::MacAddr8;
 use serde::{Deserialize, Serialize};
-use validator::Validate;
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
 pub struct Service {
+    #[garde(dive)]
     pub dhcp_servers: Vec<DHCPServer>,
+    #[garde(dive)]
     pub dns_servers: Vec<DNSServer>,
+    #[garde(dive)]
     pub ntp_servers: Vec<NTPServer>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
+#[garde(allow_unvalidated)]
 pub struct DHCPServer {
     pub name: String,
     pub interface: String,
@@ -23,6 +27,7 @@ pub struct DHCPServer {
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
+#[garde(allow_unvalidated)]
 pub struct DNSServer {
     pub name: String,
     pub interface: String,
@@ -30,6 +35,7 @@ pub struct DNSServer {
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
+#[garde(allow_unvalidated)]
 pub struct NTPServer {
     pub name: String,
     pub interface: String,

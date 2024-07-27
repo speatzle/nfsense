@@ -1,14 +1,18 @@
+use garde::Validate;
 use serde::{Deserialize, Serialize};
-use validator::Validate;
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
 pub struct Firewall {
+    #[garde(dive)]
     pub forward_rules: Vec<ForwardRule>,
+    #[garde(dive)]
     pub destination_nat_rules: Vec<DestinationNATRule>,
+    #[garde(dive)]
     pub source_nat_rules: Vec<SourceNATRule>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
+#[garde(allow_unvalidated)]
 pub struct ForwardRule {
     pub name: String,
     pub services: Vec<String>,
@@ -20,6 +24,7 @@ pub struct ForwardRule {
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
+#[garde(allow_unvalidated)]
 pub struct DestinationNATRule {
     pub name: String,
     pub services: Vec<String>,
@@ -32,6 +37,7 @@ pub struct DestinationNATRule {
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
+#[garde(allow_unvalidated)]
 pub struct SourceNATRule {
     pub name: String,
     pub services: Vec<String>,

@@ -1,5 +1,5 @@
+use garde::Validate;
 use serde::{Deserialize, Serialize};
-use validator::Validate;
 
 use super::firewall;
 use super::firewall::SNATType;
@@ -18,12 +18,19 @@ use crate::macro_db;
 
 #[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
 pub struct Config {
+    #[garde(skip)]
     pub config_version: u64,
+    #[garde(dive)]
     pub network: network::Network,
+    #[garde(dive)]
     pub object: object::Object,
+    #[garde(dive)]
     pub system: system::System,
+    #[garde(dive)]
     pub service: service::Service,
+    #[garde(dive)]
     pub vpn: vpn::VPN,
+    #[garde(dive)]
     pub firewall: firewall::Firewall,
 }
 

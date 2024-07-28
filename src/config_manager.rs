@@ -178,6 +178,7 @@ fn read_file_to_config(path: &str) -> Result<Config, ConfigError> {
     if conf.config_version != 1 {
         return Err(ConfigError::UnsupportedVersionError);
     }
+    conf.validate()?;
     Ok(conf)
 }
 

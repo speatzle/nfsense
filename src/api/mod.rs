@@ -32,6 +32,9 @@ pub enum ApiError {
 
     #[error(transparent)]
     IOError(#[from] std::io::Error),
+
+    #[error(transparent)]
+    DbusError(#[from] zbus::Error),
 }
 
 impl Into<ErrorObject<'static>> for ApiError {

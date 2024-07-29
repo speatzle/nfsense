@@ -6,12 +6,11 @@ use jsonrpsee::RpcModule;
 use pwhash::sha512_crypt;
 use serde::{Deserialize, Serialize};
 
+use crate::api::ApiError;
 use ApiError::ConfigError;
 use ApiError::HashError;
 use ApiError::NotFound;
 use ApiError::ParameterDeserialize;
-
-use super::ApiError;
 
 const USER_CHANGE_PATH: &str = "system.user";
 

@@ -193,7 +193,7 @@ pub fn generate_default_config(path: &str) -> Result<(), ConfigError> {
     let hash = sha512_crypt::hash("nfsense")?;
     conf.config_version = 1;
     conf.system.users.push(crate::definitions::system::User {
-        name: "admin".to_string(),
+        name: "root".to_string(),
         comment: "Default Admin".to_string(),
         hash: hash,
     });

@@ -53,12 +53,17 @@ async fn main() {
         sessions: Arc::new(RwLock::new(HashMap::new())),
     };
 
+    info!("Connecting to System dbus...");
+    let dbus_conn = zbus::Connection::system().await.unwrap();
+
     let app_state = AppState {
         config_manager: config_manager.clone(),
         session_state: session_state.clone(),
+        dbus_conn: dbus_conn.clone(),
         rpc_module: api::new_rpc_module(RpcState {
             config_manager,
             session_state,
+            dbus_conn,
         }),
     };
 

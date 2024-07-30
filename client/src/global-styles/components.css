@@ -121,3 +121,14 @@ tbody tr:hover, th:hover {
 tbody tr.selected {
   background-color: var(--cl-table-sl)
 }
+
+.pillbar {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.pill {
+  border: 1px solid var(--cl-fg);
+  padding: 0.25rem;
+}

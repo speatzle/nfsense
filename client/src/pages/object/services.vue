@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { apiCall } from '../../api';
 import getPlugins from '../../plugins';
+import EnumTypeDisplay from '~/components/display/EnumTypeDisplay.vue';
 const p = getPlugins();
 
 let services = $ref({});
@@ -9,7 +10,7 @@ let selection = $ref([] as number[]);
 
 const columns = [
   { heading: 'Name', path: 'name' },
-  { heading: 'Type', path: 'type' },
+  { heading: 'Type', path: 'type', component: markRaw(EnumTypeDisplay), componentProp: 'data' },
   { heading: 'Value', path: 'value' },
   { heading: 'Comment', path: 'comment' },
 ];

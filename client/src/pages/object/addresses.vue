@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { apiCall } from '../../api';
 import getPlugins from '../../plugins';
+import EnumTypeDisplay from '~/components/display/EnumTypeDisplay.vue';
 const p = getPlugins();
 
 let addresses = $ref([]);
@@ -9,7 +10,7 @@ let selection = $ref([] as number[]);
 
 const columns = [
   { heading: 'Name', path: 'name' },
-  { heading: 'Type', path: 'type' },
+  { heading: 'Type', path: 'type', component: markRaw(EnumTypeDisplay), componentProp: 'data' },
   { heading: 'Value', path: 'value' },
   { heading: 'Comment', path: 'comment' },
 ];
@@ -33,7 +34,7 @@ const displayData = $computed(() => {
     data.push({
       name: addresses[index].name,
       value: getAddressValue(addresses[index]),
-      type: addresses[index].type,
+      type: addresses[index].address_type,
       comment: addresses[index].comment,
     });
   }
@@ -42,7 +43,7 @@ const displayData = $computed(() => {
 
 function getAddressValue(s: any): string {
   let value: string;
-  switch (s.type) {
+  switch (s.address_type) {
   case 'host':
     value = s.host;
     break;

@@ -15,6 +15,7 @@ const columns = [
   { heading: 'Service', path: 'services', component: markRaw(ArrayDisplay), componentProp: 'data' },
   { heading: 'Verdict', path: 'verdict' },
   { heading: 'Counter', path: 'counter' },
+  { heading: 'Log', path: 'log' },
   { heading: 'Comment', path: 'comment' },
 ];
 

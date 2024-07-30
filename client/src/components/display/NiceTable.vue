@@ -108,7 +108,10 @@ function dragDropRow() {
     data.splice(draggedRow, 1);
     data.splice(draggedOverRow, 0, row);
     data = data;
-    emit('draggedRow', draggedRow, draggedOverRow);
+    // Don't emit if we are at the same spot
+    if (draggedRow !== draggedOverRow){
+      emit('draggedRow', draggedRow, draggedOverRow);
+    }
   }
 
   // Reset Drag & Remove Selection

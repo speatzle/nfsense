@@ -16,6 +16,7 @@ export function isNullish(value: any) {
 }
 
 export function variantOf(enumValue: any) {
+  if (enumValue === null) return null;
   if (typeof enumValue === 'string') return enumValue;
   else return Object.entries(enumValue)[0][0];
 }

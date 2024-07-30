@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { apiCall } from '../../api';
 import getPlugins from '../../plugins';
+import ArrayDisplay from '~/components/display/ArrayDisplay.vue';
+import EnumTypeDisplay from '~/components/display/EnumTypeDisplay.vue';
 const p = getPlugins();
 
 let interfaces = $ref({});
@@ -9,10 +11,15 @@ let selection = $ref([] as number[]);
 
 const columns = [
   { heading: 'Name', path: 'name' },
-  { heading: 'Type', path: 'type' },
-  { heading: 'Members', path: 'members' },
-  { heading: 'Addressing Mode', path: 'addressing_mode' },
-  { heading: 'Address', path: 'address' },
+  { heading: 'Alias', path: 'alias' },
+  { heading: 'Type', path: 'interface_type', component: markRaw(EnumTypeDisplay), componentProp: 'data' },
+  { heading: 'Addressing Mode', path: 'addressing_mode', component: markRaw(EnumTypeDisplay), componentProp: 'data' },
+  { heading: 'Address', path: 'addressing_mode.static.address' },
+  { heading: 'Vlan Parent', path: 'interface_type.vlan.parent' },
+  { heading: 'Vlan ID', path: 'interface_type.vlan.id' },
+  { heading: 'Bond Members', path: 'interface_type.bond.members', component: markRaw(ArrayDisplay), componentProp: 'data' },
+  { heading: 'Bridge Members', path: 'interface_type.bridge.members', component: markRaw(ArrayDisplay), componentProp: 'data' },
+  { heading: 'Comment', path: 'comment' },
 ];
 
 const displayData = $computed(() => {
@@ -21,7 +28,8 @@ const displayData = $computed(() => {
   for (const index in interfaces) {
     data.push({
       name: interfaces[index].name,
-      type: interfaces[index].type,
+      alias: interfaces[index].alias,
+      interface_type: interfaces[index].interface_type,
       addressing_mode: interfaces[index].addressing_mode,
       address: interfaces[index].address,
       comment: interfaces[index].comment,

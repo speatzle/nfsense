@@ -13,11 +13,13 @@ export default [
       },
     },
     plugins: { vueParser },
+    files: ['src/**/*.js', 'src/**/*.ts', 'src/**/*.vue'],
     rules: {
       'semi': [
         'error',
         'always',
       ],
+      'object-curly-spacing': ['warn', 'always'],
       'comma-dangle': [
         'error',
         'always-multiline',

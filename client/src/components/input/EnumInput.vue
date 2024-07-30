@@ -1,5 +1,5 @@
 <script lang="ts">
-import { Index, MaybeIndex, equals } from '../../util';
+import { Index, MaybeIndex, equals, variantOf } from '../../util';
 import { Fields } from './NicerForm.vue';
 
 export type Variant = {
@@ -34,7 +34,7 @@ const emit = defineEmits<{
 }>();
 
 // Local Variables for Two-Way bindings
-let modelValue: MaybeEnumValue = $ref(null);
+let modelValue = $ref(null as MaybeEnumValue);
 // Sync from v-model
 onMounted(() => {
   watch(() => props.modelValue, (val) => {
@@ -49,8 +49,14 @@ onMounted(() => {
   }, { deep: true, immediate: true });
 });
 // Sync to v-model
-watch($$(modelValue), (val) => {
+watch($$(modelValue), (val, oldVal) => {
   if (equals(val, props.modelValue)) return;
+  const [oldVariant, newVariant] = [variantOf(oldVal), variantOf(val)];
+  // Wipe variant values if variant definitions change
+  if (typeof val === 'object'
+    && val && newVariant && oldVariant
+    && !equals(props.variants[newVariant].fields, props.variants[oldVariant].fields))
+    val[newVariant] = formValue = {};
   emit('update:modelValue', typeof val === 'string' ? val : Object.assign({}, val));
 }, { deep: true });
 

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { apiCall } from '../../api';
 import getPlugins from '../../plugins';
+import ArrayDisplay from '~/components/display/ArrayDisplay.vue';
 const p = getPlugins();
 
 let peers = $ref({});
@@ -9,7 +10,7 @@ let selection = $ref([] as number[]);
 
 const columns = [
   { heading: 'Name', path: 'name' },
-  { heading: 'Allowed IPs', path: 'allowed_ips' },
+  { heading: 'Allowed IPs', path: 'allowed_ips', component: markRaw(ArrayDisplay), componentProp: 'data' },
   { heading: 'Endpoint', path: 'endpoint' },
   { heading: 'Persistent Keepalive', path: 'persistent_keepalive' },
   { heading: 'Comment', path: 'comment' },

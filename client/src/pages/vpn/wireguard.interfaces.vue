@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { apiCall } from '../../api';
 import getPlugins from '../../plugins';
+import ArrayDisplay from '~/components/display/ArrayDisplay.vue';
 const p = getPlugins();
 
 let interfaces = $ref({});
@@ -10,7 +11,7 @@ let selection = $ref([] as number[]);
 const columns = [
   { heading: 'Name', path: 'name' },
   { heading: 'Listen Port', path: 'listen_port' },
-  { heading: 'Peers', path: 'peers' },
+  { heading: 'Peers', path: 'peers', component: markRaw(ArrayDisplay), componentProp: 'data' },
   { heading: 'Comment', path: 'comment' },
 
 ];

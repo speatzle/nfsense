@@ -8,8 +8,8 @@ let loading = $ref(false);
 let selection = $ref([] as number[]);
 
 const columns = [
-  {heading: 'Interface', path: 'interface'},
-  {heading: 'Comment', path: 'comment'},
+  { heading: 'Interface', path: 'interface' },
+  { heading: 'Comment', path: 'comment' },
 ];
 
 async function load(){
@@ -23,7 +23,7 @@ async function load(){
 }
 
 async function deleteRule(){
-  let res = await apiCall('service.dhcp_servers.delete', {index: selection[0]});
+  let res = await apiCall('service.dhcp_servers.delete', { index: selection[0] });
   if (res.Error === null) {
     console.debug('deleted server');
     p.toast.success('Deleted DHCP Server');

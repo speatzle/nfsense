@@ -9,13 +9,13 @@ let loading = $ref(false);
 let selection = $ref([] as number[]);
 
 const columns = [
-  {heading: 'Name', path: 'name'},
-  {heading: 'Source', path: 'source_addresses', component: markRaw(ArrayDisplay), componentProp: 'data'},
-  {heading: 'Destination', path: 'destination_addresses', component: markRaw(ArrayDisplay), componentProp: 'data'},
-  {heading: 'Service', path: 'services', component: markRaw(ArrayDisplay), componentProp: 'data'},
-  {heading: 'Verdict', path: 'verdict'},
-  {heading: 'Counter', path: 'counter'},
-  {heading: 'Comment', path: 'comment'},
+  { heading: 'Name', path: 'name' },
+  { heading: 'Source', path: 'source_addresses', component: markRaw(ArrayDisplay), componentProp: 'data' },
+  { heading: 'Destination', path: 'destination_addresses', component: markRaw(ArrayDisplay), componentProp: 'data' },
+  { heading: 'Service', path: 'services', component: markRaw(ArrayDisplay), componentProp: 'data' },
+  { heading: 'Verdict', path: 'verdict' },
+  { heading: 'Counter', path: 'counter' },
+  { heading: 'Comment', path: 'comment' },
 ];
 
 async function load(){
@@ -29,7 +29,7 @@ async function load(){
 }
 
 async function deleteRule(){
-  let res = await apiCall('firewall.forward_rules.delete', {id: selection[0]});
+  let res = await apiCall('firewall.forward_rules.delete', { id: selection[0] });
   if (res.Error === null) {
     console.debug('deleted rule');
     p.toast.success('Deleted Rule');
@@ -41,7 +41,7 @@ async function deleteRule(){
 
 async function draggedRow(draggedRow: number, draggedOverRow: number) {
   console.log('dragged', draggedRow, draggedOverRow);
-  let res = await apiCall('firewall.forward_rules.move', {index: draggedRow, to_index: draggedOverRow});
+  let res = await apiCall('firewall.forward_rules.move', { index: draggedRow, to_index: draggedOverRow });
   if (res.Error === null) {
     console.debug('moved rule');
     p.toast.success('Moved Rule');

@@ -34,7 +34,7 @@ const navRoutesNew = [
     { caption: 'Rules', icon: IRule, href: '/firewall/forward_rules' },
     { caption: 'SNAT', icon: ISNAT, href: '/firewall/source_nat_rules' },
     { caption: 'DNAT', icon: IDNAT, href: '/firewall/destination_nat_rules' },
-  ]},
+  ] },
   { caption: 'Network', icon: INetwork, children: [
     { caption: 'Interfaces', icon: IEthernet, href: '/network/interfaces' },
     { caption: 'Static Routes', icon: IStaticRoutes, href: '/network/static_routes' },
@@ -53,7 +53,7 @@ const navRoutesNew = [
       { caption: 'Status', icon: IDashboard, href: '/vpn/wireguard_status' },
       { caption: 'Interfaces', icon: IEthernet, href: '/vpn/wireguard.interfaces' },
       { caption: 'Peers', icon: INodes, href: '/vpn/wireguard.peers' },
-    ]},
+    ] },
   ] },
   { caption: 'Users', icon: IUser, href: '/system/users' },
   { caption: 'Config', icon: IConfig, href: '/config/config' },

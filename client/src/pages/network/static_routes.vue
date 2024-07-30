@@ -6,11 +6,11 @@ let loading = $ref(false);
 let selection = $ref([] as number[]);
 
 const columns = [
-  {heading: 'Name', path: 'name'},
-  {heading: 'Interface', path: 'interface'},
-  {heading: 'Gateway', path: 'gateway'},
-  {heading: 'Destination', path: 'destination'},
-  {heading: 'Metric', path: 'metric'},
+  { heading: 'Name', path: 'name' },
+  { heading: 'Interface', path: 'interface' },
+  { heading: 'Gateway', path: 'gateway' },
+  { heading: 'Destination', path: 'destination' },
+  { heading: 'Metric', path: 'metric' },
 ];
 
 async function load(){
@@ -26,7 +26,7 @@ async function load(){
 }
 
 async function deleteStaticRoutes(){
-  let res = await apiCall('network.static_routes.delete', {id: selection[0]});
+  let res = await apiCall('network.static_routes.delete', { id: selection[0] });
   if (res.Error === null) {
     console.debug('deleted static routes');
   } else {

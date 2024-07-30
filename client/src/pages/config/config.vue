@@ -8,9 +8,9 @@ let changelog = $ref([]);
 let loading = $ref(false);
 
 const columns = [
-  {heading: 'Path', path: 'path'},
-  {heading: 'Action', path: 'action'},
-  {heading: 'ID', path: 'id'},
+  { heading: 'Path', path: 'path' },
+  { heading: 'Action', path: 'action' },
+  { heading: 'ID', path: 'id' },
 ];
 
 const displayData = $computed(() => {

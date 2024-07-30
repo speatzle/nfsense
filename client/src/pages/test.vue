@@ -8,7 +8,7 @@ const testValues: Options = {
   a: { display: 'Option a' },
   z: { display: 'Option z' },
 };
-let vm: any = $ref({Multiple: [1]});
+let vm: any = $ref({ Multiple: [1] });
 
 function genSP(indexIsChar: boolean): SearchProvider {
   return async (o) => {

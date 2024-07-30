@@ -8,10 +8,10 @@ let loading = $ref(false);
 let selection = $ref([] as number[]);
 
 const columns = [
-  {heading: 'Name', path: 'name'},
-  {heading: 'Listen Port', path: 'listen_port'},
-  {heading: 'Peers', path: 'peers'},
-  {heading: 'Comment', path: 'comment'},
+  { heading: 'Name', path: 'name' },
+  { heading: 'Listen Port', path: 'listen_port' },
+  { heading: 'Peers', path: 'peers' },
+  { heading: 'Comment', path: 'comment' },
 
 ];
 
@@ -42,7 +42,7 @@ async function load(){
 }
 
 async function deleteInterface(){
-  let res = await apiCall('vpn.wireguard.interfaces.delete', {name: displayData[selection[0]].name});
+  let res = await apiCall('vpn.wireguard.interfaces.delete', { name: displayData[selection[0]].name });
   if (res.Error === null) {
     console.debug('deleted interface');
   } else {

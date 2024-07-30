@@ -85,7 +85,7 @@ function toggleRowSelection(index: number) {
   else if (shiftState) { // Selection becomes a range including the highest, lowest and clicked row
     const points = [Math.max(...selection), Math.min(...selection), index];
     const [max, min] = [Math.max(...points), Math.min(...points)];
-    selection = Array.from({length: max - min + 1}, (_, i) => i + min);
+    selection = Array.from({ length: max - min + 1 }, (_, i) => i + min);
   } else if (ctrlState) // Toggle the presence of the row in the selection
     selection = selection.includes(index)
       ? selection.filter(i => i !== index)

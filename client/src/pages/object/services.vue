@@ -8,10 +8,10 @@ let loading = $ref(false);
 let selection = $ref([] as number[]);
 
 const columns = [
-  {heading: 'Name', path: 'name'},
-  {heading: 'Type', path: 'type'},
-  {heading: 'Value', path: 'value'},
-  {heading: 'Comment', path: 'comment'},
+  { heading: 'Name', path: 'name' },
+  { heading: 'Type', path: 'type' },
+  { heading: 'Value', path: 'value' },
+  { heading: 'Comment', path: 'comment' },
 ];
 
 const displayData = $computed(() => {
@@ -65,7 +65,7 @@ async function load(){
 }
 
 async function deleteService(){
-  let res = await apiCall('object.services.delete', {name: displayData[selection[0]].name});
+  let res = await apiCall('object.services.delete', { name: displayData[selection[0]].name });
   if (res.Error === null) {
     console.debug('deleted service');
   } else {

@@ -8,14 +8,14 @@ let loading = $ref(false);
 let selection = $ref([] as number[]);
 
 const columns = [
-  {heading: 'Name', path: 'name'},
-  {heading: 'Source', path: 'source_addresses'},
-  {heading: 'Destination', path: 'destination_addresses'},
-  {heading: 'Service', path: 'services'},
-  {heading: 'Translated Address', path: 'dnat_address'},
-  {heading: 'Translated Service', path: 'dnat_service'},
-  {heading: 'Counter', path: 'counter'},
-  {heading: 'Comment', path: 'comment'},
+  { heading: 'Name', path: 'name' },
+  { heading: 'Source', path: 'source_addresses' },
+  { heading: 'Destination', path: 'destination_addresses' },
+  { heading: 'Service', path: 'services' },
+  { heading: 'Translated Address', path: 'dnat_address' },
+  { heading: 'Translated Service', path: 'dnat_service' },
+  { heading: 'Counter', path: 'counter' },
+  { heading: 'Comment', path: 'comment' },
 ];
 
 async function load(){
@@ -29,7 +29,7 @@ async function load(){
 }
 
 async function deleteRule(){
-  let res = await apiCall('firewall.destination_nat_rules.delete', {id: selection[0]});
+  let res = await apiCall('firewall.destination_nat_rules.delete', { id: selection[0] });
   if (res.Error === null) {
     console.debug('deleted rule');
     p.toast.success('Deleted Rule');
@@ -41,7 +41,7 @@ async function deleteRule(){
 
 async function draggedRow(draggedRow: number, draggedOverRow: number) {
   console.log('dragged', draggedRow, draggedOverRow);
-  let res = await apiCall('firewall.destination_nat_rules.move', {index: draggedRow, to_index: draggedOverRow});
+  let res = await apiCall('firewall.destination_nat_rules.move', { index: draggedRow, to_index: draggedOverRow });
   if (res.Error === null) {
     console.debug('moved rule');
     p.toast.success('Moved Rule');

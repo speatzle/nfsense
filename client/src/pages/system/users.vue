@@ -8,8 +8,8 @@ let loading = $ref(false);
 let selection = $ref([] as number[]);
 
 const columns = [
-  {heading: 'Name', path: 'name'},
-  {heading: 'Comment', path: 'comment'},
+  { heading: 'Name', path: 'name' },
+  { heading: 'Comment', path: 'comment' },
 ];
 
 async function load(){
@@ -25,7 +25,7 @@ async function load(){
 }
 
 async function deleteUser(){
-  let res = await apiCall('system.users.delete', {name: users[selection[0]].name});
+  let res = await apiCall('system.users.delete', { name: users[selection[0]].name });
   if (res.Error === null) {
     console.debug('deleted user');
   } else {

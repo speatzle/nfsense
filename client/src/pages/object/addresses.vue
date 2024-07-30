@@ -8,10 +8,10 @@ let loading = $ref(false);
 let selection = $ref([] as number[]);
 
 const columns = [
-  {heading: 'Name', path: 'name'},
-  {heading: 'Type', path: 'type'},
-  {heading: 'Value', path: 'value'},
-  {heading: 'Comment', path: 'comment'},
+  { heading: 'Name', path: 'name' },
+  { heading: 'Type', path: 'type' },
+  { heading: 'Value', path: 'value' },
+  { heading: 'Comment', path: 'comment' },
 ];
 
 async function load(){
@@ -62,7 +62,7 @@ function getAddressValue(s: any): string {
 }
 
 async function deleteAddress(){
-  let res = await apiCall('object.addresses_delete', {id: displayData[selection[0]].name});
+  let res = await apiCall('object.addresses_delete', { id: displayData[selection[0]].name });
   if (res.Error === null) {
     console.debug('deleted address');
   } else {

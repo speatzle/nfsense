@@ -14,9 +14,9 @@ async function load(){
   loading = true;
   let res: any;
   if (editTypes[subsystem][entity].idType == 'Number') {
-    res = await apiCall(`${subsystem}.${entity}.get`, {index: id as number - 0});
+    res = await apiCall(`${subsystem}.${entity}.get`, { index: id as number - 0 });
   } else {
-    res = await apiCall(`${subsystem}.${entity}.get`, {name: id});
+    res = await apiCall(`${subsystem}.${entity}.get`, { name: id });
   }
 
   if (res.Error === null) {
@@ -33,15 +33,15 @@ async function update() {
   let res: any;
 
   if (editTypes[subsystem][entity].idType == 'Number') {
-    res = await apiCall(`${subsystem}.${entity}.update`, {index: id as number - 0, thing: vm});
+    res = await apiCall(`${subsystem}.${entity}.update`, { index: id as number - 0, thing: vm });
   } else {
     if (id != vm.name) {
       if (confirm('You are about to Change the name and all references, are you Sure?')) {
-        res = await apiCall(`${subsystem}.${entity}.update`, {name: id, thing: vm});
+        res = await apiCall(`${subsystem}.${entity}.update`, { name: id, thing: vm });
       }
 
     } else {
-      res = await apiCall(`${subsystem}.${entity}.update`, {name: id, thing: vm});
+      res = await apiCall(`${subsystem}.${entity}.update`, { name: id, thing: vm });
     }
   }
 

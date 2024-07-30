@@ -8,11 +8,11 @@ let loading = $ref(false);
 let selection = $ref([] as number[]);
 
 const columns = [
-  {heading: 'Name', path: 'name'},
-  {heading: 'Type', path: 'type'},
-  {heading: 'Members', path: 'members'},
-  {heading: 'Addressing Mode', path: 'addressing_mode'},
-  {heading: 'Address', path: 'address'},
+  { heading: 'Name', path: 'name' },
+  { heading: 'Type', path: 'type' },
+  { heading: 'Members', path: 'members' },
+  { heading: 'Addressing Mode', path: 'addressing_mode' },
+  { heading: 'Address', path: 'address' },
 ];
 
 const displayData = $computed(() => {
@@ -43,7 +43,7 @@ async function load(){
 }
 
 async function deleteInterface(){
-  let res = await apiCall('network.interfaces.delete', {name: displayData[selection[0]].name});
+  let res = await apiCall('network.interfaces.delete', { name: displayData[selection[0]].name });
   if (res.Error === null) {
     console.debug('deleted interface');
   } else {

@@ -103,7 +103,7 @@ watch($$(search), async (val, oldVal) => {
 
 async function performSearch(unknownKeys?: Index[]) {
   if (searchProvider !== null)
-    options = await searchProvider({search, unknownKeys});
+    options = await searchProvider({ search, unknownKeys });
 }
 
 async function expand() {

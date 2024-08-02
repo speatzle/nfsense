@@ -32,6 +32,7 @@
       "tab_size": 2
     },
     "CSS": {
+      "format_on_save": "off",
       "tab_size": 2
     }
   }

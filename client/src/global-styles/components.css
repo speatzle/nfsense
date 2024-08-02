@@ -68,7 +68,11 @@ th, td {
   padding: 0.5rem;
   border: 0.125rem solid var(--cl-bg-el);
 }
-th > *{
+td {
+  vertical-align: top;
+}
+
+th>* {
   justify-content: center;
   align-items: center;
 }

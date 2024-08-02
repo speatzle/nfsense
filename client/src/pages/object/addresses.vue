@@ -1,17 +1,27 @@
 <script setup lang="ts">
 import { apiCall } from '../../api';
 import getPlugins from '../../plugins';
+import EnumValueDisplay from '~/components/display/EnumValueDisplay.vue';
 import EnumTypeDisplay from '~/components/display/EnumTypeDisplay.vue';
+import ArrayDisplay from '~/components/display/ArrayDisplay.vue';
 const p = getPlugins();
 
 let addresses = $ref([]);
 let loading = $ref(false);
 let selection = $ref([] as number[]);
 
+const addressValueDefinition: { [key: string]: { path: string, component: Component | undefined } } = {
+  'host': { path: 'host.address', component: undefined },
+  'range': { path: 'range.address', component: undefined },
+  'network': { path: 'network.address', component: undefined },
+  'group': { path: 'group.members', component: ArrayDisplay },
+};
+
+
 const columns = [
   { heading: 'Name', path: 'name' },
-  { heading: 'Type', path: 'type', component: markRaw(EnumTypeDisplay), componentProp: 'data' },
-  { heading: 'Value', path: 'value' },
+  { heading: 'Type', path: 'address_type', component: markRaw(EnumTypeDisplay), componentProp: 'data' },
+  { heading: 'Value', path: 'address_type', component: markRaw(EnumValueDisplay), componentProp: 'data', props: { definition: addressValueDefinition } },
   { heading: 'Comment', path: 'comment' },
 ];
 
@@ -33,34 +43,12 @@ const displayData = $computed(() => {
   for (const index in addresses) {
     data.push({
       name: addresses[index].name,
-      value: getAddressValue(addresses[index]),
-      type: addresses[index].address_type,
+      address_type: addresses[index].address_type,
       comment: addresses[index].comment,
     });
   }
   return data;
 });
-
-function getAddressValue(s: any): string {
-  let value: string;
-  switch (s.address_type) {
-  case 'host':
-    value = s.host;
-    break;
-  case 'range':
-    value = s.range;
-    break;
-  case 'network':
-    value = s.network;
-    break;
-  case 'group':
-    value = s.children;
-    break;
-  default:
-    value = 'unkown';
-  }
-  return value;
-}
 
 async function deleteAddress(){
   let res = await apiCall('object.addresses_delete', { id: displayData[selection[0]].name });

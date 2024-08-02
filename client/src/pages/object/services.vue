@@ -2,16 +2,26 @@
 import { apiCall } from '../../api';
 import getPlugins from '../../plugins';
 import EnumTypeDisplay from '~/components/display/EnumTypeDisplay.vue';
+import EnumValueDisplay from '~/components/display/EnumValueDisplay.vue';
+import PortServiceDisplay from '~/components/display/PortServiceDisplay.vue';
+import ArrayDisplay from '~/components/display/ArrayDisplay.vue';
 const p = getPlugins();
 
 let services = $ref({});
 let loading = $ref(false);
 let selection = $ref([] as number[]);
 
+const serviceValueDefinition: { [key: string]: { path: string, component: Component | undefined } } = {
+  'tcp': { path: 'tcp', component: PortServiceDisplay },
+  'udp': { path: 'udp', component: PortServiceDisplay },
+  'icmp': { path: 'icmp.code', component: undefined },
+  'group': { path: 'group.members', component: ArrayDisplay },
+};
+
 const columns = [
   { heading: 'Name', path: 'name' },
-  { heading: 'Type', path: 'type', component: markRaw(EnumTypeDisplay), componentProp: 'data' },
-  { heading: 'Value', path: 'value' },
+  { heading: 'Type', path: 'service_type', component: markRaw(EnumTypeDisplay), componentProp: 'data', props: { definition: serviceValueDefinition } },
+  { heading: 'Value', path: 'service_type', component: markRaw(EnumValueDisplay), componentProp: 'data', props: { definition: serviceValueDefinition } },
   { heading: 'Comment', path: 'comment' },
 ];
 
@@ -21,37 +31,12 @@ const displayData = $computed(() => {
   for (const index in services) {
     data.push({
       name: services[index].name,
-      value: getServiceValue(services[index]),
-      type: Object.keys(services[index].service_type)[0],
+      service_type: services[index].service_type,
       comment: services[index].comment,
     });
   }
   return data;
 });
-
-function getServiceValue(s: any): string {
-  console.debug('test', Object.keys(s.service_type)[0]);
-  let value: string;
-  switch (Object.keys(s.service_type)[0]) {
-  case 'tcp':
-  case 'udp':
-    value = getServicePortRange(s.service_type[Object.keys(s.service_type)[0]]);
-    break;
-  case 'icmp':
-    value = 'icmp';
-    break;
-  case 'group':
-    value = s.children;
-    break;
-  default:
-    value = 'unkown';
-  }
-  return value;
-}
-
-function getServicePortRange(s:any): string {
-  return `${s.source}-${s.destination}`;
-}
 
 async function load(){
   loading = true;

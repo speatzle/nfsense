@@ -1,21 +1,7 @@
 <!-- Base component that implements selecting single and multiple values from a list in a type-unsafe manner -->
-<script lang="ts">
-// Types
-export type Options = Record<Index, Option>;
-export type Option = {
-  [key: Index]: any, // Allow additional properties for customization
-  display?: string,
-};
-export type SearchProvider = (opts: SearchOptions) => Promise<Options>;
-export type MaybeSearchProvider = SearchProvider | null;
-export type SearchOptions = {
-  search: string,
-  unknownKeys?: Index[],
-  // parentData?: any,
-};
-</script>
 <script setup lang="ts">
 import { equals, isNullish, Index } from '../../util';
+import type { Options, MaybeSearchProvider } from './input';
 // --- Prop setup ---
 const props = withDefaults(defineProps<{
   // Two-Way Bindings (v-model)
@@ -89,9 +75,9 @@ watch($$(multiple), () => modelValue = multiple ? [] : null );
 // --- Everything Else  ---
 let expanded = $ref(false);
 let navigated = $ref(0);
-let inputDiv: HTMLElement | null = $ref(null);
-let input: HTMLElement | null = $ref(null);
-let valueButton: HTMLElement | null = $ref(null);
+let inputDiv = $ref(null as HTMLElement | null);
+let input = $ref(null as HTMLElement | null);
+let valueButton = $ref(null as HTMLElement | null);
 
 const selCount = $computed(() => modelValue?.length || 0);
 

@@ -1,19 +1,6 @@
-<script lang="ts">
-import { Index, MaybeIndex, equals, variantOf } from '../../util';
-import { Fields } from './NicerForm.vue';
-
-export type Variant = {
-  fields?: Fields,
-  display?: string,
-  icon?: Component
-};
-export type Variants = Record<Index, Variant>;
-export type EnumValueWithFields = { [index: Index]: Record<Index, any> }
-export type EnumValue = Index | EnumValueWithFields;
-export type MaybeEnumValue = EnumValue | null;
-</script>
-
 <script setup lang="ts">
+import type { MaybeEnumValue, Variants, EnumValueWithFields } from './input';
+import { equals, variantOf, MaybeIndex, Index } from '~/util';
 
 const props = withDefaults(defineProps<{
   // Two-Way Bindings

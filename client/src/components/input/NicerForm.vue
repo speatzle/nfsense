@@ -1,17 +1,6 @@
-<script lang="ts">
-import { equals, Index } from '../../util';
-
-export type Field = {
-  is: Component | string,
-  label?: string,
-  props?: any,
-  // actions?: Action[],
-  // forceCastNumber`?: bool,
-};
-export type Fields = Record<Index, Field>;
-</script>
-
 <script setup lang="ts">
+import { equals, Index } from '../../util';
+import type { Fields } from './input';
 const props = withDefaults(defineProps<{
   // Two-Way Bindings
   modelValue?: Record<Index, any>,

@@ -1,4 +1,4 @@
-import { SearchProvider, Options } from '~/components/input/DropdownInput.vue';
+import { SearchProvider, Options } from '~/components/input/input';
 import { apiCall } from './api';
 
 const GetHardwareInterfaces: SearchProvider = async (o) => {

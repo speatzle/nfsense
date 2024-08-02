@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useKeyModifier } from '@vueuse/core';
 import type { Component } from 'vue';
-import { equals } from '~/util';
+import { equals, atPath } from '~/util';
 
 const shiftState = $(useKeyModifier('Shift'));
 const ctrlState = $(useKeyModifier('Control'));
@@ -19,6 +19,7 @@ const props = withDefaults(defineProps<{
     heading: string,
     path: string,
     component: Component,
+    props: any,
   }[],
   sortSelf?: boolean,
   draggable?: boolean,
@@ -94,12 +95,6 @@ function toggleRowSelection(index: number) {
   emit('selectionChanged');
 }
 
-function atPath(value: any, path: string): any {
-  for (const segment of path.split('.'))
-    value = (value ?? {} as any)[segment];
-  return value;
-}
-
 let draggedRow = $ref(-1);
 let draggedOverRow = $ref(-1);
 function dragDropRow() {
@@ -149,9 +144,9 @@ function dragDropRow() {
           @dragstart="() => draggedRow = index"
           @dragenter="() => draggedOverRow = index"
           @dragend="() => dragDropRow()">
-        <td v-for="{path, component} of columns" :key="path">
-          <component :is="component" v-if="component" :data="atPath(row, path)"/>
-          <template v-else>{{ atPath(row, path) }}</template>
+        <td v-for="col of columns" :key="col.path">
+          <component :is="col.component" v-if="col.component" :data="atPath(row, col.path)" v-bind="col.props"/>
+          <template v-else>{{ atPath(row, col.path) }}</template>
         </td>
       </tr>
     </tbody>

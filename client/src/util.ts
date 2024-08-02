@@ -23,3 +23,9 @@ export function variantOf(enumValue: any) {
 
 export type Index = string | number | symbol;
 export type MaybeIndex = Index | null;
+
+export function atPath(value: any, path: string): any {
+  for (const segment of path.split('.'))
+    value = (value ?? {} as any)[segment];
+  return value;
+}

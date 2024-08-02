@@ -249,7 +249,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
           'icmp': {
             display: 'ICMP',
             fields: {
-              icmp_code: { is: 'NumberBox', label: 'ICMP Code' },
+              code: { is: 'NumberBox', label: 'ICMP Code' },
             },
           },
           'group': {

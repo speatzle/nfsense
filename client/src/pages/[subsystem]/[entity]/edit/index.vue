@@ -2,12 +2,27 @@
 import { editTypes } from '../../../../definitions';
 import { apiCall } from '../../../../api';
 import getPlugins from '../../../../plugins';
+import { isNullish } from '../../../../util';
+
 const p = getPlugins();
 
 const props = $defineProps<{subsystem: string, entity: string}>();
 const { subsystem, entity } = $(props);
 
 let vm: any = $ref({});
+let loading = $ref(true);
+
+// Load default
+async function load(){
+  loading = true;
+  if (!isNullish(editTypes[subsystem][entity].default)) {
+    console.debug('loading form default', editTypes[subsystem][entity].default);
+    vm = editTypes[subsystem][entity].default;
+  } else {
+    console.debug('no form default found');
+  }
+  loading = false;
+}
 
 async function create() {
   console.debug('value', vm);
@@ -22,9 +37,16 @@ async function create() {
   }
 }
 
+onMounted(async() => {
+  if (editTypes[subsystem][entity]) {
+    load();
+  }
+});
+
 </script>
 <template>
-  <div v-if="editTypes[subsystem][entity]">
+  <p v-if="loading">Loading...</p>
+  <div v-else-if="editTypes[subsystem][entity]">
     <PageHeader :title="'Create ' + editTypes[subsystem][entity].name">
     </PageHeader>
     <NicerForm v-model="vm" class="scroll cl-secondary" :fields="editTypes[subsystem][entity].fields"/>

@@ -112,6 +112,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
           'continue': { display: 'Continue' },
         } } },
         counter: { is: 'CheckBox', label: 'Counter' },
+        log: { is: 'CheckBox', label: 'Log' },
         comment: { is: 'MultilineTextBox', label: 'Comment' },
       },
       default: {
@@ -141,6 +142,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
         dnat_address: { is: 'SingleSelect', label: 'Destination', props: { searchProvider: GetAddresses } },
         dnat_service: { is: 'SingleSelect', label: 'Service', props: { searchProvider: GetServices } },
         counter: { is: 'CheckBox', label: 'Counter' },
+        log: { is: 'CheckBox', label: 'Log' },
         comment: { is: 'MultilineTextBox', label: 'Comment' },
       },
       default: {
@@ -179,6 +181,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
           },
         } } },
         counter: { is: 'CheckBox', label: 'Counter' },
+        log: { is: 'CheckBox', label: 'Log' },
         comment: { is: 'MultilineTextBox', label: 'Comment' },
       },
       default: {

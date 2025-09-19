@@ -25,6 +25,7 @@ pub struct ForwardRule {
     pub negate_destination: bool,
     pub comment: String,
     pub counter: bool,
+    pub log: bool,
     pub verdict: Verdict,
 }
 
@@ -40,6 +41,7 @@ pub struct DestinationNATRule {
     pub negate_destination: bool,
     pub comment: String,
     pub counter: bool,
+    pub log: bool,
     pub dnat_address: Option<String>,
     pub dnat_service: Option<String>,
 }
@@ -56,6 +58,7 @@ pub struct SourceNATRule {
     pub negate_destination: bool,
     pub comment: String,
     pub counter: bool,
+    pub log: bool,
     pub snat_type: SNATType,
 }
 

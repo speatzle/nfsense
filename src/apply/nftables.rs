@@ -18,6 +18,7 @@ pub struct Rule {
     pub services: Vec<String>,
     pub addresses: String,
     pub counter: bool,
+    pub log: bool,
     pub verdict: Option<String>,
     pub destination_nat_action: Option<String>,
     pub source_nat_action: Option<String>,
@@ -201,6 +202,7 @@ pub fn apply_nftables(pending_config: Config, _current_config: Config) -> Result
         forward_rules.push(Rule {
             name: rule.name.clone(),
             counter: rule.counter,
+            log: rule.log,
             addresses: generate_address_matcher(
                 rule.source_addresses(pending_config.clone()),
                 rule.negate_source,
@@ -225,6 +227,7 @@ pub fn apply_nftables(pending_config: Config, _current_config: Config) -> Result
         destination_nat_rules.push(Rule {
             name: rule.name.clone(),
             counter: rule.counter,
+            log: rule.log,
             addresses: generate_address_matcher(
                 rule.source_addresses(pending_config.clone()),
                 rule.negate_source,
@@ -251,6 +254,7 @@ pub fn apply_nftables(pending_config: Config, _current_config: Config) -> Result
         source_nat_rules.push(Rule {
             name: rule.name.clone(),
             counter: rule.counter,
+            log: rule.log,
             addresses: generate_address_matcher(
                 rule.source_addresses(pending_config.clone()),
                 rule.negate_source,

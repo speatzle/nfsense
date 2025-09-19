@@ -56,6 +56,26 @@ const GetPeers: SearchProvider = async (o) => {
   }
 };
 
+const ICMPPacketTypes: SearchProvider = async (o) => {
+  return {
+    'echo_reply': { display: 'EchoReply' },
+    'destination_unreachable': { display: 'DestinationUnreachable' },
+    'source_quench': { display: 'SourceQuench' },
+    'redirect': { display: 'Redirect' },
+    'echo_request': { display: 'EchoRequest' },
+    'time_exceeded': { display: 'TimeExceeded' },
+    'parameter_problem': { display: 'ParameterProblem' },
+    'timestamp_request': { display: 'TimestampRequest' },
+    'timestamp_reply': { display: 'TimestampReply' },
+    'info_request': { display: 'InfoRequest' },
+    'info_reply': { display: 'InfoReply' },
+    'address_mask_request': { display: 'AddressMaskRequest' },
+    'address_mask_reply': { display: 'AddressMaskReply' },
+    'router_advertisement': { display: 'RouterAdvertisement' },
+    'router_solicitation': { display: 'RouterSolicitation' },
+  };
+};
+
 const PortDefinition: Object = {
   'any': { display: 'Any' },
   'single': {
@@ -249,7 +269,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
           'icmp': {
             display: 'ICMP',
             fields: {
-              code: { is: 'NumberBox', label: 'ICMP Code' },
+              ptypes: { is: 'MultiSelect', label: 'Packet Types', props: { searchProvider: ICMPPacketTypes } },
             },
           },
           'group': {

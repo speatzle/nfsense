@@ -55,7 +55,7 @@ pub enum ServiceType {
         destination: PortDefinition,
     },
     ICMP {
-        code: u8,
+        ptypes: Vec<ICMPPacketTypes>,
     },
     Group {
         members: Vec<String>,
@@ -68,4 +68,24 @@ pub enum PortDefinition {
     Any,
     Single { port: u64 },
     Range { start_port: u64, end_port: u64 },
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "snake_case")]
+pub enum ICMPPacketTypes {
+    EchoReply,
+    DestinationUnreachable,
+    SourceQuench,
+    Redirect,
+    EchoRequest,
+    TimeExceeded,
+    ParameterProblem,
+    TimestampRequest,
+    TimestampReply,
+    InfoRequest,
+    InfoReply,
+    AddressMaskRequest,
+    AddressMaskReply,
+    RouterAdvertisement,
+    RouterSolicitation,
 }

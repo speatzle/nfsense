@@ -34,7 +34,7 @@ async function load(){
 }
 
 async function deleteRule(){
-  let res = await apiCall('firewall.source_nat_rules.delete', { id: selection[0] });
+  let res = await apiCall('firewall.source_nat_rules.delete', { index: selection[0] });
   if (res.Error === null) {
     console.debug('deleted rule');
     p.toast.success('Deleted Rule');

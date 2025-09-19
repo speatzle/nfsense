@@ -59,7 +59,9 @@ fn convert_list_to_set(list: Vec<String>) -> String {
 
 fn generate_address_matcher(
     source_addresses: Vec<Address>,
+    negate_source: bool,
     destination_addresses: Vec<Address>,
+    negate_destination: bool,
 ) -> Result<String, ApplyError> {
     let source_list = convert_addresses_to_strings(source_addresses);
     let destination_list = convert_addresses_to_strings(destination_addresses);
@@ -67,12 +69,18 @@ fn generate_address_matcher(
 
     if source_list.len() > 0 {
         res += "ip saddr ";
+        if negate_source {
+            res += "!= ";
+        }
         res += &convert_list_to_set(source_list);
         res += " ";
     }
 
     if destination_list.len() > 0 {
         res += "ip daddr ";
+        if negate_destination {
+            res += "!= ";
+        }
         res += &convert_list_to_set(destination_list);
     }
 
@@ -195,7 +203,9 @@ pub fn apply_nftables(pending_config: Config, _current_config: Config) -> Result
             counter: rule.counter,
             addresses: generate_address_matcher(
                 rule.source_addresses(pending_config.clone()),
+                rule.negate_source,
                 rule.destination_addresses(pending_config.clone()),
+                rule.negate_destination,
             )?,
             services: generate_service_matchers(rule.services(pending_config.clone()))?,
             verdict: Some(match rule.verdict {
@@ -217,7 +227,9 @@ pub fn apply_nftables(pending_config: Config, _current_config: Config) -> Result
             counter: rule.counter,
             addresses: generate_address_matcher(
                 rule.source_addresses(pending_config.clone()),
+                rule.negate_source,
                 rule.destination_addresses(pending_config.clone()),
+                rule.negate_destination,
             )?,
             services: generate_service_matchers(rule.services(pending_config.clone()))?,
             verdict: None,
@@ -241,7 +253,9 @@ pub fn apply_nftables(pending_config: Config, _current_config: Config) -> Result
             counter: rule.counter,
             addresses: generate_address_matcher(
                 rule.source_addresses(pending_config.clone()),
+                rule.negate_source,
                 rule.destination_addresses(pending_config.clone()),
+                rule.negate_destination,
             )?,
             services: generate_service_matchers(rule.services(pending_config.clone()))?,
             verdict: None,

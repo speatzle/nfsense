@@ -102,7 +102,9 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
       fields: {
         name: { is: 'TextBox', label: 'Name' },
         source_addresses: { is: 'MultiSelect', label: 'Source', props: { searchProvider: GetAddresses } },
+        negate_source: { is: 'CheckBox', label: 'Negate Source' },
         destination_addresses: { is: 'MultiSelect', label: 'Destination', props: { searchProvider: GetAddresses } },
+        negate_destination: { is: 'CheckBox', label: 'Negate Destination' },
         services: { is: 'MultiSelect', label: 'Services', props: { searchProvider: GetServices } },
         verdict: { is: 'EnumInput', label: 'Verdict', props: { variants: {
           'accept': { display: 'Accept' },
@@ -131,7 +133,9 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
       fields: {
         name: { is: 'TextBox', label: 'Name' },
         source_addresses: { is: 'MultiSelect', label: 'Source', props: { searchProvider: GetAddresses } },
+        negate_source: { is: 'CheckBox', label: 'Negate Source' },
         destination_addresses: { is: 'MultiSelect', label: 'Destination', props: { searchProvider: GetAddresses } },
+        negate_destination: { is: 'CheckBox', label: 'Negate Destination' },
         services: { is: 'MultiSelect', label: 'Services', props: { searchProvider: GetServices } },
         dnat_heading: { is: 'Heading', props: { caption: 'DNAT' } },
         dnat_address: { is: 'SingleSelect', label: 'Destination', props: { searchProvider: GetAddresses } },
@@ -159,7 +163,9 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
       fields: {
         name: { is: 'TextBox', label: 'Name' },
         source_addresses: { is: 'MultiSelect', label: 'Source', props: { searchProvider: GetAddresses } },
+        negate_source: { is: 'CheckBox', label: 'Negate Source' },
         destination_addresses: { is: 'MultiSelect', label: 'Destination', props: { searchProvider: GetAddresses } },
+        negate_destination: { is: 'CheckBox', label: 'Negate Destination' },
         services: { is: 'MultiSelect', label: 'Services', props: { searchProvider: GetServices } },
         snat_heading: { is: 'Heading', props: { caption: 'SNAT' } },
         snat_type: { is: 'EnumInput', label: 'Type', props: { variants: {

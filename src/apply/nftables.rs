@@ -9,7 +9,7 @@ use std::{error::Error, io::Write};
 use tera::Context;
 use tracing::{error, info};
 
-const NFTABLES_CONFIG_PATH: &str = "/etc/nftables/nfsense.conf";
+const NFTABLES_CONFIG_PATH: &str = "/etc/nfsense/nfsense-nftables.conf";
 const NFTABLES_TEMPLATE_PATH: &str = "nftables/nftables.conf";
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

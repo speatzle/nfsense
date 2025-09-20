@@ -242,7 +242,7 @@ pub fn apply_kea(pending_config: Config, _current_config: Config) -> Result<(), 
     info!("Restarting Kea");
     match Command::new("systemctl")
         .arg("restart")
-        .arg("kea-dhcp4")
+        .arg("kea-dhcp4-server")
         .output()
     {
         Ok(out) => {

@@ -8,7 +8,7 @@ use std::{error::Error, io::Write};
 use tera::Context;
 use tracing::{error, info};
 
-const CHRONY_CONFIG_PATH: &str = "/etc/chrony.conf";
+const CHRONY_CONFIG_PATH: &str = "/etc/chrony/conf.d/chrony-nfsense.conf";
 const CHRONY_TEMPLATE_PATH: &str = "chrony/chrony.conf";
 
 pub fn apply_chrony(pending_config: Config, _current_config: Config) -> Result<(), ApplyError> {

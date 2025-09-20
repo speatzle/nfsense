@@ -5,8 +5,8 @@ use std::sync::Arc;
 
 const SERVICE_UNBOUND: &str = "unbound.service";
 const SERVICE_SSH: &str = "sshd.service";
-const SERVICE_KEAV4: &str = "kea-dhcp4.service";
-const SERVICE_KEAV6: &str = "kea-dhcp6.service";
+const SERVICE_KEAV4: &str = "kea-dhcp4-server.service";
+const SERVICE_KEAV6: &str = "kea-dhcp6-server.service";
 const SERVICE_CHRONY: &str = "chronyd.service";
 const SERVICE_NETWORKD: &str = "systemd-networkd.service";
 const SERVICE_NFTABLES: &str = "nftables.service";

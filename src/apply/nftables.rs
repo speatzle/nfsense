@@ -146,7 +146,7 @@ fn generate_service_matchers(services: Vec<Service>) -> Result<Vec<String>, Appl
                 destination,
             } => list.push(generate_port_matcher("udp", source, destination)),
             // TODO Implement Packet type matching
-            ServiceType::ICMP { ptypes } => list.push("ip protocol icmp".to_string()),
+            ServiceType::ICMP { ptypes: _ } => list.push("ip protocol icmp".to_string()),
             ServiceType::Group { .. } => (
                 //TODO
             ),

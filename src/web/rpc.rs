@@ -2,7 +2,7 @@ use crate::AppState;
 use axum::routing::post;
 use axum::{Json, Router};
 use jsonrpsee::core::traits::ToRpcParams;
-use jsonrpsee::core::Error;
+use jsonrpsee::server::MethodsError;
 use serde::{Deserialize, Serialize};
 use serde_json::value::RawValue;
 
@@ -18,16 +18,14 @@ struct ParamConverter {
 }
 
 impl ToRpcParams for ParamConverter {
-    fn to_rpc_params(self) -> Result<Option<Box<RawValue>>, Error> {
-        let s = String::from_utf8(serde_json::to_vec(&self.params)?);
-        match s {
-            Ok(s) => {
-                return RawValue::from_string(s)
-                    .map(Some)
-                    .map_err(Error::ParseError)
-            }
-            Err(err) => return Err(Error::Custom(err.to_string())),
-        }
+    fn to_rpc_params(self) -> Result<Option<Box<RawValue>>, serde_json::Error> {
+        let s = serde_json::to_string(&self.params)?;
+        RawValue::from_string(s).map(Some).map_err(|_| {
+            serde_json::Error::io(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                "RawValue parse error",
+            ))
+        })
     }
 }
 
@@ -106,7 +104,7 @@ async fn api_handler(
     );
 
     // TODO find a async save way to catch panics?
-    let res: Result<Option<Box<RawValue>>, Error> = state
+    let res: Result<Option<Box<RawValue>>, MethodsError> = state
         .rpc_module
         .call(&req.method, ParamConverter { params: req.params })
         .await;

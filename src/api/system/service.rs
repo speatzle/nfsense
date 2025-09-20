@@ -1,6 +1,6 @@
 use crate::api::ApiError;
 use crate::state::RpcState;
-use jsonrpsee::{types::Params, RpcModule};
+use jsonrpsee::{types::Params, Extensions, RpcModule};
 use std::sync::Arc;
 
 const SERVICE_UNBOUND: &str = "unbound.service";
@@ -28,6 +28,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
 pub async fn get_services_status<'a>(
     _: Params<'a>,
     _state: Arc<RpcState>,
+    _: Extensions,
 ) -> Result<Vec<String>, ApiError> {
     let res: Vec<String> = vec![
         get_service_status(&_state.dbus_conn, SERVICE_UNBOUND).await?,
@@ -62,7 +63,11 @@ async fn get_service_status(
 }
 
 // TODO add services whitelist
-async fn restart_service<'a>(params: Params<'a>, _state: Arc<RpcState>) -> Result<(), ApiError> {
+async fn restart_service<'a>(
+    params: Params<'a>,
+    _state: Arc<RpcState>,
+    _: Extensions,
+) -> Result<(), ApiError> {
     let unit: String = params.parse().map_err(ApiError::ParameterDeserialize)?;
     let systemd_manager = zbus_systemd::systemd1::ManagerProxy::new(&_state.dbus_conn).await?;
     let unit_object_path = systemd_manager.get_unit(unit).await?;
@@ -72,7 +77,11 @@ async fn restart_service<'a>(params: Params<'a>, _state: Arc<RpcState>) -> Resul
     Ok(())
 }
 
-async fn stop_service<'a>(params: Params<'a>, _state: Arc<RpcState>) -> Result<(), ApiError> {
+async fn stop_service<'a>(
+    params: Params<'a>,
+    _state: Arc<RpcState>,
+    _: Extensions,
+) -> Result<(), ApiError> {
     let unit: String = params.parse().map_err(ApiError::ParameterDeserialize)?;
     let systemd_manager = zbus_systemd::systemd1::ManagerProxy::new(&_state.dbus_conn).await?;
     let unit_object_path = systemd_manager.get_unit(unit).await?;

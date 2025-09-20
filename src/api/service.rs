@@ -6,7 +6,7 @@ use crate::{
     state::RpcState,
     update_thing_by_index,
 };
-use jsonrpsee::RpcModule;
+use jsonrpsee::{Extensions, RpcModule};
 
 pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module

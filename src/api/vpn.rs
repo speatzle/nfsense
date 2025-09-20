@@ -5,7 +5,7 @@ use crate::{
     create_thing, delete_thing_by_name, get_thing_by_name, list_things, update_thing_by_name,
 };
 use jsonrpsee::types::Params;
-use jsonrpsee::RpcModule;
+use jsonrpsee::{Extensions, RpcModule};
 use std::process::Command;
 
 pub fn register_methods(module: &mut RpcModule<RpcState>) {
@@ -84,7 +84,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 }
 
-pub fn wireguard_status(_: Params, _: &RpcState) -> Result<String, ApiError> {
+pub fn wireguard_status(_: Params, _: &RpcState, _: &Extensions) -> Result<String, ApiError> {
     match Command::new("wg").output() {
         Ok(out) => Ok(String::from_utf8_lossy(&out.stdout).to_string()),
         Err(err) => Err(ApiError::IOError(err)),

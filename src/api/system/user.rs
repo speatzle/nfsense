@@ -2,7 +2,7 @@ use crate::config_manager::{Change, ChangeAction::Create, ChangeAction::Update};
 use crate::delete_thing_by_name;
 use crate::{definitions::system::User, state::RpcState};
 use jsonrpsee::types::Params;
-use jsonrpsee::RpcModule;
+use jsonrpsee::{Extensions, RpcModule};
 use pwhash::sha512_crypt;
 use serde::{Deserialize, Serialize};
 
@@ -47,7 +47,7 @@ pub struct GetUser {
     name: String,
 }
 
-pub fn get_user(p: Params, state: &RpcState) -> Result<GetUserResult, ApiError> {
+pub fn get_user(p: Params, state: &RpcState, _: &Extensions) -> Result<GetUserResult, ApiError> {
     let u: GetUser = p.parse().map_err(ParameterDeserialize)?;
 
     let index = state
@@ -71,7 +71,11 @@ pub fn get_user(p: Params, state: &RpcState) -> Result<GetUserResult, ApiError> 
     }
 }
 
-pub fn get_users(_: Params, state: &RpcState) -> Result<Vec<GetUserResult>, ApiError> {
+pub fn get_users(
+    _: Params,
+    state: &RpcState,
+    _: &Extensions,
+) -> Result<Vec<GetUserResult>, ApiError> {
     let mut res: Vec<GetUserResult> = Vec::new();
     for u in state
         .config_manager
@@ -96,7 +100,7 @@ struct CreateUser {
     comment: Option<String>,
 }
 
-pub fn create_user(p: Params, state: &RpcState) -> Result<(), ApiError> {
+pub fn create_user(p: Params, state: &RpcState, _: &Extensions) -> Result<(), ApiError> {
     let u: CreateUser = p.parse().map_err(ParameterDeserialize)?;
 
     let hash = sha512_crypt::hash(u.password).map_err(HashError)?;
@@ -127,7 +131,7 @@ struct UpdateUser {
     thing: CreateUser,
 }
 
-pub fn update_user(p: Params, state: &RpcState) -> Result<(), ApiError> {
+pub fn update_user(p: Params, state: &RpcState, _: &Extensions) -> Result<(), ApiError> {
     let u: UpdateUser = p.parse().map_err(ParameterDeserialize)?;
 
     let mut cm = state.config_manager.clone();

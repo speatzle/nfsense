@@ -51,7 +51,7 @@ impl Into<ErrorObject<'static>> for ApiError {
 #[macro_export]
 macro_rules! get_thing_by_name {
     ($( $sub_system:ident ).+) => {
-        |params, state| {
+        |params, state, _: &Extensions| {
             use serde::Deserialize;
 
             #[derive(Deserialize)]
@@ -80,7 +80,7 @@ macro_rules! get_thing_by_name {
 #[macro_export]
 macro_rules! get_thing_by_index {
     ($( $sub_system:ident ).+) => {
-        |params, state| {
+        |params, state, _: &Extensions| {
             use serde::{Deserialize, Serialize};
 
             #[derive(Deserialize, Serialize)]
@@ -106,7 +106,7 @@ macro_rules! get_thing_by_index {
 #[macro_export]
 macro_rules! list_things {
     ($( $sub_system:ident ).+) => {
-        |_, state| {
+        |_, state, _: &Extensions| {
             Ok(state
             .config_manager
             .get_pending_config()
@@ -118,7 +118,7 @@ macro_rules! list_things {
 #[macro_export]
 macro_rules! create_thing {
     ($( $sub_system:ident ).+, $typ:ty) => {
-        |params, state| {
+        |params, state, _: &Extensions| {
             let t: $typ = params.parse().map_err(ApiError::ParameterDeserialize)?;
 
             let mut cm = state.config_manager.clone();
@@ -140,7 +140,7 @@ macro_rules! create_thing {
 #[macro_export]
 macro_rules! update_thing_by_name {
     ($( $sub_system:ident ).+, $typ:ty) => {
-        |params, state| {
+        |params, state, _: &Extensions| {
             use serde::{Deserialize, Serialize};
 
             #[derive(Deserialize, Serialize)]
@@ -178,7 +178,7 @@ macro_rules! update_thing_by_name {
 #[macro_export]
 macro_rules! update_thing_by_index {
     ($( $sub_system:ident ).+, $typ:ty) => {
-        |params, state| {
+        |params, state, _: &Extensions| {
             use serde::{Deserialize, Serialize};
 
             #[derive(Deserialize, Serialize)]
@@ -211,7 +211,7 @@ macro_rules! update_thing_by_index {
 #[macro_export]
 macro_rules! delete_thing_by_name {
     ($( $sub_system:ident ).+) => {
-        |params, state| {
+        |params, state, _: &Extensions| {
             use serde::{Deserialize, Serialize};
 
             #[derive(Deserialize, Serialize)]
@@ -249,7 +249,7 @@ macro_rules! delete_thing_by_name {
 #[macro_export]
 macro_rules! delete_thing_by_index {
     ($( $sub_system:ident ).+) => {
-        |params, state| {
+        |params, state, _: &Extensions| {
             use serde::{Deserialize, Serialize};
 
             #[derive(Deserialize, Serialize)]

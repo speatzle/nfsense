@@ -7,7 +7,7 @@ use crate::{
     state::RpcState,
     update_thing_by_index, update_thing_by_name,
 };
-use jsonrpsee::{types::Params, RpcModule};
+use jsonrpsee::{types::Params, Extensions, RpcModule};
 use std::process::Command;
 
 pub fn register_methods(module: &mut RpcModule<RpcState>) {
@@ -85,7 +85,11 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 }
 
-pub fn list_network_links(_: Params, _state: &RpcState) -> Result<Vec<Link>, ApiError> {
+pub fn list_network_links(
+    _: Params,
+    _state: &RpcState,
+    _: &Extensions,
+) -> Result<Vec<Link>, ApiError> {
     match Command::new("ls")
         .arg("-w")
         .arg("1")

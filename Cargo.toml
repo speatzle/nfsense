@@ -9,7 +9,7 @@ edition = "2021"
 async-trait = "0.1.89"
 axum = { version = "0.8.4", features = ["macros"] }
 ipnet = { version = "2.11.0", features = ["serde"] }
-jsonrpsee = { version = "0.21.0", features = ["server"] }
+jsonrpsee = { version = "0.26.0", features = ["server"] }
 macaddr = { version = "1.0.1", features = ["serde"] }
 pwhash = "1.0.0"
 rbtag = "0.3.0"

@@ -7,12 +7,16 @@ use std::{
 
 use crate::state::RpcState;
 use axum::{middleware, Router};
+use axum_reverse_proxy::ReverseProxy;
+use axum_server::tls_openssl::OpenSSLConfig;
 use config_manager::ConfigManager;
 use state::AppState;
 use std::env;
 use std::fs;
-use tokio::net::TcpListener;
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr};
+use std::path::PathBuf;
 use tower_cookies::CookieManagerLayer;
+//use tower_http::services::ServeDir;
 use tracing::info;
 use tracing_subscriber;
 use web::auth::SessionState;
@@ -68,6 +72,14 @@ async fn main() {
         }),
     };
 
+    let webinterface_router = ReverseProxy::new("/", "http://localhost:5173");
+    /* TODO add flag to server via proxy, default to static files
+    let static_files = ServeDir::new("./assets");
+    Router::new()
+            .route("/", get(|| async {"hello"}))
+            .nest_service("/static", static_files)
+            */
+
     // Note: The Router Works Bottom Up, So the auth middleware will only applies to everything above it.
     let main_router = Router::new()
         .merge(web::rpc::routes())
@@ -77,10 +89,17 @@ async fn main() {
         ))
         .merge(web::auth::routes())
         .with_state(app_state)
+        .merge(webinterface_router)
         .layer(CookieManagerLayer::new());
     // .fallback_service(service)
 
+    let config =
+        OpenSSLConfig::from_pem_file(PathBuf::from("cert.pem"), PathBuf::from("key.pem")).unwrap();
+
     info!("Server started successfully");
-    let listener = TcpListener::bind("[::]:8080").await.unwrap();
-    axum::serve(listener, main_router).await.unwrap();
+    let addr = SocketAddr::new(IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 0)), 8080);
+    axum_server::bind_openssl(addr, config)
+        .serve(main_router.into_make_service())
+        .await
+        .unwrap();
 }

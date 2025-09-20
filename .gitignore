@@ -1,4 +1,4 @@
 config.json
 pending.json
+*.pem
 /target
-

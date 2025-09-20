@@ -11,6 +11,7 @@ use config_manager::ConfigManager;
 use state::AppState;
 use std::env;
 use std::fs;
+use tokio::net::TcpListener;
 use tower_cookies::CookieManagerLayer;
 use tracing::info;
 use tracing_subscriber;
@@ -80,8 +81,6 @@ async fn main() {
     // .fallback_service(service)
 
     info!("Server started successfully");
-    axum::Server::bind(&"[::]:8080".parse().unwrap())
-        .serve(main_router.into_make_service())
-        .await
-        .unwrap();
+    let listener = TcpListener::bind("[::]:8080").await.unwrap();
+    axum::serve(listener, main_router).await.unwrap();
 }

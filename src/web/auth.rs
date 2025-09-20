@@ -6,6 +6,7 @@ use std::sync::{Arc, RwLock};
 use uuid::Uuid;
 
 use super::super::AppState;
+use axum::body::Body;
 use axum::routing::post;
 use axum::{Json, Router};
 use serde::{Deserialize, Serialize};
@@ -69,6 +70,7 @@ fn get_user(name: String, users: Vec<User>) -> Option<User> {
     return None;
 }
 
+#[axum::debug_handler]
 async fn login_handler(
     cookies: Cookies,
     State(state): State<AppState>,
@@ -99,6 +101,7 @@ async fn login_handler(
     StatusCode::UNAUTHORIZED
 }
 
+#[axum::debug_handler]
 async fn logout_handler(cookies: Cookies, state: State<AppState>) -> impl IntoResponse {
     let session_cookie = cookies.get(SESSION_COOKIE);
     match session_cookie {
@@ -146,6 +149,7 @@ pub struct SessionResponse {
     pub commit_hash: String,
 }
 
+#[axum::debug_handler]
 async fn session_handler(cookies: Cookies, State(state): State<AppState>) -> impl IntoResponse {
     match get_session(cookies, state.session_state) {
         Ok(_) => {
@@ -167,11 +171,11 @@ async fn session_handler(cookies: Cookies, State(state): State<AppState>) -> imp
     }
 }
 
-pub async fn mw_auth<B>(
+pub async fn mw_auth(
     state: State<AppState>,
     cookies: Cookies,
-    mut req: Request<B>,
-    next: Next<B>,
+    mut req: Request<Body>,
+    next: Next,
     // session_state: SessionState,
 ) -> Result<Response, StatusCode> {
     match get_session(cookies, state.session_state.clone()) {

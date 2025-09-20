@@ -108,7 +108,7 @@ impl ConfigManager {
             match (apply_function)(data.pending_config.clone(), data.current_config.clone()) {
                 Ok(_) => info!("Applied"),
                 Err(e) => {
-                    error!("Applying function, Reverting to current config...");
+                    error!("Ran into an error while applying, Reverting to current config... Error: {}", e);
 
                     for apply_function in APPLY_FUNCTIONS {
                         match (apply_function)(

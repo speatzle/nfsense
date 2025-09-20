@@ -13,11 +13,11 @@ use config_manager::ConfigManager;
 use state::AppState;
 use std::env;
 use std::fs;
-use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr};
+use std::net::{IpAddr, Ipv6Addr, SocketAddr};
 use std::path::PathBuf;
 use tower_cookies::CookieManagerLayer;
 //use tower_http::services::ServeDir;
-use tracing::info;
+use tracing::{error, info};
 use tracing_subscriber;
 use web::auth::SessionState;
 
@@ -72,8 +72,16 @@ async fn main() {
         }),
     };
 
+    if args.len() > 1 && args[1] == "apply-pending-config" {
+        match app_state.config_manager.clone().apply_pending_changes() {
+            Ok(_) => info!("Done! Exiting..."),
+            Err(err) => error!("Failed to apply config: {}", err),
+        }
+        return;
+    }
+
     let webinterface_router = ReverseProxy::new("/", "http://localhost:5173");
-    /* TODO add flag to server via proxy, default to static files
+    /* TODO add flag to server via proxy for dev purposes, default to static files
     let static_files = ServeDir::new("./assets");
     Router::new()
             .route("/", get(|| async {"hello"}))

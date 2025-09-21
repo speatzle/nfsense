@@ -16,8 +16,6 @@ import SingleSelect from './components/input/SingleSelect.vue';
 import MultiSelect from './components/input/MultiSelect.vue';
 import Heading from './components/display/Heading.vue';
 
-import { Form, Field, ErrorMessage  } from 'vee-validate';
-
 import App from './App.vue';
 import { createHead } from '@vueuse/head';
 import { createRouter, createWebHistory } from 'vue-router';
@@ -42,13 +40,9 @@ app.component('TextBox', TextBox);
 app.component('NumberBox', NumberBox);
 app.component('MultilineTextBox', MultilineTextBox);
 app.component('CheckBox', CheckBox);
-app.component('ValidationForm', Form);
-app.component('Field', Field);
-app.component('ErrorMessage', ErrorMessage);
 app.component('SingleSelect', SingleSelect);
 app.component('MultiSelect', MultiSelect);
 app.component('EnumInput', EnumInput);
 app.component('Heading', Heading);
-
 
 app.mount('#app');

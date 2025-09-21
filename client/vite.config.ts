@@ -1,98 +1,27 @@
 import { defineConfig } from 'vite';
-import TSConfigPaths from 'vite-tsconfig-paths';
-import Vue from '@vitejs/plugin-vue';
-import Pages from 'vite-plugin-pages';
-import Markdown from 'unplugin-vue-markdown/vite';
+import { fileURLToPath, URL } from 'node:url';
 
+import VueDevTools from 'vite-plugin-vue-devtools';
+import VueMacros from 'vue-macros/vite';
+import Vue from '@vitejs/plugin-vue';
+import AutoImport from 'unplugin-auto-import/vite';
 import Components from 'unplugin-vue-components/vite';
 import Icons from 'unplugin-icons/vite';
 import IconsResolver from 'unplugin-icons/resolver';
-import I18N from '@intlify/unplugin-vue-i18n/vite';
-import Macros from 'unplugin-vue-macros/vite';
-import AutoImport from 'unplugin-auto-import/vite';
+import Pages from 'vite-plugin-pages';
 
-import Shiki from 'markdown-it-shiki';
-import LinkAttributes from 'markdown-it-link-attributes';
-
-// https://vitejs.dev/config/
+// https://vite.dev/config/
 export default defineConfig({
-  server: {
-    'proxy': {
-      '/api': 'http://localhost:8080',
-      '/login': 'http://localhost:8080',
-      '/logout': 'http://localhost:8080',
-      '/session': 'http://localhost:8080',
-      '/ws': {
-        target: 'ws://localhost:8080',
-        ws: true,
-      },
-    },
-  },
   plugins: [
-    TSConfigPaths(),
-    Macros({
-      plugins: {
-        vue: Vue({
-          include: [/\.vue$/, /\.md$/],
-        }),
-      },
-
-      shortEmits: true,
+    VueDevTools(),
+    VueMacros({
       reactivityTransform: true,
-      shortBind: true
-    }),
-    Pages({
-      extensions: ['vue', 'md'],
-    }),
-    Markdown({
-      wrapperClasses: 'prose prose-sm m-auto text-left',
-      headEnabled: true,
-      markdownItSetup(md: any) {
-        md.use(Shiki as any, { // TODO: Figure out what's wrong here
-          theme: {
-            light: 'vitesse-light',
-            dark: 'vitesse-dark',
-          },
-        });
-        md.use(LinkAttributes as any, { // TODO: Figure out what's wrong here
-          matcher: (link: string) => /^https?:\/\//.test(link),
-          attrs: {
-            target: '_blank',
-            rel: 'noopener',
-          },
-        });
+      plugins: {
+        vue: Vue(),
       },
-    }),
-    Components({
-      extensions: ['vue'],
-      include: [/\.vue$/, /\.vue\?vue/],
-      dts: 'src/generated/components.d.ts',
-      resolvers: [
-        IconsResolver(),
-        (componentName: string) => {
-          if (componentName === 'FocusTrap')
-            return { name: 'FocusTrap', from: 'focus-trap-vue' };
-        },
-      ],
-      types: [{
-        from: 'focus-trap-vue',
-        names: ['FocusTrap'],
-      }],
-    }),
-    Icons({
-    }),
-    I18N({
-      runtimeOnly: true,
-      compositionOnly: true,
-      fullInstall: true,
-      include: ['src/locales'],
     }),
     AutoImport({
-      include: [
-        /\.[tj]sx?$/,
-        /\.vue$/, /\.vue\?vue/,
-        /\.md$/,
-      ],
+      include: [/\.[jt]sx?$/, /\.vue$/, /\.vue\?vue/, /\.md$/],
       imports: [
         'vue',
         'vue-router',
@@ -106,8 +35,37 @@ export default defineConfig({
         },
       ],
       dts: 'src/generated/auto-imports.d.ts',
+      dtsMode: 'overwrite',
       dirs: ['src/composables'],
       vueTemplate: true,
     }),
+    Components({
+      extensions: ['vue'],
+      include: [/\.vue$/, /\.vue\?vue/],
+      dts: 'src/generated/components.d.ts',
+      resolvers: [
+        IconsResolver(),
+        (componentName: string) => {
+          if (componentName === 'FocusTrap') return { name: 'FocusTrap', from: 'focus-trap-vue' };
+        },
+      ],
+      types: [
+        {
+          from: 'focus-trap-vue',
+          names: ['FocusTrap'],
+        },
+      ],
+    }),
+    Icons({}),
+    Pages({
+      extensions: ['vue', 'md'],
+    }),
   ],
+
+  // Easy Imports (Keep in sync with tsconfig.json!)
+  resolve: {
+    alias: {
+      '~': fileURLToPath(new URL('./src', import.meta.url)),
+    },
+  },
 });

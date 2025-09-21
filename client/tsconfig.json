@@ -1,40 +1,28 @@
 {
+//  "include": ["**/*", "**/*.vue", "**/*.d.ts"],
+  "exclude": ["dist", "node_modules"],
   "compilerOptions": {
-    "module": "ESNext",
+    // Build Target
     "target": "ESNext",
-    "lib": [
-      "DOM",
-      "ESNext"
-    ],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["DOM", "ESNext"],
+
+    // Options that ensure a clean build
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo", // Keeps this out of the toplevel
+    "skipLibCheck": true,      // Skips unnecessarily type-checking node_modules
+    "isolatedModules": true,   // Ensures that code transformers work correctly
+    "noEmit": true,            // Prevents .js files being emitted right next to source files
+    "resolveJsonModule": true, // Allows importing .json files as objects
+    // "esModuleInterop": true,   // require/import interop
+
+    // Checks
     "strict": true,
-    "esModuleInterop": true,
-    "jsx": "preserve",
-    "skipLibCheck": true,
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "noUnusedLocals": true,
-    "strictNullChecks": true,
-    "allowJs": true,
-    "forceConsistentCasingInFileNames": true,
-    "outDir": "dist",
-    "types": [
-      "vite/client",
-      "vite-plugin-pages/client",
-      "unplugin-vue-macros/macros-global"
-    ],
+
+    // Easy Imports (Keep in Sync with vite.config.json!)
     "baseUrl": ".",
     "paths": {
-      "~/*": [
-        "src/*"
-      ],
-      "@/*": [
-        "src/components/*"
-      ]
-    }
+      "~/*": ["./src/*"],
+    },
   },
-  "exclude": [
-    "dist",
-    "node_modules",
-    "cypress"
-  ]
 }

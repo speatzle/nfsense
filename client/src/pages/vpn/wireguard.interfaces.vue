@@ -4,7 +4,7 @@ import getPlugins from '../../plugins';
 import ArrayDisplay from '~/components/display/ArrayDisplay.vue';
 const p = getPlugins();
 
-let interfaces = $ref({});
+let interfaces = $ref({} as any); // TODO: Add proper type
 let loading = $ref(false);
 let selection = $ref([] as number[]);
 

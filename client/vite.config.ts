@@ -34,7 +34,6 @@ export default defineConfig({
       plugins: {
         vue: Vue({
           include: [/\.vue$/, /\.md$/],
-          reactivityTransform: true,
         }),
       },
 
@@ -48,14 +47,14 @@ export default defineConfig({
     Markdown({
       wrapperClasses: 'prose prose-sm m-auto text-left',
       headEnabled: true,
-      markdownItSetup(md) {
-        md.use(Shiki, {
+      markdownItSetup(md: any) {
+        md.use(Shiki as any, { // TODO: Figure out what's wrong here
           theme: {
             light: 'vitesse-light',
             dark: 'vitesse-dark',
           },
         });
-        md.use(LinkAttributes, {
+        md.use(LinkAttributes as any, { // TODO: Figure out what's wrong here
           matcher: (link: string) => /^https?:\/\//.test(link),
           attrs: {
             target: '_blank',
@@ -70,7 +69,7 @@ export default defineConfig({
       dts: 'src/generated/components.d.ts',
       resolvers: [
         IconsResolver(),
-        (componentName) => {
+        (componentName: string) => {
           if (componentName === 'FocusTrap')
             return { name: 'FocusTrap', from: 'focus-trap-vue' };
         },

@@ -6,7 +6,7 @@ import EnumTypeDisplay from '~/components/display/EnumTypeDisplay.vue';
 import ArrayDisplay from '~/components/display/ArrayDisplay.vue';
 const p = getPlugins();
 
-let addresses = $ref([]);
+let addresses = $ref([] as any[]); // TODO: Add proper type
 let loading = $ref(false);
 let selection = $ref([] as number[]);
 

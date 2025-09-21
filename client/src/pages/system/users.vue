@@ -3,7 +3,7 @@ import { apiCall } from '../../api';
 import getPlugins from '../../plugins';
 const p = getPlugins();
 
-let users = $ref([]);
+let users = $ref([] as any[]); // TODO: Add proper type
 let loading = $ref(false);
 let selection = $ref([] as number[]);
 

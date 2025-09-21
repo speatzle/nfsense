@@ -7,7 +7,7 @@ import PortServiceDisplay from '~/components/display/PortServiceDisplay.vue';
 import ArrayDisplay from '~/components/display/ArrayDisplay.vue';
 const p = getPlugins();
 
-let services = $ref({});
+let services = $ref({} as any); // TODO: Add proper type
 let loading = $ref(false);
 let selection = $ref([] as number[]);
 

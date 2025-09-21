@@ -8,7 +8,7 @@ let props = withDefaults(defineProps<{
   // One-Way Bindings
   icon?: string | Component,
   caption?: string,
-  children: NavRoute[],
+  children?: NavRoute[],
   clickHandler?: () => void,
 }>(), {
   // Two-Way Bindings

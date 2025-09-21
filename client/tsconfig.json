@@ -2,7 +2,10 @@
   "compilerOptions": {
     "module": "ESNext",
     "target": "ESNext",
-    "lib": ["DOM", "ESNext"],
+    "lib": [
+      "DOM",
+      "ESNext"
+    ],
     "strict": true,
     "esModuleInterop": true,
     "jsx": "preserve",
@@ -13,6 +16,7 @@
     "strictNullChecks": true,
     "allowJs": true,
     "forceConsistentCasingInFileNames": true,
+    "outDir": "dist",
     "types": [
       "vite/client",
       "vite-plugin-pages/client",
@@ -20,15 +24,17 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "~/*": ["src/*"],
-      "@/*": ["src/components/*"]
+      "~/*": [
+        "src/*"
+      ],
+      "@/*": [
+        "src/components/*"
+      ]
     }
   },
-  "vueCompilerOptions": {
-    "plugins": [
-      "@vue-macros/volar/define-model",
-      "@vue-macros/volar/define-slots"
-    ]
-  },
-  "exclude": ["dist", "node_modules", "cypress"]
+  "exclude": [
+    "dist",
+    "node_modules",
+    "cypress"
+  ]
 }

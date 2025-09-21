@@ -5,3 +5,7 @@ declare module '*.vue' {
   const component: DefineComponent<{}, {}, any>;
   export default component;
 }
+declare module 'simple-jsonrpc-js' {
+  const mod: any; // TODO: Add proper type?
+  export default mod;
+}

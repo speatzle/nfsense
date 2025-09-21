@@ -5,7 +5,7 @@ import ArrayDisplay from '~/components/display/ArrayDisplay.vue';
 import EnumTypeDisplay from '~/components/display/EnumTypeDisplay.vue';
 const p = getPlugins();
 
-let interfaces = $ref({});
+let interfaces = $ref({} as any); // TODO: Add proper type
 let loading = $ref(false);
 let selection = $ref([] as number[]);
 

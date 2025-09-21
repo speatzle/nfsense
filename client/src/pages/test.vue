@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { SearchProvider, Options } from '../components/input/DropdownInput.vue';
+import { SearchProvider, Options } from '../components/input/input';
 
 const testValues: Options = {
   1: { display: 'Option 1' },

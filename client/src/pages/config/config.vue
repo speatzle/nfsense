@@ -16,7 +16,7 @@ const columns = [
 const displayData = $computed(() => {
   let data: any;
   data = [];
-  for (const change of changelog) {
+  for (const change of changelog as any) { // TODO: Add proper type
     data.push({
       path: change.path,
       action: change.action,

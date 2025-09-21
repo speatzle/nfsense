@@ -7,7 +7,7 @@ const p = getPlugins();
 const props = $defineProps<{subsystem: string, entity: string, id: string | number}>();
 const { subsystem, entity, id } = $(props);
 
-let vm = $ref({});
+let vm = $ref({} as any); // TODO: Add proper type
 let loading = $ref(true);
 
 async function load(){

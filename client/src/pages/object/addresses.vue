@@ -13,7 +13,7 @@ let selection = $ref([] as number[]);
 const addressValueDefinition: { [key: string]: { path: string, component: Component | undefined } } = {
   'host': { path: 'host.address', component: undefined },
   'range': { path: 'range.address', component: undefined },
-  'network': { path: 'network.address', component: undefined },
+  'network': { path: 'network.network', component: undefined },
   'group': { path: 'group.members', component: ArrayDisplay },
 };
 

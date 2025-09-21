@@ -14,7 +14,7 @@ let selection = $ref([] as number[]);
 const serviceValueDefinition: { [key: string]: { path: string, component: Component | undefined } } = {
   'tcp': { path: 'tcp', component: PortServiceDisplay },
   'udp': { path: 'udp', component: PortServiceDisplay },
-  'icmp': { path: 'icmp.code', component: undefined },
+  'icmp': { path: 'icmp.ptypes', component: undefined },
   'group': { path: 'group.members', component: ArrayDisplay },
 };
 

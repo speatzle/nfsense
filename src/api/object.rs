@@ -1,4 +1,5 @@
 use super::ApiError;
+use crate::definitions::util::interface::generate_interface_address_objects;
 use crate::{
     create_thing,
     definitions::object::{Address, Service},
@@ -48,7 +49,17 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method::<Result<Vec<Address>, ApiError>, _>(
             "object.addresses.list",
-            list_things!(object.addresses),
+            |_, state, _: &Extensions| {
+                let mut addresses = state
+                    .config_manager
+                    .get_pending_config()
+                    .object
+                    .addresses
+                    .clone();
+
+                addresses.append(&mut generate_interface_address_objects(state));
+                Ok(addresses)
+            },
         )
         .unwrap();
 

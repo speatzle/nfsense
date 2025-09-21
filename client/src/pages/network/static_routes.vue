@@ -26,7 +26,7 @@ async function load(){
 }
 
 async function deleteStaticRoutes(){
-  let res = await apiCall('network.static_routes.delete', { id: selection[0] });
+  let res = await apiCall('network.static_routes.delete', { index: selection[0] });
   if (res.Error === null) {
     console.debug('deleted static routes');
   } else {

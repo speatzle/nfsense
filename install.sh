@@ -20,14 +20,13 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 . "$HOME/.cargo/env"
 
 echo "Clone nfsense Repo"
-# TODO test if this folder already exists
 if [ ! -d "/opt/nfsense" ]; then
     cd /opt
     git clone "https://github.com/speatzle/nfsense.git"
 else
     echo "nfsense folder already exists"
 fi
-cd nfsense
+cd /opt/nfsense
 
 echo "Generate SSL Certificates"
 openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -sha256 -days 3650 -nodes -subj "/C=XX/ST=StateName/L=CityName/O=CompanyName/OU=CompanySectionName/CN=CommonNameOrHostname"

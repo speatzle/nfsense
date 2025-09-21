@@ -1,6 +1,7 @@
 use crate::api::ApiError;
 use crate::state::RpcState;
 use jsonrpsee::{types::Params, Extensions, RpcModule};
+use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
 const SERVICE_UNBOUND: &str = "unbound.service";
@@ -10,6 +11,12 @@ const SERVICE_KEAV6: &str = "kea-dhcp6-server.service";
 const SERVICE_CHRONY: &str = "chronyd.service";
 const SERVICE_NETWORKD: &str = "systemd-networkd.service";
 const SERVICE_NFTABLES: &str = "nftables.service";
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Service {
+    pub name: String,
+    pub status: String,
+}
 
 pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
@@ -29,8 +36,8 @@ pub async fn get_services_status<'a>(
     _: Params<'a>,
     _state: Arc<RpcState>,
     _: Extensions,
-) -> Result<Vec<String>, ApiError> {
-    let res: Vec<String> = vec![
+) -> Result<Vec<Service>, ApiError> {
+    let res: Vec<Service> = vec![
         get_service_status(&_state.dbus_conn, SERVICE_UNBOUND).await?,
         get_service_status(&_state.dbus_conn, SERVICE_SSH).await?,
         get_service_status(&_state.dbus_conn, SERVICE_KEAV4).await?,
@@ -45,7 +52,7 @@ pub async fn get_services_status<'a>(
 async fn get_service_status(
     dbus_conn: &zbus::Connection,
     unit: &str,
-) -> Result<String, zbus::Error> {
+) -> Result<Service, zbus::Error> {
     let systemd_manager = zbus_systemd::systemd1::ManagerProxy::new(dbus_conn).await?;
 
     match systemd_manager.get_unit(unit.to_string()).await {
@@ -53,12 +60,15 @@ async fn get_service_status(
             let systemd_unit =
                 zbus_systemd::systemd1::UnitProxy::new(dbus_conn, unit_object_path).await?;
             match systemd_unit.active_state().await {
-                Ok(status) => Ok(status),
-                Err(_err) => Ok("unknown status".to_string()),
+                Ok(status) => Ok(Service {
+                    name: unit.to_owned(),
+                    status,
+                }),
+                Err(_err) => Err(_err),
             }
         }
         // TODO handle error better
-        Err(_err) => Ok("unknown unit".to_string()),
+        Err(_err) => Err(_err),
     }
 }
 

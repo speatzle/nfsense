@@ -34,6 +34,7 @@ const navRoutesNew = [
     { caption: 'Rules', icon: IRule, href: '/firewall/forward_rules' },
     { caption: 'SNAT', icon: ISNAT, href: '/firewall/source_nat_rules' },
     { caption: 'DNAT', icon: IDNAT, href: '/firewall/destination_nat_rules' },
+    { caption: 'Inbound', icon: IRule, href: '/firewall/inbound_rules' },
   ] },
   { caption: 'Network', icon: INetwork, children: [
     { caption: 'Interfaces', icon: IEthernet, href: '/network/interfaces' },

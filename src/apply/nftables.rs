@@ -223,6 +223,7 @@ pub fn apply_nftables(pending_config: Config, _current_config: Config) -> Result
 
     // Destination Nat Rules
     let mut destination_nat_rules = vec![];
+    let mut automatic_dnat_forward_rules = vec![];
     for rule in &pending_config.firewall.destination_nat_rules {
         destination_nat_rules.push(Rule {
             name: rule.name.clone(),
@@ -244,13 +245,78 @@ pub fn apply_nftables(pending_config: Config, _current_config: Config) -> Result
                     )?,
             ),
             source_nat_action: None,
-        })
+        });
+
+        if rule.automatic_forward_rule {
+            // Automatic destination nat rules need the correct destination matchers since the dnat rule is already applied before this companion rule is hit.
+            // Depending on if its a address and or a service nat, the negate destination option also needs to be ignored
+
+            let mut negate_desination = rule.negate_destination;
+            let mut destination_addresses = rule.destination_addresses(pending_config.clone());
+            let mut services = generate_service_matchers(rule.services(pending_config.clone()))?;
+
+            // TODO this might match additional traffic, use connection mark instead?
+            if let Some(dnat_address) = rule.clone().dnat_address {
+                negate_desination = false;
+                let mut found = false;
+                for address in pending_config.clone().object.addresses {
+                    if address.name == dnat_address {
+                        destination_addresses = vec![address];
+                        found = true;
+                        break;
+                    }
+                }
+                if !found {
+                    panic!("DNat Address for automatic forward rule not found");
+                }
+            }
+
+            // TODO this might match additional traffic, use connection mark instead?
+            if let Some(dnat_service) = rule.clone().dnat_service {
+                let mut found = false;
+                for service in pending_config.clone().object.services {
+                    if service.name == dnat_service {
+                        services = generate_service_matchers(vec![service])?;
+                        found = true;
+                        break;
+                    }
+                }
+                if !found {
+                    panic!("DNat Service for automatic forward rule not found");
+                }
+            }
+
+            automatic_dnat_forward_rules.push(Rule {
+                name: rule.name.clone(),
+                counter: false,
+                log: rule.log,
+                addresses: generate_address_matcher(
+                    rule.source_addresses(pending_config.clone()),
+                    rule.negate_source,
+                    destination_addresses,
+                    negate_desination,
+                )?,
+                services: services,
+                verdict: Some("accept".to_string()),
+                destination_nat_action: None,
+                source_nat_action: None,
+            })
+        }
     }
     context.insert("destination_nat_rules", &destination_nat_rules);
+    context.insert(
+        "automatic_dnat_forward_rules",
+        &automatic_dnat_forward_rules,
+    );
 
     // Source Nat Rules
     let mut source_nat_rules = vec![];
+    let mut automatic_snat_forward_rules = vec![];
     for rule in &pending_config.firewall.source_nat_rules {
+        info!(
+            "Created normal snat forward rule: {} log: {}",
+            rule.name, rule.log,
+        );
         source_nat_rules.push(Rule {
             name: rule.name.clone(),
             counter: rule.counter,
@@ -274,9 +340,32 @@ pub fn apply_nftables(pending_config: Config, _current_config: Config) -> Result
                         )?
                 }
             }),
-        })
+        });
+
+        if rule.automatic_forward_rule {
+            let rule1 = Rule {
+                name: rule.name.clone(),
+                counter: false,
+                log: rule.log,
+                addresses: generate_address_matcher(
+                    rule.source_addresses(pending_config.clone()),
+                    rule.negate_source,
+                    rule.destination_addresses(pending_config.clone()),
+                    rule.negate_destination,
+                )?,
+                services: generate_service_matchers(rule.services(pending_config.clone()))?,
+                verdict: Some("accept".to_string()),
+                destination_nat_action: None,
+                source_nat_action: None,
+            };
+            automatic_snat_forward_rules.push(rule1.clone());
+        }
     }
     context.insert("source_nat_rules", &source_nat_rules);
+    context.insert(
+        "automatic_snat_forward_rules",
+        &automatic_snat_forward_rules,
+    );
 
     match templates::TEMPLATES.render(NFTABLES_TEMPLATE_PATH, &context) {
         Ok(s) => config_data = s,

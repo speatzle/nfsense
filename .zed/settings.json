@@ -1,0 +1,36 @@
+{
+  "prettier": {
+    "allowed": false
+  },
+  "tab_size": 2,
+  "languages": {
+    "JavaScript": {
+      "formatter": {
+        "code_actions": {
+          "source.fixAll.eslint": true
+        }
+      },
+      "tab_size": 2
+    },
+    "TypeScript": {
+      "formatter": {
+        "code_actions": {
+          "source.fixAll.eslint": true
+        }
+      },
+      "tab_size": 2
+    },
+    "Vue.js": {
+      "formatter": {
+        "code_actions": {
+          "source.fixAll.eslint": true
+        }
+      },
+      "tab_size": 2
+    },
+    "CSS": {
+      "format_on_save": "off",
+      "tab_size": 2
+    }
+  }
+}

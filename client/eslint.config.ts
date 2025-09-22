@@ -2,7 +2,6 @@ import { globalIgnores } from 'eslint/config';
 import { defineConfigWithVueTs, vueTsConfigs } from '@vue/eslint-config-typescript';
 import pluginVue from 'eslint-plugin-vue';
 import pluginOxlint from 'eslint-plugin-oxlint';
-import skipFormatting from '@vue/eslint-config-prettier/skip-formatting';
 
 export default defineConfigWithVueTs(
   {
@@ -15,10 +14,8 @@ export default defineConfigWithVueTs(
   pluginVue.configs['flat/essential'],
   vueTsConfigs.recommended,
   ...pluginOxlint.configs['flat/recommended'],
-  skipFormatting,
   {
     rules: {
-      'prefer-template': 'warn',
       '@typescript-eslint/no-explicit-any': 'off',
       'vue/multi-word-component-names': 'off',
       'vue/html-closing-bracket-spacing': 'off',
@@ -30,6 +27,28 @@ export default defineConfigWithVueTs(
       'vue/no-template-shadow': 'off',
       'vue/v-on-event-hyphenation': 'off',
       'vue/singleline-html-element-content-newline': 'off',
+
+      // Formatting
+      'prefer-template': 'warn',
+      'semi': [
+        'warn',
+        'always',
+      ],
+      'object-curly-spacing': ['warn', 'always'],
+      'comma-dangle': [
+        'warn',
+        'always-multiline',
+      ],
+      'no-trailing-spaces': 'warn',
+      'quotes': [
+        'warn',
+        'single',
+      ],
+      'indent': [
+        'warn',
+        2,
+      ],
+      'prefer-const': 'warn',
     },
   },
 );

@@ -58,6 +58,8 @@ pub struct KeaLeases {
 #[derive(Serialize, Clone, Debug)]
 pub struct KeaSubnet4 {
     // TODO add subnet Id https://kea.readthedocs.io/en/kea-2.2.0/arm/dhcp4-srv.html#ipv4-subnet-identifier
+    #[serde(rename = "id")]
+    pub id: u64,
     #[serde(rename = "subnet")]
     pub subnet: IpNet,
     #[serde(rename = "pools")]
@@ -92,13 +94,16 @@ pub fn apply_kea(pending_config: Config, _current_config: Config) -> Result<(), 
             lease_database: KeaLeases {
                 database_type: "memfile".to_string(),
                 persist: true,
-                name: "/var/lib/kea/dhcp4.leases".to_string(),
+                name: "/var/lib/kea/kea-leases4.csv".to_string(),
             },
             subnet4: vec![],
         },
     };
 
+    let mut dhcpindex = 0;
     for dhcp_server in pending_config.service.dhcp_servers.clone() {
+        //TODO find a stable way for the subnet id
+        dhcpindex += 1;
         let interface = dhcp_server.interface(pending_config.clone());
         // TODO specify main ip of interface https://kea.readthedocs.io/en/kea-2.2.0/arm/dhcp4-srv.html#interface-configuration
         match interface.interface_type {
@@ -113,6 +118,7 @@ pub fn apply_kea(pending_config: Config, _current_config: Config) -> Result<(), 
         }
 
         let mut subnet = KeaSubnet4 {
+            id: dhcpindex,
             subnet: match interface.addressing_mode {
                 AddressingMode::Static { address } => address.clone(),
                 _ => panic!("Unsupported Addressing mode"),

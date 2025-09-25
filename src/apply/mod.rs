@@ -22,4 +22,10 @@ pub enum ApplyError {
 
     #[error("Service Restart Failed")]
     ServiceRestartFailed,
+
+    #[error("Config Apply Failed")]
+    ConfigApplyFailed,
+
+    #[error("Config Check Failed")]
+    ConfigCheckFailed,
 }

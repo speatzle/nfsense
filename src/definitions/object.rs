@@ -66,8 +66,8 @@ pub enum ServiceType {
 #[serde(rename_all = "snake_case")]
 pub enum PortDefinition {
     Any,
-    Single { port: u64 },
-    Range { start_port: u64, end_port: u64 },
+    Single { port: u32 },
+    Range { start_port: u32, end_port: u32 },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

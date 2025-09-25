@@ -85,8 +85,9 @@ systemctl daemon-reload
 
 echo "Setup nftables"
 echo '#!/usr/sbin/nft -f\n' > /etc/nftables.conf
-echo 'include "/etc/nfsense/nfsense-nftables.conf"' >> /etc/nftables.conf
-touch /etc/nfsense/nfsense-nftables.conf
+echo 'include "/etc/nfsense/nftables.conf"' >> /etc/nftables.conf
+touch /etc/nfsense/nftables.conf
+
 
 echo "Disable ifupdown"
 mv /etc/network/interfaces /etc/network/interfaces.old

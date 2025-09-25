@@ -1,403 +1,945 @@
 use super::ApplyError;
+use crate::definitions::config::Config;
 use crate::definitions::firewall::{SNATType, Verdict};
 use crate::definitions::object::{Address, AddressType, PortDefinition, Service, ServiceType};
-use crate::{definitions::config::Config, templates};
-use serde::{Deserialize, Serialize};
-use std::fmt::Debug;
+use nftables::expr;
+use nftables::expr::Payload::PayloadField;
+use nftables::expr::{Expression, MetaKey, NamedExpression, SetItem, CT};
+use nftables::schema::NfCmd::Flush;
+use nftables::schema::{FlushObject, NfListObject, NfObject, Table};
+use nftables::stmt;
+use nftables::stmt::{Operator, Statement};
+use nftables::types::{NfChainPolicy, NfChainType, NfFamily, NfHook};
+use nftables::{batch::Batch, helper, schema};
+use std::collections::HashSet;
+use std::io::Write;
 use std::process::Command;
-use std::{error::Error, io::Write};
-use tera::Context;
 use tracing::{error, info};
 
-const NFTABLES_CONFIG_PATH: &str = "/etc/nfsense/nfsense-nftables.conf";
-const NFTABLES_TEMPLATE_PATH: &str = "nftables/nftables.conf";
+const NFTABLES_CONFIG_PATH: &str = "/etc/nfsense/nftables.conf";
+const NFTABLES_CT_DNAT_MARK_OFFSET: u32 = 1000;
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct Rule {
-    pub name: String,
-    pub services: Vec<String>,
-    pub addresses: String,
-    pub counter: bool,
-    pub log: bool,
-    pub verdict: Option<String>,
-    pub destination_nat_action: Option<String>,
-    pub source_nat_action: Option<String>,
+fn port_definition_to_expression(port_def: &PortDefinition) -> Option<Expression<'static>> {
+    match port_def {
+        PortDefinition::Any => None,
+        PortDefinition::Single { port } => Some(Expression::Number((*port).into())),
+        PortDefinition::Range {
+            start_port,
+            end_port,
+        } => Some(Expression::Range(Box::new(expr::Range {
+            range: [
+                Expression::Number((*start_port).into()),
+                Expression::Number((*end_port).into()),
+            ],
+        }))),
+    }
 }
 
-fn convert_addresses_to_strings(addresses: Vec<Address>) -> Vec<String> {
-    let mut list = vec![];
+fn generate_service_matcher_statements(service: &Service) -> Vec<Statement<'static>> {
+    let mut statements = Vec::new();
+
+    match &service.service_type {
+        ServiceType::TCP {
+            source,
+            destination,
+        } => {
+            // Handle TCP source port
+            if let Some(right_expr) = port_definition_to_expression(source) {
+                statements.push(Statement::Match(stmt::Match {
+                    op: Operator::EQ,
+                    left: Expression::Named(NamedExpression::Payload(PayloadField(
+                        expr::PayloadField {
+                            protocol: "tcp".into(),
+                            field: "sport".into(),
+                        },
+                    ))),
+                    right: right_expr,
+                }));
+            }
+
+            // Handle TCP destination port
+            if let Some(right_expr) = port_definition_to_expression(destination) {
+                statements.push(Statement::Match(stmt::Match {
+                    op: Operator::EQ,
+                    left: Expression::Named(NamedExpression::Payload(PayloadField(
+                        expr::PayloadField {
+                            protocol: "tcp".into(),
+                            field: "dport".into(),
+                        },
+                    ))),
+                    right: right_expr,
+                }));
+            }
+        }
+        ServiceType::UDP {
+            source,
+            destination,
+        } => {
+            // Handle UDP source port
+            if let Some(right_expr) = port_definition_to_expression(source) {
+                statements.push(Statement::Match(stmt::Match {
+                    op: Operator::EQ,
+                    left: Expression::Named(NamedExpression::Payload(PayloadField(
+                        expr::PayloadField {
+                            protocol: "udp".into(),
+                            field: "sport".into(),
+                        },
+                    ))),
+                    right: right_expr,
+                }));
+            }
+
+            // Handle UDP destination port
+            if let Some(right_expr) = port_definition_to_expression(destination) {
+                statements.push(Statement::Match(stmt::Match {
+                    op: Operator::EQ,
+                    left: Expression::Named(NamedExpression::Payload(PayloadField(
+                        expr::PayloadField {
+                            protocol: "udp".into(),
+                            field: "dport".into(),
+                        },
+                    ))),
+                    right: right_expr,
+                }));
+            }
+        }
+        ServiceType::ICMP { ptypes: _ } => {
+            // TODO match icmp packet types
+            statements.push(Statement::Match(stmt::Match {
+                op: Operator::EQ,
+                left: Expression::Named(NamedExpression::Payload(PayloadField(
+                    expr::PayloadField {
+                        protocol: "ip".into(),
+                        field: "protocol".into(),
+                    },
+                ))),
+                right: Expression::String("icmp".into()),
+            }));
+        }
+        ServiceType::Group { members: _ } => {
+            // TODO group
+        }
+    }
+
+    statements
+}
+
+fn generate_address_expression(
+    addresses: Vec<Address>,
+    pending_config: Config,
+) -> Expression<'static> {
+    let mut address_set_items = Vec::new();
+
     for address in addresses {
-        match address.address_type {
-            AddressType::Host { address } => list.push(address.to_string()),
-            AddressType::Range { range } => list.push(range.to_string()),
-            AddressType::Network { network } => list.push(network.to_string()),
-            AddressType::Group { .. } => {
-                //TODO
+        match address.clone().address_type {
+            AddressType::Host { address } => {
+                address_set_items.push(SetItem::Element(Expression::String(
+                    address.to_string().into(),
+                )));
+            }
+            AddressType::Network { network } => {
+                address_set_items.push(SetItem::Element(Expression::Named(
+                    NamedExpression::Prefix(expr::Prefix {
+                        addr: Expression::String(network.network().to_string().into()).into(),
+                        len: network.prefix_len().into(),
+                    }),
+                )));
+            }
+            AddressType::Range { range } => {
+                _ = range;
+                /* TODO Implement Range when the type is correct
+                address_set_items.push(SetItem::Element(Expression::Named(
+                    NamedExpression::Range(expr::Range {
+                        range: Expression::String(range. .to_string().into())
+                            .into(),
+                        len: network.prefix_len().into(),
+                    }),
+                )));
+                */
+            }
+            AddressType::Group { members } => {
+                _ = pending_config;
+                _ = members;
+                // TODO
             }
         }
     }
-    list
-}
 
-fn convert_list_to_set(list: Vec<String>) -> String {
-    if list.len() == 0 {
-        return "".to_string();
-    } else if list.len() == 1 {
-        return list[0].clone();
-    }
-
-    let mut res = "{ ".to_string();
-
-    for (index, element) in list.iter().enumerate() {
-        res += element;
-        if index < list.len() - 1 {
-            res += ", ";
-        }
-    }
-    res += " }";
-    res
-}
-
-fn generate_address_matcher(
-    source_addresses: Vec<Address>,
-    negate_source: bool,
-    destination_addresses: Vec<Address>,
-    negate_destination: bool,
-) -> Result<String, ApplyError> {
-    let source_list = convert_addresses_to_strings(source_addresses);
-    let destination_list = convert_addresses_to_strings(destination_addresses);
-    let mut res = "".to_string();
-
-    if source_list.len() > 0 {
-        res += "ip saddr ";
-        if negate_source {
-            res += "!= ";
-        }
-        res += &convert_list_to_set(source_list);
-        res += " ";
-    }
-
-    if destination_list.len() > 0 {
-        res += "ip daddr ";
-        if negate_destination {
-            res += "!= ";
-        }
-        res += &convert_list_to_set(destination_list);
-    }
-
-    Ok(res)
-}
-
-fn generate_port_matcher(
-    protocol: &str,
-    source: PortDefinition,
-    destination: PortDefinition,
-) -> String {
-    let source_string = match source {
-        PortDefinition::Any => "".to_string(),
-        PortDefinition::Single { port } => {
-            protocol.to_string() + &" sport ".to_string() + &port.to_string()
-        }
-        PortDefinition::Range {
-            start_port,
-            end_port,
-        } => {
-            protocol.to_string()
-                + &" sport ".to_string()
-                + &start_port.to_string()
-                + " - "
-                + &end_port.to_string()
-        }
-    };
-
-    let destination_string = match destination {
-        PortDefinition::Any => "".to_string(),
-        PortDefinition::Single { port } => {
-            protocol.to_string() + &" dport ".to_string() + &port.to_string()
-        }
-        PortDefinition::Range {
-            start_port,
-            end_port,
-        } => {
-            protocol.to_string()
-                + &" dport ".to_string()
-                + &start_port.to_string()
-                + " - "
-                + &end_port.to_string()
-        }
-    };
-    if source_string.len() != 0 && destination_string.len() != 0 {
-        source_string + " " + &destination_string
-    } else {
-        source_string + &destination_string
-    }
-}
-
-fn generate_service_matchers(services: Vec<Service>) -> Result<Vec<String>, ApplyError> {
-    let mut list = vec![];
-    for service in services {
-        match service.service_type {
-            ServiceType::TCP {
-                source,
-                destination,
-            } => list.push(generate_port_matcher("tcp", source, destination)),
-            ServiceType::UDP {
-                source,
-                destination,
-            } => list.push(generate_port_matcher("udp", source, destination)),
-            // TODO Implement Packet type matching
-            ServiceType::ICMP { ptypes: _ } => list.push("ip protocol icmp".to_string()),
-            ServiceType::Group { .. } => (
-                //TODO
-            ),
-        }
-    }
-    Ok(list)
-}
-
-fn generate_nat_action(
-    address: Option<Address>,
-    service: Option<Service>,
-) -> Result<String, ApplyError> {
-    let mut action;
-    match address {
-        Some(a) => {
-            action = "ip to ".to_string()
-                + &match a.address_type {
-                    AddressType::Host { address } => address.to_string(),
-                    _ => panic!("Invalid AddressType as Nat Action"),
-                }
-        }
-        None => match service {
-            Some(_) => action = "to ".to_string(),
-            None => panic!("Address and Service can't both be None for Nat Action"),
-        },
-    }
-
-    match service {
-        Some(s) => match s.service_type {
-            ServiceType::TCP { destination, .. } | ServiceType::UDP { destination, .. } => {
-                match destination {
-                    PortDefinition::Single { port } => {
-                        action += ":";
-                        action += &port.to_string()
-                    }
-                    _ => panic!("Destination Port Definition must be Single for Nat Action"),
-                }
-            }
-            _ => panic!("ServiceType must be TCP or UDP for Nat Action"),
-        },
-        None => (),
-    }
-    Ok(action)
+    // TODO don't return set if there is only one item
+    return Expression::Named(NamedExpression::Set(address_set_items));
 }
 
 pub fn apply_nftables(pending_config: Config, _current_config: Config) -> Result<(), ApplyError> {
-    let config_data;
-    let mut context = Context::new();
+    // TODO add a uuid to rules to be able to identify them and their counters to prevent rule reordering swapping counter values
+    // Also usefull for log matching
+    let mut batch = Batch::new();
 
-    // Forward Rules
-    let mut forward_rules = vec![];
-    for rule in &pending_config.firewall.forward_rules {
-        forward_rules.push(Rule {
-            name: rule.name.clone(),
-            counter: rule.counter,
-            log: rule.log,
-            addresses: generate_address_matcher(
-                rule.source_addresses(pending_config.clone()),
-                rule.negate_source,
-                rule.destination_addresses(pending_config.clone()),
-                rule.negate_destination,
-            )?,
-            services: generate_service_matchers(rule.services(pending_config.clone()))?,
-            verdict: Some(match rule.verdict {
-                Verdict::Accept => "accept".to_string(),
-                Verdict::Drop => "drop".to_string(),
-                Verdict::Continue => "continue".to_string(),
+    // Create table if not exists
+    batch.add(NfListObject::Table(Table {
+        family: NfFamily::INet,
+        name: "nfsense_inet".into(),
+        ..Default::default()
+    }));
+
+    // Delete all Rules
+    batch.add_cmd(Flush(FlushObject::Table(Table {
+        family: NfFamily::INet,
+        name: "nfsense_inet".into(),
+        ..Default::default()
+    })));
+
+    // Used to track all counters which should exist, after all counters are created (recreation is a noop and preserves state)
+    // check if there are currently counters which should not exist and delete them
+    // dont compare current and pending config since this might be a revert and the current config might not be correct or some other leftover state
+    let mut counters: Vec<String> = vec![];
+
+    // Input Chain
+    batch.add(NfListObject::Chain(schema::Chain {
+        family: NfFamily::INet,
+        table: "nfsense_inet".into(),
+        name: "inbound".into(),
+        _type: Some(NfChainType::Filter),
+        hook: Some(NfHook::Input),
+        prio: Some(0),
+        policy: Some(NfChainPolicy::Drop),
+        ..Default::default()
+    }));
+
+    // Inbound Connection Tracking
+    batch.add(NfListObject::Rule(schema::Rule {
+        family: NfFamily::INet,
+        table: "nfsense_inet".into(),
+        chain: "inbound".into(),
+        comment: Some("Allow established and related connections".into()),
+        expr: vec![Statement::VerdictMap(nftables::stmt::VerdictMap {
+            key: Expression::Named(NamedExpression::CT(CT {
+                key: "state".into(),
+                ..Default::default()
+            })),
+            data: Expression::Named(NamedExpression::Set(vec![
+                SetItem::MappingStatement(
+                    Expression::String("invalid".into()),
+                    Statement::Drop(Some(stmt::Drop {})),
+                ),
+                SetItem::MappingStatement(
+                    Expression::String("related".into()),
+                    Statement::Accept(Some(stmt::Accept {})),
+                ),
+                SetItem::MappingStatement(
+                    Expression::String("established".into()),
+                    Statement::Accept(Some(stmt::Accept {})),
+                ),
+            ])),
+        })]
+        .into(),
+        ..Default::default()
+    }));
+
+    // Inbound allow loopback
+    batch.add(NfListObject::Rule(schema::Rule {
+        family: NfFamily::INet,
+        table: "nfsense_inet".into(),
+        chain: "inbound".into(),
+        comment: Some("Allow Loopback connections".into()),
+        expr: vec![
+            Statement::Match(stmt::Match {
+                left: Expression::Named(NamedExpression::Meta(expr::Meta {
+                    key: MetaKey::Iifname,
+                })),
+                right: Expression::String("lo".into()),
+                op: Operator::EQ,
             }),
-            destination_nat_action: None,
-            source_nat_action: None,
-        })
-    }
-    context.insert("forward_rules", &forward_rules);
+            Statement::Accept(None),
+        ]
+        .into(),
+        ..Default::default()
+    }));
 
-    // Destination Nat Rules
-    let mut destination_nat_rules = vec![];
-    let mut automatic_dnat_forward_rules = vec![];
-    for rule in &pending_config.firewall.destination_nat_rules {
-        destination_nat_rules.push(Rule {
-            name: rule.name.clone(),
-            counter: rule.counter,
-            log: rule.log,
-            addresses: generate_address_matcher(
-                rule.source_addresses(pending_config.clone()),
-                rule.negate_source,
-                rule.destination_addresses(pending_config.clone()),
-                rule.negate_destination,
-            )?,
-            services: generate_service_matchers(rule.services(pending_config.clone()))?,
-            verdict: None,
-            destination_nat_action: Some(
-                "dnat ".to_string()
-                    + &generate_nat_action(
-                        rule.dnat_address(pending_config.clone()),
-                        rule.dnat_service(pending_config.clone()),
-                    )?,
-            ),
-            source_nat_action: None,
-        });
+    // Inbound temp allow all, Inbound rules should go here
+    batch.add(NfListObject::Rule(schema::Rule {
+        family: NfFamily::INet,
+        table: "nfsense_inet".into(),
+        chain: "inbound".into(),
+        comment: Some("Temp Allow all".into()),
+        expr: vec![Statement::Accept(Some(stmt::Accept {}))].into(),
+        ..Default::default()
+    }));
 
+    counters.push("inbound_default_drop".to_owned());
+    batch.add(NfListObject::Counter(schema::Counter {
+        family: NfFamily::INet,
+        table: "nfsense_inet".into(),
+        name: "inbound_default_drop".into(),
+        ..Default::default()
+    }));
+
+    // Inbound default drop, TODO Log
+    batch.add(NfListObject::Rule(schema::Rule {
+        family: NfFamily::INet,
+        table: "nfsense_inet".into(),
+        chain: "inbound".into(),
+        comment: Some("Inbound default drop".into()),
+        expr: vec![
+            Statement::Counter(stmt::Counter::Named("inbound_default_drop".into())),
+            Statement::Log(Some(stmt::Log {
+                prefix: Some("inbound_default_drop".into()),
+                group: None,
+                snaplen: None,
+                queue_threshold: None,
+                level: None,
+                flags: Some(HashSet::from([stmt::LogFlag::All])),
+            })),
+            Statement::Drop(Some(stmt::Drop {})),
+        ]
+        .into(),
+        ..Default::default()
+    }));
+
+    // Forward Chain
+    batch.add(NfListObject::Chain(schema::Chain {
+        family: NfFamily::INet,
+        table: "nfsense_inet".into(),
+        name: "forward".into(),
+        _type: Some(NfChainType::Filter),
+        hook: Some(NfHook::Forward),
+        prio: Some(0),
+        policy: Some(NfChainPolicy::Drop),
+        ..Default::default()
+    }));
+
+    // Forward Connection Tracking
+    batch.add(NfListObject::Rule(schema::Rule {
+        family: NfFamily::INet,
+        table: "nfsense_inet".into(),
+        chain: "forward".into(),
+        comment: Some("Allow established and related connections".into()),
+        expr: vec![Statement::VerdictMap(nftables::stmt::VerdictMap {
+            key: Expression::Named(NamedExpression::CT(CT {
+                key: "state".into(),
+                ..Default::default()
+            })),
+            data: Expression::Named(NamedExpression::Set(vec![
+                SetItem::MappingStatement(
+                    Expression::String("invalid".into()),
+                    Statement::Drop(Some(stmt::Drop {})),
+                ),
+                SetItem::MappingStatement(
+                    Expression::String("related".into()),
+                    Statement::Accept(Some(stmt::Accept {})),
+                ),
+                SetItem::MappingStatement(
+                    Expression::String("established".into()),
+                    Statement::Accept(Some(stmt::Accept {})),
+                ),
+            ])),
+        })]
+        .into(),
+        ..Default::default()
+    }));
+
+    // Prerouting Chain
+    batch.add(NfListObject::Chain(schema::Chain {
+        family: NfFamily::INet,
+        table: "nfsense_inet".into(),
+        name: "prerouting".into(),
+        _type: Some(NfChainType::NAT),
+        hook: Some(NfHook::Prerouting),
+        prio: Some(-100),
+        policy: Some(NfChainPolicy::Accept),
+        ..Default::default()
+    }));
+
+    // TODO create dnat rules and their automatic forward rules
+    for (index, res) in (0u32..).zip(
+        pending_config
+            .firewall
+            .destination_nat_rules
+            .iter()
+            .enumerate(),
+    ) {
+        let (_, rule) = res;
+
+        if rule.counter {
+            counters.push(format!("dnat_{}", index));
+            batch.add(NfListObject::Counter(schema::Counter {
+                family: NfFamily::INet,
+                table: "nfsense_inet".into(),
+                name: format!("dnat_{}", index).into(),
+                ..Default::default()
+            }));
+        }
+
+        let source_addresses = rule.source_addresses(pending_config.clone());
+        let destination_addresses = rule.destination_addresses(pending_config.clone());
+
+        // TODO find a way to have only one rule? icmp clashes with tcp/udp
+        // also needs to run when there are no services
+        for service in rule.services(pending_config.clone()) {
+            let mut expression: Vec<Statement> = vec![];
+
+            // Source Address matchers
+            if source_addresses.len() > 0 {
+                let mut source_op = Operator::EQ;
+                if rule.negate_source {
+                    source_op = Operator::NEQ;
+                }
+
+                expression.push(Statement::Match(stmt::Match {
+                    op: source_op,
+                    left: Expression::Named(NamedExpression::Payload(PayloadField(
+                        expr::PayloadField {
+                            protocol: "ip".into(),
+                            field: "saddr".into(),
+                        },
+                    ))),
+                    right: generate_address_expression(
+                        source_addresses.clone(),
+                        pending_config.clone(),
+                    ),
+                }));
+            }
+
+            // Destination Address matchers
+            if destination_addresses.len() > 0 {
+                let mut source_op = Operator::EQ;
+                if rule.negate_destination {
+                    source_op = Operator::NEQ;
+                }
+
+                expression.push(Statement::Match(stmt::Match {
+                    op: source_op,
+                    left: Expression::Named(NamedExpression::Payload(PayloadField(
+                        expr::PayloadField {
+                            protocol: "ip".into(),
+                            field: "daddr".into(),
+                        },
+                    ))),
+                    right: generate_address_expression(
+                        destination_addresses.clone(),
+                        pending_config.clone(),
+                    ),
+                }));
+            }
+
+            // Generate service matcher statements
+            expression.extend(generate_service_matcher_statements(&service));
+
+            if rule.counter {
+                expression.push(Statement::Counter(stmt::Counter::Named(
+                    format!("dnat_{}", index).into(),
+                )));
+            }
+
+            if rule.log {
+                expression.push(Statement::Log(Some(stmt::Log {
+                    prefix: Some(format!("dnat_{}", index).into()),
+                    group: None,
+                    snaplen: None,
+                    queue_threshold: None,
+                    level: None,
+                    flags: Some(HashSet::from([stmt::LogFlag::All])),
+                })))
+            }
+
+            if rule.automatic_forward_rule {
+                expression.push(Statement::Mangle(stmt::Mangle {
+                    key: Expression::Named(NamedExpression::CT(CT {
+                        key: "mark".into(),
+                        ..Default::default()
+                    })),
+                    // TODO set a max rule count?
+                    value: Expression::Number(index + NFTABLES_CT_DNAT_MARK_OFFSET),
+                }));
+            }
+
+            let mut addr = None;
+            let mut destination_port = None;
+
+            if let Some(dnataddr) = rule.dnat_address(pending_config.clone()) {
+                match dnataddr.address_type {
+                    AddressType::Host { address } => {
+                        addr = Some(Expression::String(address.to_string().into()));
+                    }
+                    _ => todo!("Unsupported address type"),
+                }
+            }
+
+            if let Some(dnatservice) = rule.dnat_service(pending_config.clone()) {
+                match dnatservice.service_type {
+                    ServiceType::TCP { destination, .. } => match destination {
+                        PortDefinition::Single { port } => {
+                            destination_port = Some(Expression::Number(port))
+                        }
+                        _ => todo!("Unsupported port definition"),
+                    },
+                    ServiceType::UDP { destination, .. } => match destination {
+                        PortDefinition::Single { port } => {
+                            destination_port = Some(Expression::Number(port))
+                        }
+                        _ => todo!("Unsupported port definition"),
+                    },
+                    _ => todo!("Unsupported service type"),
+                }
+            }
+
+            expression.push(Statement::DNAT(Some(stmt::NAT {
+                addr: addr,
+                port: destination_port,
+                // TODO ipv6
+                family: Some(stmt::NATFamily::IP),
+                flags: None,
+            })));
+
+            batch.add(NfListObject::Rule(schema::Rule {
+                family: NfFamily::INet,
+                table: "nfsense_inet".into(),
+                chain: "prerouting".into(),
+                comment: Some(rule.name.clone().into()),
+                expr: expression.into(),
+                ..Default::default()
+            }));
+        }
+
+        // Automatic forward rule
         if rule.automatic_forward_rule {
-            // Automatic destination nat rules need the correct destination matchers since the dnat rule is already applied before this companion rule is hit.
-            // Depending on if its a address and or a service nat, the negate destination option also needs to be ignored
-
-            let mut negate_desination = rule.negate_destination;
-            let mut destination_addresses = rule.destination_addresses(pending_config.clone());
-            let mut services = generate_service_matchers(rule.services(pending_config.clone()))?;
-
-            // TODO this might match additional traffic, use connection mark instead?
-            if let Some(dnat_address) = rule.clone().dnat_address {
-                negate_desination = false;
-                let mut found = false;
-                for address in pending_config.clone().object.addresses {
-                    if address.name == dnat_address {
-                        destination_addresses = vec![address];
-                        found = true;
-                        break;
-                    }
-                }
-                if !found {
-                    panic!("DNat Address for automatic forward rule not found");
-                }
+            // in prerouting rule: ip saddr 192.168.1.100 ct mark set 0x1
+            // in forward rule: ct mark 0x1 accept
+            let mut forward_expression: Vec<Statement> = vec![];
+            forward_expression.push(Statement::Match(stmt::Match {
+                op: Operator::EQ,
+                left: Expression::Named(NamedExpression::CT(CT {
+                    key: "mark".into(),
+                    ..Default::default()
+                })),
+                // TODO set a max rule count?
+                right: Expression::Number(index + NFTABLES_CT_DNAT_MARK_OFFSET),
+            }));
+            if rule.log {
+                forward_expression.push(Statement::Log(Some(stmt::Log {
+                    prefix: Some(format!("fw_dnat_{}", index).into()),
+                    group: None,
+                    snaplen: None,
+                    queue_threshold: None,
+                    level: None,
+                    flags: Some(HashSet::from([stmt::LogFlag::All])),
+                })))
             }
+            forward_expression.push(Statement::Accept(None));
 
-            // TODO this might match additional traffic, use connection mark instead?
-            if let Some(dnat_service) = rule.clone().dnat_service {
-                let mut found = false;
-                for service in pending_config.clone().object.services {
-                    if service.name == dnat_service {
-                        services = generate_service_matchers(vec![service])?;
-                        found = true;
-                        break;
-                    }
-                }
-                if !found {
-                    panic!("DNat Service for automatic forward rule not found");
-                }
-            }
-
-            automatic_dnat_forward_rules.push(Rule {
-                name: rule.name.clone(),
-                counter: false,
-                log: rule.log,
-                addresses: generate_address_matcher(
-                    rule.source_addresses(pending_config.clone()),
-                    rule.negate_source,
-                    destination_addresses,
-                    negate_desination,
-                )?,
-                services: services,
-                verdict: Some("accept".to_string()),
-                destination_nat_action: None,
-                source_nat_action: None,
-            })
+            batch.add(NfListObject::Rule(schema::Rule {
+                family: NfFamily::INet,
+                table: "nfsense_inet".into(),
+                chain: "forward".into(),
+                comment: Some(format!("Automatic Forward Rule: {} ", rule.name.clone()).into()),
+                expr: forward_expression.into(),
+                ..Default::default()
+            }));
         }
     }
-    context.insert("destination_nat_rules", &destination_nat_rules);
-    context.insert(
-        "automatic_dnat_forward_rules",
-        &automatic_dnat_forward_rules,
-    );
 
-    // Source Nat Rules
-    let mut source_nat_rules = vec![];
-    let mut automatic_snat_forward_rules = vec![];
-    for rule in &pending_config.firewall.source_nat_rules {
-        info!(
-            "Created normal snat forward rule: {} log: {}",
-            rule.name, rule.log,
-        );
-        source_nat_rules.push(Rule {
-            name: rule.name.clone(),
-            counter: rule.counter,
-            log: rule.log,
-            addresses: generate_address_matcher(
-                rule.source_addresses(pending_config.clone()),
-                rule.negate_source,
-                rule.destination_addresses(pending_config.clone()),
-                rule.negate_destination,
-            )?,
-            services: generate_service_matchers(rule.services(pending_config.clone()))?,
-            verdict: None,
-            destination_nat_action: None,
-            source_nat_action: Some(match rule.snat_type.clone() {
-                SNATType::Masquerade => "masquerade".to_string(),
+    // Postrouting Chain
+    batch.add(NfListObject::Chain(schema::Chain {
+        family: NfFamily::INet,
+        table: "nfsense_inet".into(),
+        name: "postrouting".into(),
+        _type: Some(NfChainType::NAT),
+        hook: Some(NfHook::Postrouting),
+        prio: Some(100),
+        policy: Some(NfChainPolicy::Accept),
+        ..Default::default()
+    }));
+
+    // Create snat rules and their automatic forward rules
+    for (index, res) in (0u32..).zip(pending_config.firewall.source_nat_rules.iter().enumerate()) {
+        let (_, rule) = res;
+
+        if rule.counter {
+            counters.push(format!("snat_{}", index));
+            batch.add(NfListObject::Counter(schema::Counter {
+                family: NfFamily::INet,
+                table: "nfsense_inet".into(),
+                name: format!("snat_{}", index).into(),
+                ..Default::default()
+            }));
+        }
+
+        let source_addresses = rule.source_addresses(pending_config.clone());
+        let destination_addresses = rule.destination_addresses(pending_config.clone());
+
+        // TODO find a way to have only one rule? icmp clashes with tcp/udp
+        // also needs to run when there are no services
+        for service in rule.services(pending_config.clone()) {
+            // Gets reused in the automatic forward rule
+            let mut match_expression: Vec<Statement> = vec![];
+
+            // Source Address matchers
+            if source_addresses.len() > 0 {
+                let mut source_op = Operator::EQ;
+                if rule.negate_source {
+                    source_op = Operator::NEQ;
+                }
+
+                match_expression.push(Statement::Match(stmt::Match {
+                    op: source_op,
+                    left: Expression::Named(NamedExpression::Payload(PayloadField(
+                        expr::PayloadField {
+                            protocol: "ip".into(),
+                            field: "saddr".into(),
+                        },
+                    ))),
+                    right: generate_address_expression(
+                        source_addresses.clone(),
+                        pending_config.clone(),
+                    ),
+                }));
+            }
+
+            // Destination Address matchers
+            if destination_addresses.len() > 0 {
+                let mut source_op = Operator::EQ;
+                if rule.negate_destination {
+                    source_op = Operator::NEQ;
+                }
+
+                match_expression.push(Statement::Match(stmt::Match {
+                    op: source_op,
+                    left: Expression::Named(NamedExpression::Payload(PayloadField(
+                        expr::PayloadField {
+                            protocol: "ip".into(),
+                            field: "daddr".into(),
+                        },
+                    ))),
+                    right: generate_address_expression(
+                        destination_addresses.clone(),
+                        pending_config.clone(),
+                    ),
+                }));
+            }
+
+            // Generate service matcher statements
+            match_expression.extend(generate_service_matcher_statements(&service));
+
+            let mut expression: Vec<Statement> = vec![];
+            expression.extend(match_expression.clone());
+
+            if rule.counter {
+                expression.push(Statement::Counter(stmt::Counter::Named(
+                    format!("snat_{}", index).into(),
+                )));
+            }
+
+            if rule.log {
+                expression.push(Statement::Log(Some(stmt::Log {
+                    prefix: Some(format!("snat_{}", index).into()),
+                    group: None,
+                    snaplen: None,
+                    queue_threshold: None,
+                    level: None,
+                    flags: Some(HashSet::from([stmt::LogFlag::All])),
+                })))
+            }
+
+            match rule.snat_type {
+                SNATType::Masquerade => {
+                    expression.push(Statement::Masquerade(None));
+                }
                 SNATType::SNAT { .. } => {
-                    "snat ".to_string()
-                        + &generate_nat_action(
-                            rule.snat_type.address(pending_config.clone()),
-                            rule.snat_type.service(pending_config.clone()),
-                        )?
+                    let mut source_addr = None;
+                    let mut source_port = None;
+
+                    if let Some(address) = rule.snat_type.address(pending_config.clone()) {
+                        match address.address_type {
+                            AddressType::Host { address } => {
+                                source_addr = Some(Expression::String(address.to_string().into()));
+                            }
+                            _ => todo!("Unsupported address type"),
+                        }
+                    }
+
+                    if let Some(service) = rule.snat_type.service(pending_config.clone()) {
+                        match service.service_type {
+                            ServiceType::TCP { destination, .. } => match destination {
+                                PortDefinition::Single { port } => {
+                                    source_port = Some(Expression::Number(port))
+                                }
+                                _ => todo!("Unsupported port definition: {}", service.name),
+                            },
+                            ServiceType::UDP { destination, .. } => match destination {
+                                PortDefinition::Single { port } => {
+                                    source_port = Some(Expression::Number(port))
+                                }
+                                _ => todo!("Unsupported port definition: {}", service.name),
+                            },
+                            _ => todo!("Unsupported service type: {}", service.name),
+                        }
+                    }
+
+                    expression.push(Statement::SNAT(Some(stmt::NAT {
+                        addr: source_addr,
+                        port: source_port,
+                        // TODO ipv6
+                        family: Some(stmt::NATFamily::IP),
+                        flags: None,
+                    })));
                 }
-            }),
-        });
-
-        if rule.automatic_forward_rule {
-            let rule1 = Rule {
-                name: rule.name.clone(),
-                counter: false,
-                log: rule.log,
-                addresses: generate_address_matcher(
-                    rule.source_addresses(pending_config.clone()),
-                    rule.negate_source,
-                    rule.destination_addresses(pending_config.clone()),
-                    rule.negate_destination,
-                )?,
-                services: generate_service_matchers(rule.services(pending_config.clone()))?,
-                verdict: Some("accept".to_string()),
-                destination_nat_action: None,
-                source_nat_action: None,
-            };
-            automatic_snat_forward_rules.push(rule1.clone());
-        }
-    }
-    context.insert("source_nat_rules", &source_nat_rules);
-    context.insert(
-        "automatic_snat_forward_rules",
-        &automatic_snat_forward_rules,
-    );
-
-    match templates::TEMPLATES.render(NFTABLES_TEMPLATE_PATH, &context) {
-        Ok(s) => config_data = s,
-        Err(e) => {
-            error!("Error: {}", e);
-            let mut cause = e.source();
-            while let Some(e) = cause {
-                error!("Reason: {}", e);
-                cause = e.source();
             }
-            return Err(ApplyError::TemplateError(e));
+
+            batch.add(NfListObject::Rule(schema::Rule {
+                family: NfFamily::INet,
+                table: "nfsense_inet".into(),
+                chain: "postrouting".into(),
+                comment: Some(rule.name.clone().into()),
+                expr: expression.into(),
+                ..Default::default()
+            }));
+
+            // Automatic forward rule
+            if rule.automatic_forward_rule {
+                let mut forward_expression: Vec<Statement> = vec![];
+                forward_expression.extend(match_expression);
+
+                if rule.log {
+                    forward_expression.push(Statement::Log(Some(stmt::Log {
+                        prefix: Some(format!("fw_snat_{}", index).into()),
+                        group: None,
+                        snaplen: None,
+                        queue_threshold: None,
+                        level: None,
+                        flags: Some(HashSet::from([stmt::LogFlag::All])),
+                    })))
+                }
+                forward_expression.push(Statement::Accept(None));
+
+                batch.add(NfListObject::Rule(schema::Rule {
+                    family: NfFamily::INet,
+                    table: "nfsense_inet".into(),
+                    chain: "forward".into(),
+                    comment: Some(format!("Automatic Forward Rule: {} ", rule.name.clone()).into()),
+                    expr: forward_expression.into(),
+                    ..Default::default()
+                }));
+            }
         }
     }
 
-    info!("Deleting old nftables Config");
+    // TODO create normal forward rules
+    for (index, res) in (0u32..).zip(pending_config.firewall.forward_rules.iter().enumerate()) {
+        let (_, rule) = res;
+
+        if rule.counter {
+            counters.push(format!("fw_{}", index));
+            batch.add(NfListObject::Counter(schema::Counter {
+                family: NfFamily::INet,
+                table: "nfsense_inet".into(),
+                name: format!("fw_{}", index).into(),
+                ..Default::default()
+            }));
+        }
+
+        let source_addresses = rule.source_addresses(pending_config.clone());
+        let destination_addresses = rule.destination_addresses(pending_config.clone());
+
+        // TODO find a way to have only one rule? icmp clashes with tcp/udp
+        // also needs to run when there are no services
+        for service in rule.services(pending_config.clone()) {
+            // Gets reused in the automatic forward rule
+            let mut match_expression: Vec<Statement> = vec![];
+
+            // Source Address matchers
+            if source_addresses.len() > 0 {
+                let mut source_op = Operator::EQ;
+                if rule.negate_source {
+                    source_op = Operator::NEQ;
+                }
+
+                match_expression.push(Statement::Match(stmt::Match {
+                    op: source_op,
+                    left: Expression::Named(NamedExpression::Payload(PayloadField(
+                        expr::PayloadField {
+                            protocol: "ip".into(),
+                            field: "saddr".into(),
+                        },
+                    ))),
+                    right: generate_address_expression(
+                        source_addresses.clone(),
+                        pending_config.clone(),
+                    ),
+                }));
+            }
+
+            // Destination Address matchers
+            if destination_addresses.len() > 0 {
+                let mut source_op = Operator::EQ;
+                if rule.negate_destination {
+                    source_op = Operator::NEQ;
+                }
+
+                match_expression.push(Statement::Match(stmt::Match {
+                    op: source_op,
+                    left: Expression::Named(NamedExpression::Payload(PayloadField(
+                        expr::PayloadField {
+                            protocol: "ip".into(),
+                            field: "daddr".into(),
+                        },
+                    ))),
+                    right: generate_address_expression(
+                        destination_addresses.clone(),
+                        pending_config.clone(),
+                    ),
+                }));
+            }
+
+            // Generate service matcher statements
+            match_expression.extend(generate_service_matcher_statements(&service));
+
+            let mut expression: Vec<Statement> = vec![];
+            expression.extend(match_expression.clone());
+
+            if rule.counter {
+                expression.push(Statement::Counter(stmt::Counter::Named(
+                    format!("fw_{}", index).into(),
+                )));
+            }
+
+            if rule.log {
+                expression.push(Statement::Log(Some(stmt::Log {
+                    prefix: Some(format!("fw_{}", index).into()),
+                    group: None,
+                    snaplen: None,
+                    queue_threshold: None,
+                    level: None,
+                    flags: Some(HashSet::from([stmt::LogFlag::All])),
+                })))
+            }
+
+            expression.push(match rule.verdict {
+                Verdict::Accept => Statement::Accept(None),
+                Verdict::Drop => Statement::Drop(None),
+                Verdict::Continue => Statement::Continue(None),
+            });
+
+            batch.add(NfListObject::Rule(schema::Rule {
+                family: NfFamily::INet,
+                table: "nfsense_inet".into(),
+                chain: "forward".into(),
+                comment: Some(rule.name.clone().into()),
+                expr: expression.into(),
+                ..Default::default()
+            }));
+        }
+    }
+
+    counters.push("fw_default_drop".to_owned());
+    batch.add(NfListObject::Counter(schema::Counter {
+        family: NfFamily::INet,
+        table: "nfsense_inet".into(),
+        name: "fw_default_drop".into(),
+        ..Default::default()
+    }));
+
+    // Forward default drop counter, TODO Log
+    batch.add(NfListObject::Rule(schema::Rule {
+        family: NfFamily::INet,
+        table: "nfsense_inet".into(),
+        chain: "forward".into(),
+        comment: Some("Forward default drop".into()),
+        expr: vec![
+            Statement::Counter(stmt::Counter::Named("fw_default_drop".into())),
+            Statement::Log(Some(stmt::Log {
+                prefix: Some("fw_default_drop".into()),
+                group: None,
+                snaplen: None,
+                queue_threshold: None,
+                level: None,
+                flags: Some(HashSet::from([stmt::LogFlag::All])),
+            })),
+            Statement::Drop(Some(stmt::Drop {})),
+        ]
+        .into(),
+        ..Default::default()
+    }));
+
+    // TODO save current counter state in case of disaster (not when reverting!)
+
+    // Get existing counters
+    let current_counters = helper::get_current_ruleset_with_args(
+        helper::DEFAULT_NFT,
+        vec!["list", "counters", "table", "inet", "nfsense_inet"],
+    )
+    .unwrap();
+
+    // Check each current counter and delete those that shouldn't exist
+    for cc in current_counters.objects.iter() {
+        match cc {
+            NfObject::ListObject(NfListObject::Counter(ref counter)) => {
+                let mut should_exist = false;
+
+                // Check if this counter should exist in our expected counters list
+                for expected_counter in &counters {
+                    if counter.name == *expected_counter {
+                        should_exist = true;
+                        break;
+                    }
+                }
+
+                // Delete counter if it shouldn't exist
+                if !should_exist {
+                    info!("Deleting counter {}", counter.name);
+                    batch.delete(NfListObject::Counter(schema::Counter {
+                        family: NfFamily::INet,
+                        table: "nfsense_inet".into(),
+                        name: counter.name.clone(),
+                        ..Default::default()
+                    }));
+                }
+            }
+            _ => {}
+        }
+    }
+
+    let ruleset = batch.to_nftables();
+
+    // Check if ruleset is valid, TODO fix unwarp
+    info!("Checking Ruleset");
+    match helper::apply_ruleset_with_args(&ruleset, helper::DEFAULT_NFT, vec!["-c"]) {
+        Ok(_) => info!("Ruleset Ok"),
+        Err(e) => {
+            error!("Config check failed: {}", e);
+            return Err(ApplyError::ConfigCheckFailed);
+        }
+    }
+
+    // Apply ruleset,TODO fix unwarp
+    info!("Applying Ruleset");
+    match helper::apply_ruleset(&ruleset) {
+        Ok(_) => info!("Ruleset Applied"),
+        Err(e) => {
+            error!("Config Apply failed: {}", e);
+            return Err(ApplyError::ConfigApplyFailed);
+        }
+    }
+
+    info!("Save new Ruleset to disk");
     std::fs::remove_file(NFTABLES_CONFIG_PATH)?;
-
-    info!("Writing new nftables Config");
     let mut f = std::fs::File::create(NFTABLES_CONFIG_PATH)?;
-    f.write_all(config_data.as_bytes())?;
+    f.write_all(
+        "#!/usr/sbin/nft -f\n\n\n# Nftables config for restore on reboot\nflush ruleset\n"
+            .as_bytes(),
+    )?;
 
-    info!("Restarting nftables");
-    match Command::new("systemctl")
-        .arg("restart")
-        .arg("nftables")
-        .output()
-    {
+    let mut cmd = Command::new("nft")
+        .arg("list")
+        .arg("ruleset")
+        .stdout(f)
+        .spawn()?;
+
+    match cmd.wait() {
         Ok(out) => {
-            if out.status.success() {
+            if out.success() {
+                info!("New Ruleset Saved");
                 Ok(())
             } else {
-                Err(ApplyError::ServiceRestartFailed)
+                Err(ApplyError::ConfigApplyFailed)
             }
         }
         Err(err) => Err(ApplyError::IOError(err)),

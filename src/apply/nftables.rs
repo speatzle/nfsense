@@ -124,6 +124,88 @@ fn generate_service_matcher_statements(service: &Service) -> Vec<Statement<'stat
     statements
 }
 
+fn generate_address_matcher(
+    addresses: &[Address],
+    field: &'static str,
+    negate: bool,
+    pending_config: &Config,
+) -> Option<Statement<'static>> {
+    if addresses.is_empty() {
+        return None;
+    }
+
+    let address_expr = generate_address_expression(addresses.to_vec(), pending_config.clone());
+    let op = if negate { Operator::NEQ } else { Operator::EQ };
+
+    Some(Statement::Match(stmt::Match {
+        op,
+        left: Expression::Named(NamedExpression::Payload(PayloadField(expr::PayloadField {
+            protocol: "ip".into(),
+            field: field.into(),
+        }))),
+        right: address_expr,
+    }))
+}
+
+fn generate_log_statement(prefix: String) -> Statement<'static> {
+    Statement::Log(Some(stmt::Log {
+        prefix: Some(prefix.into()),
+        group: None,
+        snaplen: None,
+        queue_threshold: None,
+        level: None,
+        flags: Some(HashSet::from([stmt::LogFlag::All])),
+    }))
+}
+
+fn generate_counter_statement(name: String) -> Statement<'static> {
+    Statement::Counter(stmt::Counter::Named(name.into()))
+}
+
+fn create_counter(batch: &mut Batch, name: String) {
+    batch.add(NfListObject::Counter(schema::Counter {
+        family: NfFamily::INet,
+        table: "nfsense_inet".into(),
+        name: name.into(),
+        ..Default::default()
+    }));
+}
+
+fn build_base_rule_expressions(
+    source_addresses: &[Address],
+    destination_addresses: &[Address],
+    service: Option<&Service>,
+    negate_source: bool,
+    negate_destination: bool,
+    pending_config: &Config,
+) -> Vec<Statement<'static>> {
+    let mut expressions = Vec::new();
+
+    // Source Address matchers
+    if let Some(matcher) =
+        generate_address_matcher(source_addresses, "saddr", negate_source, pending_config)
+    {
+        expressions.push(matcher);
+    }
+
+    // Destination Address matchers
+    if let Some(matcher) = generate_address_matcher(
+        destination_addresses,
+        "daddr",
+        negate_destination,
+        pending_config,
+    ) {
+        expressions.push(matcher);
+    }
+
+    // Generate service matcher statements if service is provided
+    if let Some(service) = service {
+        expressions.extend(generate_service_matcher_statements(service));
+    }
+
+    expressions
+}
+
 fn generate_address_expression(
     addresses: Vec<Address>,
     pending_config: Config,
@@ -266,12 +348,7 @@ pub fn apply_nftables(pending_config: Config, _current_config: Config) -> Result
     }));
 
     counters.push("inbound_default_drop".to_owned());
-    batch.add(NfListObject::Counter(schema::Counter {
-        family: NfFamily::INet,
-        table: "nfsense_inet".into(),
-        name: "inbound_default_drop".into(),
-        ..Default::default()
-    }));
+    create_counter(&mut batch, "inbound_default_drop".to_string());
 
     // Inbound default drop, TODO Log
     batch.add(NfListObject::Rule(schema::Rule {
@@ -280,15 +357,8 @@ pub fn apply_nftables(pending_config: Config, _current_config: Config) -> Result
         chain: "inbound".into(),
         comment: Some("Inbound default drop".into()),
         expr: vec![
-            Statement::Counter(stmt::Counter::Named("inbound_default_drop".into())),
-            Statement::Log(Some(stmt::Log {
-                prefix: Some("inbound_default_drop".into()),
-                group: None,
-                snaplen: None,
-                queue_threshold: None,
-                level: None,
-                flags: Some(HashSet::from([stmt::LogFlag::All])),
-            })),
+            generate_counter_statement("inbound_default_drop".to_string()),
+            generate_log_statement("inbound_default_drop".to_string()),
             Statement::Drop(Some(stmt::Drop {})),
         ]
         .into(),
@@ -359,86 +429,38 @@ pub fn apply_nftables(pending_config: Config, _current_config: Config) -> Result
     ) {
         let (_, rule) = res;
 
+        let counter_name = format!("dnat_{}", index);
         if rule.counter {
-            counters.push(format!("dnat_{}", index));
-            batch.add(NfListObject::Counter(schema::Counter {
-                family: NfFamily::INet,
-                table: "nfsense_inet".into(),
-                name: format!("dnat_{}", index).into(),
-                ..Default::default()
-            }));
+            counters.push(counter_name.clone());
+            create_counter(&mut batch, counter_name.clone());
         }
 
         let source_addresses = rule.source_addresses(pending_config.clone());
         let destination_addresses = rule.destination_addresses(pending_config.clone());
+        let services = rule.services(pending_config.clone());
 
-        // TODO find a way to have only one rule? icmp clashes with tcp/udp
-        // also needs to run when there are no services
-        for service in rule.services(pending_config.clone()) {
-            let mut expression: Vec<Statement> = vec![];
+        let services_to_process: Vec<Option<Service>> = if services.is_empty() {
+            vec![None] // One rule with no service
+        } else {
+            services.into_iter().map(Some).collect() // One rule per service
+        };
 
-            // Source Address matchers
-            if source_addresses.len() > 0 {
-                let mut source_op = Operator::EQ;
-                if rule.negate_source {
-                    source_op = Operator::NEQ;
-                }
-
-                expression.push(Statement::Match(stmt::Match {
-                    op: source_op,
-                    left: Expression::Named(NamedExpression::Payload(PayloadField(
-                        expr::PayloadField {
-                            protocol: "ip".into(),
-                            field: "saddr".into(),
-                        },
-                    ))),
-                    right: generate_address_expression(
-                        source_addresses.clone(),
-                        pending_config.clone(),
-                    ),
-                }));
-            }
-
-            // Destination Address matchers
-            if destination_addresses.len() > 0 {
-                let mut source_op = Operator::EQ;
-                if rule.negate_destination {
-                    source_op = Operator::NEQ;
-                }
-
-                expression.push(Statement::Match(stmt::Match {
-                    op: source_op,
-                    left: Expression::Named(NamedExpression::Payload(PayloadField(
-                        expr::PayloadField {
-                            protocol: "ip".into(),
-                            field: "daddr".into(),
-                        },
-                    ))),
-                    right: generate_address_expression(
-                        destination_addresses.clone(),
-                        pending_config.clone(),
-                    ),
-                }));
-            }
-
-            // Generate service matcher statements
-            expression.extend(generate_service_matcher_statements(&service));
+        for service_option in services_to_process {
+            let mut expression = build_base_rule_expressions(
+                &source_addresses,
+                &destination_addresses,
+                service_option.as_ref(),
+                rule.negate_source,
+                rule.negate_destination,
+                &pending_config,
+            );
 
             if rule.counter {
-                expression.push(Statement::Counter(stmt::Counter::Named(
-                    format!("dnat_{}", index).into(),
-                )));
+                expression.push(generate_counter_statement(counter_name.clone()));
             }
 
             if rule.log {
-                expression.push(Statement::Log(Some(stmt::Log {
-                    prefix: Some(format!("dnat_{}", index).into()),
-                    group: None,
-                    snaplen: None,
-                    queue_threshold: None,
-                    level: None,
-                    flags: Some(HashSet::from([stmt::LogFlag::All])),
-                })))
+                expression.push(generate_log_statement(counter_name.clone()));
             }
 
             if rule.automatic_forward_rule {
@@ -502,8 +524,6 @@ pub fn apply_nftables(pending_config: Config, _current_config: Config) -> Result
 
         // Automatic forward rule
         if rule.automatic_forward_rule {
-            // in prerouting rule: ip saddr 192.168.1.100 ct mark set 0x1
-            // in forward rule: ct mark 0x1 accept
             let mut forward_expression: Vec<Statement> = vec![];
             forward_expression.push(Statement::Match(stmt::Match {
                 op: Operator::EQ,
@@ -515,14 +535,7 @@ pub fn apply_nftables(pending_config: Config, _current_config: Config) -> Result
                 right: Expression::Number(index + NFTABLES_CT_DNAT_MARK_OFFSET),
             }));
             if rule.log {
-                forward_expression.push(Statement::Log(Some(stmt::Log {
-                    prefix: Some(format!("fw_dnat_{}", index).into()),
-                    group: None,
-                    snaplen: None,
-                    queue_threshold: None,
-                    level: None,
-                    flags: Some(HashSet::from([stmt::LogFlag::All])),
-                })))
+                forward_expression.push(generate_log_statement(format!("fw_dnat_{}", index)));
             }
             forward_expression.push(Statement::Accept(None));
 
@@ -553,90 +566,42 @@ pub fn apply_nftables(pending_config: Config, _current_config: Config) -> Result
     for (index, res) in (0u32..).zip(pending_config.firewall.source_nat_rules.iter().enumerate()) {
         let (_, rule) = res;
 
+        let counter_name = format!("snat_{}", index);
         if rule.counter {
-            counters.push(format!("snat_{}", index));
-            batch.add(NfListObject::Counter(schema::Counter {
-                family: NfFamily::INet,
-                table: "nfsense_inet".into(),
-                name: format!("snat_{}", index).into(),
-                ..Default::default()
-            }));
+            counters.push(counter_name.clone());
+            create_counter(&mut batch, counter_name.clone());
         }
 
         let source_addresses = rule.source_addresses(pending_config.clone());
         let destination_addresses = rule.destination_addresses(pending_config.clone());
+        let services = rule.services(pending_config.clone());
 
-        // TODO find a way to have only one rule? icmp clashes with tcp/udp
-        // also needs to run when there are no services
-        for service in rule.services(pending_config.clone()) {
+        let services_to_process: Vec<Option<Service>> = if services.is_empty() {
+            vec![None] // One rule with no service
+        } else {
+            services.into_iter().map(Some).collect() // One rule per service
+        };
+
+        for service_option in services_to_process {
             // Gets reused in the automatic forward rule
-            let mut match_expression: Vec<Statement> = vec![];
-
-            // Source Address matchers
-            if source_addresses.len() > 0 {
-                let mut source_op = Operator::EQ;
-                if rule.negate_source {
-                    source_op = Operator::NEQ;
-                }
-
-                match_expression.push(Statement::Match(stmt::Match {
-                    op: source_op,
-                    left: Expression::Named(NamedExpression::Payload(PayloadField(
-                        expr::PayloadField {
-                            protocol: "ip".into(),
-                            field: "saddr".into(),
-                        },
-                    ))),
-                    right: generate_address_expression(
-                        source_addresses.clone(),
-                        pending_config.clone(),
-                    ),
-                }));
-            }
-
-            // Destination Address matchers
-            if destination_addresses.len() > 0 {
-                let mut source_op = Operator::EQ;
-                if rule.negate_destination {
-                    source_op = Operator::NEQ;
-                }
-
-                match_expression.push(Statement::Match(stmt::Match {
-                    op: source_op,
-                    left: Expression::Named(NamedExpression::Payload(PayloadField(
-                        expr::PayloadField {
-                            protocol: "ip".into(),
-                            field: "daddr".into(),
-                        },
-                    ))),
-                    right: generate_address_expression(
-                        destination_addresses.clone(),
-                        pending_config.clone(),
-                    ),
-                }));
-            }
-
-            // Generate service matcher statements
-            match_expression.extend(generate_service_matcher_statements(&service));
+            let match_expression = build_base_rule_expressions(
+                &source_addresses,
+                &destination_addresses,
+                service_option.as_ref(),
+                rule.negate_source,
+                rule.negate_destination,
+                &pending_config,
+            );
 
             let mut expression: Vec<Statement> = vec![];
             expression.extend(match_expression.clone());
 
             if rule.counter {
-                expression.push(Statement::Counter(stmt::Counter::Named(
-                    format!("snat_{}", index).into(),
-                )));
+                expression.push(generate_counter_statement(counter_name.clone()));
             }
 
             if rule.log {
-                expression.push(Statement::Log(Some(stmt::Log {
-                    prefix: Some(format!("snat_{}", index).into()),
-                    group: None,
-                    snaplen: None,
-                    queue_threshold: None,
-                    level: None,
-                    flags: Some(HashSet::from([stmt::LogFlag::All])),
-                })))
+                expression.push(generate_log_statement(counter_name.clone()));
             }
 
             match rule.snat_type {
@@ -699,14 +664,7 @@ pub fn apply_nftables(pending_config: Config, _current_config: Config) -> Result
                 forward_expression.extend(match_expression);
 
                 if rule.log {
-                    forward_expression.push(Statement::Log(Some(stmt::Log {
-                        prefix: Some(format!("fw_snat_{}", index).into()),
-                        group: None,
-                        snaplen: None,
-                        queue_threshold: None,
-                        level: None,
-                        flags: Some(HashSet::from([stmt::LogFlag::All])),
-                    })))
+                    forward_expression.push(generate_log_statement(format!("fw_snat_{}", index)));
                 }
                 forward_expression.push(Statement::Accept(None));
 
@@ -726,90 +684,38 @@ pub fn apply_nftables(pending_config: Config, _current_config: Config) -> Result
     for (index, res) in (0u32..).zip(pending_config.firewall.forward_rules.iter().enumerate()) {
         let (_, rule) = res;
 
+        let counter_name = format!("fw_{}", index);
         if rule.counter {
-            counters.push(format!("fw_{}", index));
-            batch.add(NfListObject::Counter(schema::Counter {
-                family: NfFamily::INet,
-                table: "nfsense_inet".into(),
-                name: format!("fw_{}", index).into(),
-                ..Default::default()
-            }));
+            counters.push(counter_name.clone());
+            create_counter(&mut batch, counter_name.clone());
         }
 
         let source_addresses = rule.source_addresses(pending_config.clone());
         let destination_addresses = rule.destination_addresses(pending_config.clone());
+        let services = rule.services(pending_config.clone());
 
-        // TODO find a way to have only one rule? icmp clashes with tcp/udp
-        // also needs to run when there are no services
-        for service in rule.services(pending_config.clone()) {
-            // Gets reused in the automatic forward rule
-            let mut match_expression: Vec<Statement> = vec![];
+        let services_to_process: Vec<Option<Service>> = if services.is_empty() {
+            vec![None] // One rule with no service
+        } else {
+            services.into_iter().map(Some).collect() // One rule per service
+        };
 
-            // Source Address matchers
-            if source_addresses.len() > 0 {
-                let mut source_op = Operator::EQ;
-                if rule.negate_source {
-                    source_op = Operator::NEQ;
-                }
-
-                match_expression.push(Statement::Match(stmt::Match {
-                    op: source_op,
-                    left: Expression::Named(NamedExpression::Payload(PayloadField(
-                        expr::PayloadField {
-                            protocol: "ip".into(),
-                            field: "saddr".into(),
-                        },
-                    ))),
-                    right: generate_address_expression(
-                        source_addresses.clone(),
-                        pending_config.clone(),
-                    ),
-                }));
-            }
-
-            // Destination Address matchers
-            if destination_addresses.len() > 0 {
-                let mut source_op = Operator::EQ;
-                if rule.negate_destination {
-                    source_op = Operator::NEQ;
-                }
-
-                match_expression.push(Statement::Match(stmt::Match {
-                    op: source_op,
-                    left: Expression::Named(NamedExpression::Payload(PayloadField(
-                        expr::PayloadField {
-                            protocol: "ip".into(),
-                            field: "daddr".into(),
-                        },
-                    ))),
-                    right: generate_address_expression(
-                        destination_addresses.clone(),
-                        pending_config.clone(),
-                    ),
-                }));
-            }
-
-            // Generate service matcher statements
-            match_expression.extend(generate_service_matcher_statements(&service));
-
-            let mut expression: Vec<Statement> = vec![];
-            expression.extend(match_expression.clone());
+        for service_option in services_to_process {
+            let mut expression = build_base_rule_expressions(
+                &source_addresses,
+                &destination_addresses,
+                service_option.as_ref(),
+                rule.negate_source,
+                rule.negate_destination,
+                &pending_config,
+            );
 
             if rule.counter {
-                expression.push(Statement::Counter(stmt::Counter::Named(
-                    format!("fw_{}", index).into(),
-                )));
+                expression.push(generate_counter_statement(counter_name.clone()));
             }
 
             if rule.log {
-                expression.push(Statement::Log(Some(stmt::Log {
-                    prefix: Some(format!("fw_{}", index).into()),
-                    group: None,
-                    snaplen: None,
-                    queue_threshold: None,
-                    level: None,
-                    flags: Some(HashSet::from([stmt::LogFlag::All])),
-                })))
+                expression.push(generate_log_statement(counter_name.clone()));
             }
 
             expression.push(match rule.verdict {
@@ -830,12 +736,7 @@ pub fn apply_nftables(pending_config: Config, _current_config: Config) -> Result
     }
 
     counters.push("fw_default_drop".to_owned());
-    batch.add(NfListObject::Counter(schema::Counter {
-        family: NfFamily::INet,
-        table: "nfsense_inet".into(),
-        name: "fw_default_drop".into(),
-        ..Default::default()
-    }));
+    create_counter(&mut batch, "fw_default_drop".to_string());
 
     // Forward default drop counter, TODO Log
     batch.add(NfListObject::Rule(schema::Rule {
@@ -844,15 +745,8 @@ pub fn apply_nftables(pending_config: Config, _current_config: Config) -> Result
         chain: "forward".into(),
         comment: Some("Forward default drop".into()),
         expr: vec![
-            Statement::Counter(stmt::Counter::Named("fw_default_drop".into())),
-            Statement::Log(Some(stmt::Log {
-                prefix: Some("fw_default_drop".into()),
-                group: None,
-                snaplen: None,
-                queue_threshold: None,
-                level: None,
-                flags: Some(HashSet::from([stmt::LogFlag::All])),
-            })),
+            generate_counter_statement("fw_default_drop".to_string()),
+            generate_log_statement("fw_default_drop".to_string()),
             Statement::Drop(Some(stmt::Drop {})),
         ]
         .into(),

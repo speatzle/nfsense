@@ -18,6 +18,7 @@ use tracing::{error, info};
 
 const NFTABLES_CONFIG_PATH: &str = "/etc/nfsense/nftables.conf";
 const NFTABLES_CT_DNAT_MARK_OFFSET: u32 = 1000;
+const NFTABLES_LOG_GROUP: u32 = 1;
 
 fn port_definition_to_expression(port_def: &PortDefinition) -> Option<Expression<'static>> {
     match port_def {
@@ -150,11 +151,11 @@ fn generate_address_matcher(
 fn generate_log_statement(prefix: String) -> Statement<'static> {
     Statement::Log(Some(stmt::Log {
         prefix: Some(prefix.into()),
-        group: None,
+        group: Some(NFTABLES_LOG_GROUP),
         snaplen: None,
         queue_threshold: None,
         level: None,
-        flags: Some(HashSet::from([stmt::LogFlag::All])),
+        flags: None,
     }))
 }
 

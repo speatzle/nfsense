@@ -40,11 +40,13 @@ pub enum ApiError {
 impl Into<ErrorObject<'static>> for ApiError {
     fn into(self) -> ErrorObject<'static> {
         info!("Converting Error {:?}", self);
-        match self {
-            // Todo Add Proper mappings
-            _ => ErrorCode::InternalError,
-        }
-        .into()
+
+        // Todo Add Proper mappings
+        ErrorObject::owned::<()>(
+            ErrorCode::InternalError.code(),
+            self.to_string(),
+            None::<()>,
+        )
     }
 }
 

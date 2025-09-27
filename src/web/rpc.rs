@@ -1,130 +1,106 @@
-use crate::AppState;
-use axum::routing::post;
-use axum::{Json, Router};
-use jsonrpsee::core::traits::ToRpcParams;
-use jsonrpsee::server::MethodsError;
-use serde::{Deserialize, Serialize};
-use serde_json::value::RawValue;
+use std::future::Future;
 
-use axum::{extract::Extension, extract::State, response::IntoResponse};
+use crate::state::{AppState, RpcState};
+use axum::extract::{Request, State};
+use axum::response::Response;
+use axum::routing::any;
+use axum::{Extension, Router};
 
-use tracing::info;
+use jsonrpsee::core::middleware::{Batch, Notification, RpcServiceBuilder, RpcServiceT};
+use jsonrpsee::server::{stop_channel, Server, ServerConfig};
+use jsonrpsee::types::Request as RpcRequest;
+use jsonrpsee::RpcModule;
+use tower::Service;
+use tracing::{error, info};
 
-const JSON_RPC_VERSION: &str = "2.0";
-
-// TODO fix this "workaround"
-struct ParamConverter {
-    params: Option<Box<RawValue>>,
+#[derive(Clone)]
+pub struct Logger<S> {
+    service: S,
 }
 
-impl ToRpcParams for ParamConverter {
-    fn to_rpc_params(self) -> Result<Option<Box<RawValue>>, serde_json::Error> {
-        let s = serde_json::to_string(&self.params)?;
-        RawValue::from_string(s).map(Some).map_err(|_| {
-            serde_json::Error::io(std::io::Error::new(
-                std::io::ErrorKind::InvalidData,
-                "RawValue parse error",
-            ))
-        })
+impl<S> RpcServiceT for Logger<S>
+where
+    S: RpcServiceT + Send + Sync + Clone + 'static,
+{
+    type MethodResponse = S::MethodResponse;
+    type NotificationResponse = S::NotificationResponse;
+    type BatchResponse = S::BatchResponse;
+
+    fn call<'a>(
+        &self,
+        req: RpcRequest<'a>,
+    ) -> impl Future<Output = Self::MethodResponse> + Send + 'a {
+        let session = req.extensions().get::<super::auth::Session>();
+        match session {
+            Some(session) => {
+                info!(
+                    "rpc call, user: {} method: {}",
+                    session.username, req.method
+                );
+            }
+            None => panic!("rpc call without session"),
+        }
+        self.service.call(req)
+    }
+
+    fn batch<'a>(&self, batch: Batch<'a>) -> impl Future<Output = Self::BatchResponse> + Send + 'a {
+        /* TODO fix batch logging
+        let session = batch.extensions().get::<super::auth::Session>();
+        match session {
+            Some(session) => {
+                info!("{} rpc batch, user: {}", self.role, session.username);
+            }
+            None => panic!("rpc batch without session"),
+        }
+        */
+        self.service.batch(batch)
+    }
+    fn notification<'a>(
+        &self,
+        n: Notification<'a>,
+    ) -> impl Future<Output = Self::NotificationResponse> + Send + 'a {
+        self.service.notification(n)
     }
 }
 
-#[derive(Deserialize)]
-struct RpcRequest {
-    id: i64,
-    params: Option<Box<RawValue>>,
-    jsonrpc: String,
-    method: String,
-}
+pub fn routes(rpc_module: RpcModule<RpcState>) -> Router<super::super::AppState> {
+    // Create stop channel for graceful shutdown
+    let (stop_handle, _server_handle) = stop_channel();
 
-#[derive(Clone, Deserialize, Serialize)]
-struct RpcResponse {
-    id: i64,
-    jsonrpc: String,
-    // Note: this Option<Option<>> is for distinguishing between success without a result (null) and and error where the field is skipped
-    #[serde(skip_serializing_if = "Option::is_none")]
-    result: Option<Option<Box<RawValue>>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    error: Option<RpcErrorObject>,
-}
+    // Configure the RPC server
+    let server_config = ServerConfig::builder()
+        .enable_ws_ping(Default::default())
+        .build();
 
-#[derive(Clone, Deserialize, Serialize)]
+    let rpc_middleware = RpcServiceBuilder::new().layer_fn(|service| Logger { service });
 
-struct RpcErrorObject {
-    code: i64,
-    message: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    data: Option<Box<RawValue>>,
-}
+    // Build the tower service for JSON-RPC
+    let rpc_service = Server::builder()
+        .set_config(server_config)
+        .to_service_builder()
+        .set_rpc_middleware(rpc_middleware)
+        .build(rpc_module, stop_handle);
 
-pub fn routes() -> Router<super::super::AppState> {
-    Router::new().route("/api", post(api_handler))
-}
-
-async fn api_handler(
-    State(state): State<AppState>,
-    session: Extension<super::auth::Session>,
-    body: String,
-) -> impl IntoResponse {
-    let req: RpcRequest = match serde_json::from_str(&body) {
-        Ok(req) => req,
-        Err(err) => {
-            return Json(RpcResponse {
-                id: 0,
-                jsonrpc: JSON_RPC_VERSION.to_string(),
-                result: None,
-                error: Some(RpcErrorObject {
-                    // TODO Send back correct code
-                    code: 0,
-                    message: err.to_string(),
-                    data: None,
-                }),
-            });
+    // Create a service function that handles both HTTP and WebSocket requests
+    let api_handler = move |State(_state): State<AppState>,
+                            session: Extension<super::auth::Session>,
+                            req: Request| {
+        let mut service = rpc_service;
+        async move {
+            // Call the RPC service which handles both HTTP and WebSocket upgrades
+            info!("Handling api connection for user {}", session.username);
+            match service.call(req).await {
+                Ok(response) => response,
+                Err(err) => {
+                    error!("RPC service error: {:?}", err);
+                    Response::builder()
+                        .status(500)
+                        .body("Internal Server Error".into())
+                        .unwrap()
+                }
+            }
         }
     };
 
-    if req.jsonrpc != JSON_RPC_VERSION {
-        return Json(RpcResponse {
-            id: req.id,
-            jsonrpc: JSON_RPC_VERSION.to_string(),
-            result: None,
-            error: Some(RpcErrorObject {
-                // TODO Send back correct code
-                code: 0,
-                message: "Invalid Jsonrpc Version".to_string(),
-                data: None,
-            }),
-        });
-    }
-    // TODO check Permissions for method here?
-
-    info!(
-        "api hit! user: {:?} method: {:?}",
-        session.username, req.method
-    );
-
-    // TODO find a async save way to catch panics?
-    let res: Result<Option<Box<RawValue>>, MethodsError> = state
-        .rpc_module
-        .call(&req.method, ParamConverter { params: req.params })
-        .await;
-
-    match res {
-        Ok(res) => Json(RpcResponse {
-            id: req.id,
-            jsonrpc: req.jsonrpc,
-            result: Some(res),
-            error: None,
-        }),
-        Err(err) => Json(RpcResponse {
-            id: req.id,
-            jsonrpc: req.jsonrpc,
-            result: None,
-            error: Some(RpcErrorObject {
-                code: 10,
-                message: err.to_string(),
-                data: None,
-            }),
-        }),
-    }
+    Router::new().route("/api", any(api_handler))
 }

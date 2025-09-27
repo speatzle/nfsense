@@ -6,7 +6,7 @@ use std::{
 };
 
 use crate::state::RpcState;
-use axum::{middleware, Router};
+use axum::{middleware, response::IntoResponse, Router};
 use axum_reverse_proxy::ReverseProxy;
 use axum_server::tls_openssl::OpenSSLConfig;
 use config_manager::ConfigManager;
@@ -62,18 +62,18 @@ async fn main() {
     let dbus_conn = zbus::Connection::system().await.unwrap();
 
     let app_state = AppState {
-        config_manager: config_manager.clone(),
         session_state: session_state.clone(),
-        dbus_conn: dbus_conn.clone(),
-        rpc_module: api::new_rpc_module(RpcState {
-            config_manager,
-            session_state,
-            dbus_conn,
-        }),
+        config_manager: config_manager.clone(),
     };
 
+    let rpc_module = api::new_rpc_module(RpcState {
+        config_manager: app_state.config_manager.clone(),
+        session_state,
+        dbus_conn,
+    });
+
     if args.len() > 1 && args[1] == "apply-pending-config" {
-        match app_state.config_manager.clone().apply_pending_changes() {
+        match config_manager.clone().apply_pending_changes() {
             Ok(_) => info!("Done! Exiting..."),
             Err(err) => error!("Failed to apply config: {}", err),
         }
@@ -90,7 +90,7 @@ async fn main() {
 
     // Note: The Router Works Bottom Up, So the auth middleware will only applies to everything above it.
     let main_router = Router::new()
-        .merge(web::rpc::routes())
+        .merge(web::rpc::routes(rpc_module))
         .layer(middleware::from_fn_with_state(
             app_state.clone(),
             web::auth::mw_auth,
@@ -99,7 +99,6 @@ async fn main() {
         .with_state(app_state)
         .merge(webinterface_router)
         .layer(CookieManagerLayer::new());
-    // .fallback_service(service)
 
     let config =
         OpenSSLConfig::from_pem_file(PathBuf::from("cert.pem"), PathBuf::from("key.pem")).unwrap();

@@ -49,6 +49,7 @@ export default defineConfigWithVueTs(
         2,
       ],
       'prefer-const': 'warn',
+      'no-self-assign': 'off',
     },
   },
 );

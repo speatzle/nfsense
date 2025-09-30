@@ -7,7 +7,7 @@ const p = getPlugins();
 
 let interfaces = $ref({} as any); // TODO: Add proper type
 let loading = $ref(false);
-let selection = $ref([] as number[]);
+const selection = $ref([] as number[]);
 
 const columns = [
   { heading: 'Name', path: 'name' },
@@ -23,8 +23,7 @@ const columns = [
 ];
 
 const displayData = $computed(() => {
-  let data: any;
-  data = [];
+  const data = [];
   for (const index in interfaces) {
     data.push({
       name: interfaces[index].name,
@@ -40,7 +39,7 @@ const displayData = $computed(() => {
 
 async function load(){
   loading = true;
-  let res = await apiCall('network.interfaces.list', {});
+  const res = await apiCall('network.interfaces.list', {});
   if (res.Error === null) {
     console.debug('interfaces', res.Data);
     interfaces = res.Data;
@@ -51,7 +50,7 @@ async function load(){
 }
 
 async function deleteInterface(){
-  let res = await apiCall('network.interfaces.delete', { name: displayData[selection[0]].name });
+  const res = await apiCall('network.interfaces.delete', { name: displayData[selection[0]].name });
   if (res.Error === null) {
     console.debug('deleted interface');
   } else {

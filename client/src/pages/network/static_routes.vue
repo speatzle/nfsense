@@ -3,7 +3,7 @@ import { apiCall } from '../../api';
 
 let staticRoutes = $ref([]);
 let loading = $ref(false);
-let selection = $ref([] as number[]);
+const selection = $ref([] as number[]);
 
 const columns = [
   { heading: 'Name', path: 'name' },
@@ -15,7 +15,7 @@ const columns = [
 
 async function load(){
   loading = true;
-  let res = await apiCall('network.static_routes.list', {});
+  const res = await apiCall('network.static_routes.list', {});
   if (res.Error === null) {
     console.debug('staticRoutes', res.Data);
     staticRoutes = res.Data;
@@ -26,7 +26,7 @@ async function load(){
 }
 
 async function deleteStaticRoutes(){
-  let res = await apiCall('network.static_routes.delete', { index: selection[0] });
+  const res = await apiCall('network.static_routes.delete', { index: selection[0] });
   if (res.Error === null) {
     console.debug('deleted static routes');
   } else {

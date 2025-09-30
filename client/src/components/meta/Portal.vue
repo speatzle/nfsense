@@ -1,5 +1,5 @@
 <script lang="ts">
-let activeTargets = $ref<string[]>([]);
+const activeTargets = $ref<string[]>([]);
 </script>
 
 <script setup lang="ts">

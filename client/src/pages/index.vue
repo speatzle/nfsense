@@ -11,7 +11,7 @@ let loading = $ref(false);
 
 async function load(){
   loading = true;
-  let res = await apiCall('system.services.status', {});
+  const res = await apiCall('system.services.status', {});
   if (res.Error === null) {
     console.debug('services staus', res.Data);
     serviceStatus = res.Data;

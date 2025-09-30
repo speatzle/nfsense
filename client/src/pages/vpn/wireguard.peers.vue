@@ -6,7 +6,7 @@ const p = getPlugins();
 
 let peers = $ref({} as any); // TODO: Add proper type
 let loading = $ref(false);
-let selection = $ref([] as number[]);
+const selection = $ref([] as number[]);
 
 const columns = [
   { heading: 'Name', path: 'name' },
@@ -17,8 +17,7 @@ const columns = [
 ];
 
 const displayData = $computed(() => {
-  let data: any;
-  data = [];
+  const data = [];
   for (const index in peers) {
     data.push({
       name: peers[index].name,
@@ -33,7 +32,7 @@ const displayData = $computed(() => {
 
 async function load() {
   loading = true;
-  let res = await apiCall('vpn.wireguard.peers.list', {});
+  const res = await apiCall('vpn.wireguard.peers.list', {});
   if (res.Error === null) {
     console.debug('peers', res.Data);
     peers = res.Data;
@@ -44,7 +43,7 @@ async function load() {
 }
 
 async function deletePeer() {
-  let res = await apiCall('vpn.wireguard.peers.delete', {
+  const res = await apiCall('vpn.wireguard.peers.delete', {
     name: displayData[selection[0]].name,
   });
   if (res.Error === null) {

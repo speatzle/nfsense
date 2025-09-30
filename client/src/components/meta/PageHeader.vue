@@ -6,7 +6,7 @@ const props = withDefaults(defineProps<{
   title: '',
   noSpacer: false,
 });
-let { title, noSpacer } = $(props);
+const { title, noSpacer } = $(props);
 watchEffect(() => useTitle(`${title} - nfSense`));
 </script>
 <template>

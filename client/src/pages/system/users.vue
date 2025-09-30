@@ -5,7 +5,7 @@ const p = getPlugins();
 
 let users = $ref([] as any[]); // TODO: Add proper type
 let loading = $ref(false);
-let selection = $ref([] as number[]);
+const selection = $ref([] as number[]);
 
 const columns = [
   { heading: 'Name', path: 'name' },
@@ -14,7 +14,7 @@ const columns = [
 
 async function load(){
   loading = true;
-  let res = await apiCall('system.users.list', {});
+  const res = await apiCall('system.users.list', {});
   if (res.Error === null) {
     users = res.Data;
     console.debug('users', users);
@@ -25,7 +25,7 @@ async function load(){
 }
 
 async function deleteUser(){
-  let res = await apiCall('system.users.delete', { name: users[selection[0]].name });
+  const res = await apiCall('system.users.delete', { name: users[selection[0]].name });
   if (res.Error === null) {
     console.debug('deleted user');
   } else {

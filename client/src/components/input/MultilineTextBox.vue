@@ -3,7 +3,7 @@
 const props = defineModels<{
   modelValue?: string,
 }>();
-let { modelValue } = $(props);
+const { modelValue } = $(props);
 
 </script>
 

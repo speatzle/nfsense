@@ -26,8 +26,7 @@ async function load(){
 
 async function create() {
   console.debug('value', vm);
-  let res: any;
-  res = await apiCall(`${subsystem }.${entity}.create`, vm);
+  const res = await apiCall(`${subsystem }.${entity}.create`, vm);
 
   if (res.Error === null) {
     p.toast.success(`Created ${  editTypes[subsystem][entity].name}`);

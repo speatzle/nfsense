@@ -11,14 +11,14 @@ const props = withDefaults(defineProps<{
 });
 
 const value = computed(() => {
-  let variant = variantOf(props.data);
+  const variant = variantOf(props.data);
   if (variant == null) {
     return {};
   }
   if (props.definition === undefined) {
     return {};
   }
-  let thing = props.definition[variant];
+  const thing = props.definition[variant];
   if (thing == null) {
     return {};
   }

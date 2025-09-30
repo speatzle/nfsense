@@ -26,7 +26,7 @@ import IVPN from '~icons/mdi/vpn';
 enum NavState { Open, Reduced, Collapsed };
 const NavStateCount = 3;
 let navState = $ref(NavState.Open);
-let reducedDynamicWidth = $ref(2.5);
+const reducedDynamicWidth = $ref(2.5);
 
 const navRoutesNew = [
   { caption: 'Dashboard', icon: IDashboard, href: '/' },
@@ -64,7 +64,7 @@ enum AuthState { Unauthenticated, MfaRequired, Authenticated };
 let authState = $ref(AuthState.Unauthenticated);
 let loginDisabled = $ref(true);
 
-let username = $ref('');
+const username = $ref('');
 let password = $ref('');
 
 const mobileMedia = window.matchMedia('only screen and (max-width: 768px)');
@@ -112,7 +112,7 @@ function UnauthorizedCallback() {
 
 async function checkAuth() {
   console.info('Checking Auth State...');
-  let res = await checkAuthentication();
+  const res = await checkAuthentication();
   authState = res.auth;
   loginDisabled = false;
   if (authState === AuthState.Authenticated) {

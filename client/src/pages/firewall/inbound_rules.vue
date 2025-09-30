@@ -5,8 +5,8 @@ import ArrayDisplay from '~/components/display/ArrayDisplay.vue';
 const p = getPlugins();
 
 let rules = $ref([]);
-let loading = $ref(false);
-let selection = $ref([] as number[]);
+const loading = $ref(false);
+const selection = $ref([] as number[]);
 
 const columns = [
   { heading: 'Name', path: 'name' },
@@ -19,7 +19,7 @@ const columns = [
 ];
 
 async function load(){
-  let res = await apiCall('firewall.inbound_rules.list', {});
+  const res = await apiCall('firewall.inbound_rules.list', {});
   if (res.Error === null) {
     rules = res.Data;
     console.debug('rules', rules);
@@ -29,7 +29,7 @@ async function load(){
 }
 
 async function deleteRule(){
-  let res = await apiCall('firewall.inbound_rules.delete', { index: selection[0] });
+  const res = await apiCall('firewall.inbound_rules.delete', { index: selection[0] });
   if (res.Error === null) {
     console.debug('deleted rule');
     p.toast.success('Deleted Rule');
@@ -41,7 +41,7 @@ async function deleteRule(){
 
 async function draggedRow(draggedRow: number, draggedOverRow: number) {
   console.log('dragged', draggedRow, draggedOverRow);
-  let res = await apiCall('firewall.inbound_rules.move', { index: draggedRow, to_index: draggedOverRow });
+  const res = await apiCall('firewall.inbound_rules.move', { index: draggedRow, to_index: draggedOverRow });
   if (res.Error === null) {
     console.debug('moved rule');
     p.toast.success('Moved Rule');

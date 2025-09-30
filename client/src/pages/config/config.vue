@@ -14,8 +14,7 @@ const columns = [
 ];
 
 const displayData = $computed(() => {
-  let data: any;
-  data = [];
+  const data = [];
   for (const change of changelog as any) { // TODO: Add proper type
     data.push({
       path: change.path,
@@ -28,7 +27,7 @@ const displayData = $computed(() => {
 
 async function load(){
   loading = true;
-  let res = await apiCall('config.pending_changes.log', {});
+  const res = await apiCall('config.pending_changes.log', {});
   if (res.Error === null) {
     console.debug('changelog', res.Data);
     changelog = res.Data;
@@ -39,7 +38,7 @@ async function load(){
 }
 
 async function apply(){
-  let res = await apiCall('config.pending_changes.apply', {});
+  const res = await apiCall('config.pending_changes.apply', {});
   if (res.Error === null) {
     console.debug('apply');
     p.toast.success('Applied Pending Config');
@@ -50,7 +49,7 @@ async function apply(){
 }
 
 async function discard(){
-  let res = await apiCall('config.pending_changes.discard', {});
+  const res = await apiCall('config.pending_changes.discard', {});
   if (res.Error === null) {
     console.debug('discard');
     p.toast.success('Discarded Pending Config');

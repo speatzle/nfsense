@@ -1,8 +1,8 @@
 import { SearchProvider, Options } from '~/components/input/input';
 import { apiCall } from './api';
 
-const GetHardwareInterfaces: SearchProvider = async (o) => {
-  let res = await apiCall('network.links.list', {});
+const GetHardwareInterfaces: SearchProvider = async (_) => {
+  const res = await apiCall('network.links.list', {});
   if (res.Error === null) {
     console.debug('links', res.Data);
     return Object.fromEntries(res.Data.map((r: any) => [r.name, { display: r.name }]));
@@ -12,8 +12,8 @@ const GetHardwareInterfaces: SearchProvider = async (o) => {
   }
 };
 
-const GetInterfaces: SearchProvider = async (o) => {
-  let res = await apiCall('network.interfaces.list', {});
+const GetInterfaces: SearchProvider = async (_) => {
+  const res = await apiCall('network.interfaces.list', {});
   if (res.Error === null) {
     console.debug('interfaces', res.Data);
     return Object.fromEntries(res.Data.map((r: any) => [r.name, { display: r.name }]));
@@ -23,8 +23,8 @@ const GetInterfaces: SearchProvider = async (o) => {
   }
 };
 
-const GetAddresses: SearchProvider = async (o) => {
-  let res = await apiCall('object.addresses.list', {});
+const GetAddresses: SearchProvider = async (_) => {
+  const res = await apiCall('object.addresses.list', {});
   if (res.Error === null) {
     console.debug('addresses', res.Data);
     return Object.fromEntries(res.Data.map((r: any) => [r.name, { display: r.name }]));
@@ -34,8 +34,8 @@ const GetAddresses: SearchProvider = async (o) => {
   }
 };
 
-const GetServices: SearchProvider = async (o) => {
-  let res = await apiCall('object.services.list', {});
+const GetServices: SearchProvider = async (_) => {
+  const res = await apiCall('object.services.list', {});
   if (res.Error === null) {
     console.debug('services', res.Data);
     return Object.fromEntries(res.Data.map((r: any) => [r.name, { display: r.name }]));
@@ -45,8 +45,8 @@ const GetServices: SearchProvider = async (o) => {
   }
 };
 
-const GetPeers: SearchProvider = async (o) => {
-  let res = await apiCall('vpn.wireguard.peers.list', {});
+const GetPeers: SearchProvider = async (_) => {
+  const res = await apiCall('vpn.wireguard.peers.list', {});
   if (res.Error === null) {
     console.debug('peers', res.Data);
     return Object.fromEntries(res.Data.map((r: any) => [r.name, { display: r.name }]));
@@ -56,7 +56,7 @@ const GetPeers: SearchProvider = async (o) => {
   }
 };
 
-const ICMPPacketTypes: SearchProvider = async (o) => {
+const ICMPPacketTypes: SearchProvider = async (_) => {
   return {
     'echo_reply': { display: 'EchoReply' },
     'destination_unreachable': { display: 'DestinationUnreachable' },
@@ -76,7 +76,7 @@ const ICMPPacketTypes: SearchProvider = async (o) => {
   };
 };
 
-const PortDefinition: Object = {
+const PortDefinition: object = {
   'any': { display: 'Any' },
   'single': {
     display: 'Single',

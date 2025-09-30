@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { NavRoute } from './NavElements.vue';
 
-let props = withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   // Two-Way Bindings
   expanded?: boolean,
 
@@ -24,8 +24,8 @@ let props = withDefaults(defineProps<{
 const emit = defineEmits<{ (e: 'update:expandedDepth', value: number): void }>();
 
 // Local Variables for Two-Way Binding
-let expanded = $ref(props.expanded ?? false);
-let lowerDepth = $ref(0);
+const expanded = $ref(props.expanded ?? false);
+const lowerDepth = $ref(0);
 
 // Sync to v-model
 watchEffect(() => emit('update:expandedDepth', expanded ? (lowerDepth || 0) + 1 : 0));

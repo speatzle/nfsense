@@ -8,7 +8,7 @@ const p = getPlugins();
 
 let addresses = $ref([] as any[]); // TODO: Add proper type
 let loading = $ref(false);
-let selection = $ref([] as number[]);
+const selection = $ref([] as number[]);
 
 const addressValueDefinition: { [key: string]: { path: string, component: Component | undefined } } = {
   'host': { path: 'host.address', component: undefined },
@@ -27,7 +27,7 @@ const columns = [
 
 async function load(){
   loading = true;
-  let res = await apiCall('object.addresses.list', {});
+  const res = await apiCall('object.addresses.list', {});
   if (res.Error === null) {
     addresses = res.Data;
     console.debug('addresses', addresses);
@@ -38,8 +38,7 @@ async function load(){
 }
 
 const displayData = $computed(() => {
-  let data: any;
-  data = [];
+  const data = [];
   for (const index in addresses) {
     data.push({
       name: addresses[index].name,
@@ -51,7 +50,7 @@ const displayData = $computed(() => {
 });
 
 async function deleteAddress(){
-  let res = await apiCall('object.addresses_delete', { id: displayData[selection[0]].name });
+  const res = await apiCall('object.addresses_delete', { id: displayData[selection[0]].name });
   if (res.Error === null) {
     console.debug('deleted address');
   } else {

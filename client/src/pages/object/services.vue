@@ -9,7 +9,7 @@ const p = getPlugins();
 
 let services = $ref({} as any); // TODO: Add proper type
 let loading = $ref(false);
-let selection = $ref([] as number[]);
+const selection = $ref([] as number[]);
 
 const serviceValueDefinition: { [key: string]: { path: string, component: Component | undefined } } = {
   'tcp': { path: 'tcp', component: PortServiceDisplay },
@@ -26,8 +26,7 @@ const columns = [
 ];
 
 const displayData = $computed(() => {
-  let data: any;
-  data = [];
+  const data = [];
   for (const index in services) {
     data.push({
       name: services[index].name,
@@ -40,7 +39,7 @@ const displayData = $computed(() => {
 
 async function load(){
   loading = true;
-  let res = await apiCall('object.services.list', {});
+  const res = await apiCall('object.services.list', {});
   if (res.Error === null) {
     console.debug('services', res.Data);
     services = res.Data;
@@ -51,7 +50,7 @@ async function load(){
 }
 
 async function deleteService(){
-  let res = await apiCall('object.services.delete', { name: displayData[selection[0]].name });
+  const res = await apiCall('object.services.delete', { name: displayData[selection[0]].name });
   if (res.Error === null) {
     console.debug('deleted service');
   } else {

@@ -102,7 +102,7 @@ function dragDropRow() {
     const row = data[draggedRow];
     data.splice(draggedRow, 1);
     data.splice(draggedOverRow, 0, row);
-    data = data;
+    data = [...data];
     // Don't emit if we are at the same spot
     if (draggedRow !== draggedOverRow){
       emit('draggedRow', draggedRow, draggedOverRow);

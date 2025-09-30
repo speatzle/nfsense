@@ -5,7 +5,7 @@ const props = defineModels<{
   min?: number,
   max?: number,
 }>();
-let { modelValue, min, max } = $(props);
+const { modelValue, min, max } = $(props);
 
 </script>
 

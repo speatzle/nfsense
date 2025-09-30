@@ -5,8 +5,8 @@ import ArrayDisplay from '~/components/display/ArrayDisplay.vue';
 const p = getPlugins();
 
 let servers = $ref([]);
-let loading = $ref(false);
-let selection = $ref([] as number[]);
+const loading = $ref(false);
+const selection = $ref([] as number[]);
 
 const columns = [
   { heading: 'Interface', path: 'interface' },
@@ -15,7 +15,7 @@ const columns = [
 ];
 
 async function load(){
-  let res = await apiCall('service.dhcp_servers.list', {});
+  const res = await apiCall('service.dhcp_servers.list', {});
   if (res.Error === null) {
     servers = res.Data;
     console.debug('rules', servers);
@@ -25,7 +25,7 @@ async function load(){
 }
 
 async function deleteRule(){
-  let res = await apiCall('service.dhcp_servers.delete', { index: selection[0] });
+  const res = await apiCall('service.dhcp_servers.delete', { index: selection[0] });
   if (res.Error === null) {
     console.debug('deleted server');
     p.toast.success('Deleted DHCP Server');

@@ -5,10 +5,10 @@ import { useToast } from 'vue-toast-notification';
 
 const $toast = useToast();
 
-let jrpc = new JsonRPC.connect_xhr('/api');
+const jrpc = new JsonRPC.connect_xhr('/api');
 // let socket = new WebSocket("ws://"+ window.location.host +"/ws/api");
 
-let UnauthorizedCallback: Function;
+let UnauthorizedCallback: () => void;
 
 export function setup(_UnauthorizedCallback: () => void) {
   UnauthorizedCallback = _UnauthorizedCallback;

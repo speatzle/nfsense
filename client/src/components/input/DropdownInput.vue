@@ -21,7 +21,7 @@ const props = withDefaults(defineProps<{
   searchProvider: null,
   placeholder: 'Search...',
 });
-let { multiple, searchProvider, placeholder } = $(props);
+const { multiple, searchProvider, placeholder } = $(props);
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: any): void,
@@ -48,7 +48,7 @@ onMounted(() => {
       await performSearch(unknownKeys);
       knownKeys = Object.keys(options);
       unknownKeys = (val as Index[]).filter(key => !knownKeys.includes(key.toString()));
-      for (let key of unknownKeys) console.warn('Unknown key in DropdownInput:', key/*, options*/);
+      for (const key of unknownKeys) console.warn('Unknown key in DropdownInput:', key/*, options*/);
       return modelValue = (val as Index[]).filter(key => knownKeys.includes(key.toString()));
     }
     if (!knownKeys.includes(val.toString())) {
@@ -75,9 +75,9 @@ watch($$(multiple), () => modelValue = multiple ? [] : null );
 // --- Everything Else  ---
 let expanded = $ref(false);
 let navigated = $ref(0);
-let inputDiv = $ref(null as HTMLElement | null);
-let input = $ref(null as HTMLElement | null);
-let valueButton = $ref(null as HTMLElement | null);
+const inputDiv = $ref(null as HTMLElement | null);
+const input = $ref(null as HTMLElement | null);
+const valueButton = $ref(null as HTMLElement | null);
 
 const selCount = $computed(() => modelValue?.length || 0);
 

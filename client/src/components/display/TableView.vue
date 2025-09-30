@@ -13,7 +13,7 @@ const props = defineModels<{
   selection?: number[],
 }>();
 
-let { title, loading, columns, data, selection, tableProps } = $(props);
+const { title, loading, columns, data, selection, tableProps } = $(props);
 
 const emit = defineEmits<{
   (event: 'draggedRow', draggedRow: number, draggedOverRow: number): void,

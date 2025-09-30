@@ -58,6 +58,7 @@ watchEffect(() => {
 });
 
 </script>
+
 <template>
   <div class="form">
     <label v-text="label"/>
@@ -70,6 +71,7 @@ watchEffect(() => {
     <NicerForm v-if="currentVariant && variants[currentVariant]?.fields" :key="currentVariant" v-model="formValue" :fields="variants[currentVariant].fields"/>
   </div>
 </template>
+
 <style scoped>
 .pillbar {
   flex-flow: nowrap;

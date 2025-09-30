@@ -1,5 +1,9 @@
 <script setup lang="ts">
-const props = withDefaults(defineProps<{ modelValue: boolean}>(), { modelValue: false });
+const props = withDefaults(defineProps<{
+  modelValue: boolean,
+}>(), {
+  modelValue: false,
+});
 const emit = defineEmits<{(e: 'update:modelValue', value: boolean): void}>();
 
 let modelValue = $ref(false);

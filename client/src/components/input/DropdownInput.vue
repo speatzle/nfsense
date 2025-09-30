@@ -169,6 +169,7 @@ function handleKeydown(e: KeyboardEvent) {
   }
 }
 </script>
+
 <template>
   <div ref="inputDiv" :class="{'multiselect': 1, 'cl-secondary': 1, expanded}"
        @keydown="handleKeydown"
@@ -203,6 +204,7 @@ function handleKeydown(e: KeyboardEvent) {
     </Transition>
   </div>
 </template>
+
 <style scoped>
 * { border: none; }
 .selection, .searchbar, .dropdown {

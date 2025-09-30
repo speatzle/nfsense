@@ -37,6 +37,7 @@ watch(() => props.options, (val) => { if (!equals(val, options)) options = val; 
 watch($$(options), (val) => { if(!equals(val, props.options)) emit('update:options', options); }, { deep: true });
 
 </script>
+
 <template>
   <DropdownInput v-model="modelValue" :multiple="false" :options="options" :search-provider="searchProvider"/>
 </template>

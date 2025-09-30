@@ -1,12 +1,16 @@
 <script setup lang="ts">
-
-const props = defineModels<{
-  modelValue?: number,
+const props = withDefaults(defineProps<{
+  modelValue: number,
   min?: number,
   max?: number,
-}>();
-const { modelValue, min, max } = $(props);
+}>(), {
+  modelValue: 0,
+});
+const emit = defineEmits<{(e: 'update:modelValue', value: number): void}>();
 
+let modelValue = $ref(0);
+watch(() => props.modelValue, (val) => { if (val !== modelValue) modelValue = val; });
+watch($$(modelValue), (val) => emit('update:modelValue', val));
 </script>
 
 <template>

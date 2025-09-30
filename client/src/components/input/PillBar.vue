@@ -2,11 +2,11 @@
 import { Index, MaybeIndex } from '../../util';
 
 const props = withDefaults(defineProps<{
+  modelValue: MaybeIndex,
   options: Record<Index, {
     display?: string,
     icon?: Component,
   }>,
-  modelValue: MaybeIndex,
 }>(), {
   options: () => ({}),
 });
@@ -21,6 +21,7 @@ watch(() => props.modelValue, (val) => { if (val !== modelValue) modelValue = va
 watch($$(modelValue), (val) => emit('update:modelValue', val));
 
 </script>
+
 <template>
   <div>
     <button v-for="[index, option] of Object.entries(options)" :key="index" class="option" :class="{selected: modelValue === index}" @click="() => modelValue = index">

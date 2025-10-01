@@ -26,6 +26,7 @@ export type Fields = Record<Index, Field>;
 // --- ENUM INPUT ---
 export type Variant = {
   fields?: Fields,
+  default?: Record<Index, any>,
   display?: string,
   icon?: Component
 };

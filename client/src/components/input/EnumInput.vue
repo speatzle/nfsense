@@ -1,74 +1,70 @@
 <script setup lang="ts">
-import type { MaybeEnumValue, Variants, EnumValueWithFields } from './input';
-import { equals, variantOf, MaybeIndex, Index } from '~/util';
+import type { MaybeEnumValue, Variants } from './input';
+import { equals, variantOf, Index } from '~/util';
 
 const props = withDefaults(defineProps<{
   // Two-Way Bindings
   modelValue?: MaybeEnumValue,
+  default?: MaybeEnumValue,
 
   // One-Way Bindings
   variants?: Variants,
   label?: string,
 }>(), {
-  modelValue: null,
+  default: null,
   variants: () => ({}),
   label: '',
 });
-const { variants } = $(props);
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: MaybeEnumValue): void
 }>();
 
+function getDefault() {
+  if (!props.default || typeof props.default !== 'object') return props.default;
+  else return Object.assign({}, props.default);
+}
+
 // Local Variables for Two-Way bindings
-let modelValue = $ref(null as MaybeEnumValue);
+let mVal = $ref(props.modelValue !== undefined ? props.modelValue : getDefault());
+const firstVariant = Object.keys(props.variants)[0];
+const currentVariant = $computed(() => variantOf(mVal));
+const savedVariants = $ref({} as Record<Index, Record<Index, any>>);
+if (!mVal && firstVariant) changeVariant(firstVariant);
 // Sync from v-model
 onMounted(() => {
   watch(() => props.modelValue, (val) => {
-    if (equals(val, modelValue)) return;
-    [currentVariant, formValue] = val ?
-      typeof val === 'string'
-        ? [val, {}]
-        : [Object.keys(val)[0], (val as EnumValueWithFields)[Object.keys(val)[0]]]
-      : [null, {}];
-    if (modelValue && typeof val === 'object' && typeof modelValue === 'object') modelValue = Object.assign(modelValue, val);
-    else modelValue = val;
+    if (equals(val, mVal)) return;
+    const oldVariant = variantOf(mVal);
+    if (mVal && typeof mVal === 'object' && oldVariant) savedVariants[oldVariant] = mVal[oldVariant];
+    mVal = val !== undefined ? val : getDefault();
   }, { deep: true, immediate: true });
 });
 // Sync to v-model
-watch($$(modelValue), (val, oldVal) => {
-  if (equals(val, props.modelValue)) return;
-  const [oldVariant, newVariant] = [variantOf(oldVal), variantOf(val)];
-  // Wipe variant values if variant definitions change
-  if (typeof val === 'object'
-    && val && newVariant && oldVariant
-    && !equals(props.variants[newVariant].fields, props.variants[oldVariant].fields))
-    val[newVariant] = formValue = {};
-  emit('update:modelValue', typeof val === 'string' ? val : Object.assign({}, val));
-}, { deep: true });
+watch($$(mVal), () => {
+  if (equals(mVal, props.modelValue)) return;
+  if (mVal !== undefined) emit('update:modelValue', mVal);
+}, { deep: true, immediate: true });
 
-let currentVariant: MaybeIndex = $ref(null);
-let formValue: Record<Index, any> = $ref({});
+function changeVariant(variant: Index) {
+  const oldVariant = variantOf(mVal);
+  if (mVal && typeof mVal === 'object' && oldVariant) savedVariants[oldVariant] = mVal[oldVariant];
 
-watchEffect(() => {
-  if (!currentVariant) modelValue = null;
-  else modelValue = variants[currentVariant].fields
-    ? { [currentVariant]: formValue ?? {} }
-    : currentVariant;
-});
-
+  if (!variant || !props.variants[variant].fields) return void(mVal = variant);
+  mVal = { [variant]: savedVariants[variant] ?? Object.assign({}, props.variants[variant].default) ?? null };
+}
 </script>
 
 <template>
   <div class="form">
     <label v-text="label"/>
     <div class="pillbar">
-      <button v-for="[index, variant] of Object.entries(variants)" :key="index" :class="{selected: currentVariant === index}" @click="() => currentVariant = index">
+      <button v-for="[index, variant] of Object.entries(props.variants)" :key="index" :class="{selected: currentVariant === index}" @click="() => changeVariant(index)">
         <component :is="variant.icon" v-if="variant.icon"/>
         <template v-else>{{ variant.display }}</template>
       </button>
     </div>
-    <NicerForm v-if="currentVariant && variants[currentVariant]?.fields" :key="currentVariant" v-model="formValue" :fields="variants[currentVariant].fields"/>
+    <NicerForm v-if="mVal && typeof mVal === 'object' && currentVariant" :key="currentVariant" v-model="mVal[currentVariant]" :fields="props.variants[currentVariant].fields"/>
   </div>
 </template>
 

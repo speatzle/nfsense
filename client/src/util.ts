@@ -15,10 +15,10 @@ export function isNullish(value: any) {
   return (value === null || value === undefined);
 }
 
-export function variantOf(enumValue: any) {
-  if (enumValue === null) return null;
+export function variantOf(enumValue: any): MaybeIndex {
+  if (isNullish(enumValue)) return null;
   if (typeof enumValue === 'string') return enumValue;
-  else return Object.entries(enumValue)[0][0];
+  return Object.keys(enumValue)[0];
 }
 
 export type Index = string | number | symbol;

@@ -2,7 +2,7 @@
 :root {
   font-family: sans-serif;
   line-height: 1;
-  user-select: none; 
+  user-select: none;
 }
 
 * {
@@ -36,4 +36,8 @@ ul, ol {
 /* Fix text getting cut off unpredictably */
 h1, h2, h3, h4, h5, h6, pre, p, label, legend {
   overflow: visible;
+}
+
+#__vue-devtools-container__, #__vue-devtools-container__ * {
+  overflow: unset;
 }

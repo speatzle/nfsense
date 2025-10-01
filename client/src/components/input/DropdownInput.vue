@@ -36,9 +36,7 @@ let options = $ref(props.options);
 // Sync from v-model
 onMounted(() => {
   watch(() => props.modelValue, async (val) => {
-    if (equals(val, modelValue)) return;
     if (isNullish(val)) return modelValue = val; // Cant be unknown
-
     // Run search provider if key unknown, log and reject if still so
     let knownKeys = Object.keys(options);
     if (multiple) {
@@ -57,6 +55,7 @@ onMounted(() => {
       if (!knownKeys.includes(val.toString()))
         return console.warn('Unknown key in DropdownInput:', val/*, options*/);
     }
+    if (equals(val, modelValue)) return;
     modelValue = val;
   }, { deep: true, immediate: true });
   watch(() => props.search, (val) => { if (!equals(val, search)) search = val; }, { deep: true });
@@ -178,7 +177,7 @@ function handleKeydown(e: KeyboardEvent) {
     <div class="head">
       <div v-if="multiple" class="selection">
         <div v-for="(key, index) of modelValue as Index[]" :key="key" :class="{navigated: selCount + navigated === index}" @click="() => toggle(key)"
-             v-text="options[key].display"/>
+             v-text="options[key]?.display"/>
       </div>
       <div class="searchbar">
         <div class="expand button" :tabindex="expanded ? undefined : -1">

@@ -1,19 +1,20 @@
 <script setup lang="ts">
 const props = withDefaults(defineProps<{
-  modelValue: boolean,
+  modelValue?: boolean,
+  default?: boolean,
 }>(), {
-  modelValue: false,
+  default: false,
 });
 const emit = defineEmits<{(e: 'update:modelValue', value: boolean): void}>();
 
-let modelValue = $ref(false);
-watch(() => props.modelValue, (val) => { if (val !== modelValue) modelValue = val; });
-watch($$(modelValue), (val) => emit('update:modelValue', val));
+let mVal = $ref(props.modelValue ?? props.default);
+watch(() => props.modelValue, (val) => { if (val !== mVal) mVal = val; });
+watch($$(mVal), (val) => emit('update:modelValue', val), { immediate: true });
 </script>
 
 <template>
-  <div tabindex="0" @click="() => modelValue = !modelValue" @keypress="() => modelValue = !modelValue">
-    <i-material-symbols-check-box-outline v-if="modelValue"/>
+  <div tabindex="0" @click="() => mVal = !mVal" @keypress="() => mVal = !mVal">
+    <i-material-symbols-check-box-outline v-if="mVal"/>
     <i-material-symbols-check-box-outline-blank v-else/>
   </div>
 </template>

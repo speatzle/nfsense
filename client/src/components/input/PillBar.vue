@@ -2,12 +2,14 @@
 import { Index, MaybeIndex } from '../../util';
 
 const props = withDefaults(defineProps<{
-  modelValue: MaybeIndex,
+  modelValue?: MaybeIndex,
+  default?: MaybeIndex,
   options: Record<Index, {
     display?: string,
     icon?: Component,
   }>,
 }>(), {
+  default: null,
   options: () => ({}),
 });
 const { options } = $(props);
@@ -16,9 +18,9 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: MaybeIndex): void,
 }>();
 
-let modelValue: MaybeIndex = $ref(null);
-watch(() => props.modelValue, (val) => { if (val !== modelValue) modelValue = val; });
-watch($$(modelValue), (val) => emit('update:modelValue', val));
+let modelValue = $ref(props.modelValue !== undefined ? props.modelValue : props.default);
+watch(() => props.modelValue, (val) => { if (val !== modelValue) modelValue = val !== undefined ? val : props.default; });
+watch($$(modelValue), (val) => emit('update:modelValue', val), { immediate: true });
 
 </script>
 

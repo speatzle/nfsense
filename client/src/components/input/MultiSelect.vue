@@ -5,6 +5,7 @@ import { Options, MaybeSearchProvider } from './input';
 const props = withDefaults(defineProps<{
   // Two-Way Bindings (v-model)
   modelValue?: Index[],
+  default?: Index[],
   search?: string,
   options?: Options,
 
@@ -12,7 +13,7 @@ const props = withDefaults(defineProps<{
   searchProvider?: MaybeSearchProvider,
   placeholder?: string,
 }>(), {
-  modelValue: () => [],
+  default: () => [],
   search: '',
   options: () => ({}),
   searchProvider: null,
@@ -26,18 +27,17 @@ const emit = defineEmits<{
 }>();
 
 // Hook up two-way bindings
-let modelValue: Index[] = $ref([]);
-watch(() => props.modelValue, (val) => { if (!equals(val, modelValue)) modelValue = val; }, { deep: true });
-watch($$(modelValue), (val) => { if(!equals(val, props.modelValue)) emit('update:modelValue', modelValue); }, { deep: true });
+let mVal = $ref(props.modelValue ?? props.default);
+watch(() => props.modelValue, (val) => { if (!equals(val, mVal)) mVal = val ?? props.default; }, { deep: true });
+watch($$(mVal), (val) => { if(!equals(val, props.modelValue)) emit('update:modelValue', mVal); }, { deep: true, immediate: true });
 let search = $ref(props.search);
 watch(() => props.search, (val) => { if (!equals(val, search)) search = val; }, { deep: true });
 watch($$(search), (val) => { if(!equals(val, props.search)) emit('update:search', search); }, { deep: true });
 let options = $ref(props.options);
 watch(() => props.options, (val) => { if (!equals(val, options)) options = val; }, { deep: true });
 watch($$(options), (val) => { if(!equals(val, props.options)) emit('update:options', options); }, { deep: true });
-
 </script>
 
 <template>
-  <DropdownInput v-model="modelValue" :multiple="true" :options="options" :search-provider="searchProvider"/>
+  <DropdownInput v-model="mVal" :multiple="true" :options="options" :search-provider="searchProvider"/>
 </template>

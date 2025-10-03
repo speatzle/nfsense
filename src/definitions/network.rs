@@ -11,6 +11,8 @@ pub struct Network {
     pub interfaces: Vec<NetworkInterface>,
     #[garde(dive)]
     pub static_routes: Vec<StaticRoute>,
+    #[garde(dive)]
+    pub virtual_routers: Vec<VirtualRouter>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
@@ -23,6 +25,7 @@ pub struct NetworkInterface {
     pub comment: String,
     pub interface_type: NetworkInterfaceType,
     pub addressing_mode: AddressingMode,
+    pub virtual_router: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -64,4 +67,16 @@ pub struct StaticRoute {
 #[garde(allow_unvalidated)]
 pub struct Link {
     pub name: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Validate, Debug)]
+#[garde(context(Config))]
+#[garde(allow_unvalidated)]
+pub struct VirtualRouter {
+    #[garde(custom(validation::validate_name))]
+    pub name: String,
+    // Is limited to u16 even though the kernel supports u32 since conntrack zones are limited to u16
+    // TODO limit more for reserved values
+    pub table_id: u16,
+    pub comment: String,
 }

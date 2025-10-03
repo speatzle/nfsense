@@ -1,0 +1,6 @@
+[NetDev]
+Name={{ name }}
+Kind=vrf
+
+[VRF]
+Table={{ table_id }}

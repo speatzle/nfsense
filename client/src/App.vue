@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { authenticate, logout, checkAuthentication, setup } from './api';
 
-// Icons
+// Icons https://icon-sets.iconify.design/?query=system
 import IDashboard from '~icons/ri/dashboard-2-line';
 import IRule from '~icons/material-symbols/rule-folder-outline-sharp';
 import IAddress from '~icons/eos-icons/ip';
@@ -22,6 +22,10 @@ import IList from '~icons/material-symbols/format-list-bulleted';
 import IFirewall from '~icons/mdi/wall-fire';
 import INetwork from '~icons/mdi/lan';
 import IVPN from '~icons/mdi/vpn';
+import IRouter from '~icons/mdi/router';
+import ISettings from '~icons/material-symbols/settings';
+
+
 
 enum NavState { Open, Reduced, Collapsed };
 const NavStateCount = 3;
@@ -39,6 +43,7 @@ const navRoutesNew = [
   { caption: 'Network', icon: INetwork, children: [
     { caption: 'Interfaces', icon: IEthernet, href: '/network/interfaces' },
     { caption: 'Static Routes', icon: IStaticRoutes, href: '/network/static_routes' },
+    { caption: 'Virtual Routers', icon: IRouter, href: '/network/virtual_routers' },
   ] },
   { caption: 'Objects', icon: IList, children: [
     { caption: 'Addresses', icon: IAddress, href: '/object/addresses' },

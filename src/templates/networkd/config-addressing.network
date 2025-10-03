@@ -11,6 +11,9 @@ DHCP=yes
 {% for vlan in vlans -%}
 VLAN={{ vlan }}
 {% endfor -%}
+{% if interface.virtual_router -%}
+VRF={{ interface.virtual_router }}
+{% endif -%}
 
 {% for static_route in static_routes %}
 [Route]

@@ -1,6 +1,7 @@
 use super::ApplyError;
 use crate::definitions::config::Config;
 use crate::definitions::firewall::{SNATType, Verdict};
+use crate::definitions::network::NetworkInterfaceType;
 use crate::definitions::object::{Address, AddressType, PortDefinition, Service, ServiceType};
 use nftables::expr;
 use nftables::expr::Payload::PayloadField;
@@ -11,7 +12,6 @@ use nftables::stmt;
 use nftables::stmt::{Operator, Statement};
 use nftables::types::{NfChainPolicy, NfChainType, NfFamily, NfHook};
 use nftables::{batch::Batch, helper, schema};
-use std::collections::HashSet;
 use std::io::Write;
 use std::process::Command;
 use tracing::{error, info};
@@ -275,6 +275,52 @@ pub fn apply_nftables(pending_config: Config, _current_config: Config) -> Result
     // check if there are currently counters which should not exist and delete them
     // dont compare current and pending config since this might be a revert and the current config might not be correct or some other leftover state
     let mut counters: Vec<String> = vec![];
+
+    // Zone Chain, used to set the conntrack zone of traffic based on the interface it came from.
+    // This is necessary since conntrack otherwise might mixup connections with the same ip/port in different virtual routers
+    // Input Chain
+    batch.add(NfListObject::Chain(schema::Chain {
+        family: NfFamily::INet,
+        table: "nfsense_inet".into(),
+        name: "ct_zone".into(),
+        _type: Some(NfChainType::Filter),
+        hook: Some(NfHook::Prerouting),
+        prio: Some(-300),
+        ..Default::default()
+    }));
+
+    for interface in pending_config.clone().network.interfaces {
+        if let Some(vr) = interface.virtual_router(pending_config.clone()) {
+            let mut ifname = interface.name;
+            if let NetworkInterfaceType::Hardware { device } = interface.interface_type {
+                ifname = device;
+            }
+            batch.add(NfListObject::Rule(schema::Rule {
+                family: NfFamily::INet,
+                table: "nfsense_inet".into(),
+                chain: "ct_zone".into(),
+                comment: Some("Set CT zone to vrf".into()),
+                expr: vec![
+                    Statement::Match(stmt::Match {
+                        left: Expression::Named(NamedExpression::Meta(expr::Meta {
+                            key: MetaKey::Iifname,
+                        })),
+                        right: Expression::String(ifname.into()),
+                        op: Operator::EQ,
+                    }),
+                    Statement::Mangle(stmt::Mangle {
+                        key: Expression::Named(NamedExpression::CT(CT {
+                            key: "zone".into(),
+                            ..Default::default()
+                        })),
+                        value: Expression::Number(vr.table_id as u32),
+                    }),
+                ]
+                .into(),
+                ..Default::default()
+            }));
+        }
+    }
 
     // Input Chain
     batch.add(NfListObject::Chain(schema::Chain {

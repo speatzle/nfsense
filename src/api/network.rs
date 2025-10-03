@@ -1,7 +1,7 @@
 use super::ApiError;
 use crate::{
     create_thing,
-    definitions::network::{Link, NetworkInterface, StaticRoute},
+    definitions::network::{Link, NetworkInterface, StaticRoute, VirtualRouter},
     delete_thing_by_index, delete_thing_by_name, get_thing_by_index, get_thing_by_name,
     list_things,
     state::RpcState,
@@ -82,6 +82,41 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
     module
         .register_method("network.links.list", list_network_links)
+        .unwrap();
+
+    module
+        .register_method(
+            "network.virtual_routers.get",
+            get_thing_by_index!(network.virtual_routers),
+        )
+        .unwrap();
+
+    module
+        .register_method::<Result<Vec<VirtualRouter>, ApiError>, _>(
+            "network.virtual_routers.list",
+            list_things!(network.virtual_routers),
+        )
+        .unwrap();
+
+    module
+        .register_method(
+            "network.virtual_routers.create",
+            create_thing!(network.virtual_routers, VirtualRouter),
+        )
+        .unwrap();
+
+    module
+        .register_method(
+            "network.virtual_routers.update",
+            update_thing_by_index!(network.virtual_routers, VirtualRouter),
+        )
+        .unwrap();
+
+    module
+        .register_method(
+            "network.virtual_routers.delete",
+            delete_thing_by_index!(network.virtual_routers),
+        )
         .unwrap();
 }
 

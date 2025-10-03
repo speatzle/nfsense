@@ -34,6 +34,17 @@ const GetAddresses: SearchProvider = async (_) => {
   }
 };
 
+const GetVirtualRouters: SearchProvider = async (_) => {
+  const res = await apiCall('network.virtual_routers.list', {});
+  if (res.Error === null) {
+    console.debug('virtual_routers', res.Data);
+    return Object.fromEntries(res.Data.map((r: any) => [r.name, { display: r.name }]));
+  } else {
+    console.debug('error', res);
+    return {} as Options;
+  }
+};
+
 const GetServices: SearchProvider = async (_) => {
   const res = await apiCall('object.services.list', {});
   if (res.Error === null) {
@@ -274,6 +285,7 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
           },
           'dhcp': { display: 'DHCP' },
         } } },
+        virtual_router: { is: 'SingleSelect', label: 'Virtual Router', props: { searchProvider: GetVirtualRouters } },
         comment: { is: 'MultilineTextBox', label: 'Comment' },
       },
     },
@@ -286,6 +298,15 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
         gateway: { is: 'TextBox', label: 'Gateway' },
         destination: { is: 'TextBox', label: 'Destination' },
         metric: { is: 'NumberBox', label: 'Metric' },
+        comment: { is: 'MultilineTextBox', label: 'Comment' },
+      },
+    },
+    'virtual_routers': {
+      name: 'Virtual Routers',
+      idType: 'Number',
+      fields: {
+        name: { is: 'TextBox', label: 'Name' },
+        table_id: { is: 'NumberBox', label: 'Table ID' },
         comment: { is: 'MultilineTextBox', label: 'Comment' },
       },
     },

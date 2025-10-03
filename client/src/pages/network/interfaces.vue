@@ -19,6 +19,7 @@ const columns = [
   { heading: 'Vlan ID', path: 'interface_type.vlan.id' },
   { heading: 'Bond Members', path: 'interface_type.bond.members', component: markRaw(ArrayDisplay), componentProp: 'data' },
   { heading: 'Bridge Members', path: 'interface_type.bridge.members', component: markRaw(ArrayDisplay), componentProp: 'data' },
+  { heading: 'Virtual Router', path: 'virtual_router' },
   { heading: 'Comment', path: 'comment' },
 ];
 

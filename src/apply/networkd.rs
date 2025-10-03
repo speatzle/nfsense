@@ -69,6 +69,19 @@ pub fn generate_networkd_config_files(
 ) -> Result<Vec<File>, ApplyError> {
     let mut files = Vec::new();
 
+    // Step 0 Generate vrf netdev files
+    for virtual_router in &pending_config.network.virtual_routers {
+        let mut context = Context::new();
+        context.insert("name", &virtual_router.name);
+        context.insert("table_id", &virtual_router.table_id);
+
+        files.push(generate_config_file(
+            context,
+            "networkd/create-vrf.netdev",
+            format!("05-create-vrf-{}.netdev", &virtual_router.name),
+        )?);
+    }
+
     // Step 1 Generate vlan netdev files
     for interface in &pending_config.network.interfaces {
         if let NetworkInterfaceType::Vlan { id, .. } = &interface.interface_type {

@@ -112,4 +112,8 @@ macro_db!(
         ->
         vpn::WireguardPeer
     },
+    {
+      [ O: virtual_router, network::NetworkInterface, network.virtual_routers; network.interfaces ()],
+      -> network::VirtualRouter
+    },
 );

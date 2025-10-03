@@ -6,7 +6,7 @@ cd /root
 
 echo "Installing Required Packages from Repos"
 apt update
-DEBIAN_FRONTEND=noninteractive apt install tcpdump kea unbound chrony wireguard-tools tar ulogd2 ulogd2-json -y
+DEBIAN_FRONTEND=noninteractive apt install tcpdump kea unbound chrony wireguard-tools tar ulogd2 ulogd2-json conntrack -y
 
 echo "Installing Required Dev Packages from Repos"
 DEBIAN_FRONTEND=noninteractive apt install curl git nodejs gcc pkg-config libssl-dev -y

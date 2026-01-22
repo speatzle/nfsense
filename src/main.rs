@@ -6,7 +6,7 @@ use std::{
 };
 
 use crate::state::RpcState;
-use axum::{middleware, response::IntoResponse, Router};
+use axum::{middleware, Router};
 use axum_reverse_proxy::ReverseProxy;
 use axum_server::tls_openssl::OpenSSLConfig;
 use config_manager::ConfigManager;

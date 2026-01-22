@@ -1,5 +1,3 @@
-use jsonrpsee::RpcModule;
-
 use super::config_manager::ConfigManager;
 use super::web::auth::SessionState;
 

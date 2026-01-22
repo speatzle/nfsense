@@ -149,7 +149,7 @@ impl ConfigManager {
         Ok(())
     }
 
-    pub fn start_transaction(&mut self) -> ConfigTransaction {
+    pub fn start_transaction(&mut self) -> ConfigTransaction<'_> {
         let data = self.shared_data.lock().unwrap();
 
         ConfigTransaction {

@@ -1,7 +1,7 @@
 use super::ApiError;
 use crate::{
     create_thing,
-    definitions::network::{Link, NetworkInterface, StaticRoute, VirtualRouter},
+    definitions::network::{Link, NetworkInterface, PolicyRoute, StaticRoute, VirtualRouter},
     delete_thing_by_index, delete_thing_by_name, get_thing_by_index, get_thing_by_name,
     list_things,
     state::RpcState,
@@ -116,6 +116,41 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .register_method(
             "network.virtual_routers.delete",
             delete_thing_by_index!(network.virtual_routers),
+        )
+        .unwrap();
+
+    module
+        .register_method(
+            "network.policy_routes.get",
+            get_thing_by_index!(network.policy_routes),
+        )
+        .unwrap();
+
+    module
+        .register_method::<Result<Vec<PolicyRoute>, ApiError>, _>(
+            "network.policy_routes.list",
+            list_things!(network.policy_routes),
+        )
+        .unwrap();
+
+    module
+        .register_method(
+            "network.policy_routes.create",
+            create_thing!(network.policy_routes, PolicyRoute),
+        )
+        .unwrap();
+
+    module
+        .register_method(
+            "network.policy_routes.update",
+            update_thing_by_index!(network.policy_routes, PolicyRoute),
+        )
+        .unwrap();
+
+    module
+        .register_method(
+            "network.policy_routes.delete",
+            delete_thing_by_index!(network.policy_routes),
         )
         .unwrap();
 }

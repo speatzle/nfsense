@@ -44,6 +44,7 @@ const navRoutesNew = [
   { caption: 'Network', icon: INetwork, children: [
     { caption: 'Interfaces', icon: IEthernet, href: '/network/interfaces' },
     { caption: 'Static Routes', icon: IStaticRoutes, href: '/network/static_routes' },
+    { caption: 'Policy Routes', icon: IStaticRoutes, href: '/network/policy_routes' },
     { caption: 'Virtual Routers', icon: IRouter, href: '/network/virtual_routers' },
   ] },
   { caption: 'Objects', icon: IList, children: [

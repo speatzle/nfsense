@@ -5,6 +5,7 @@ use super::firewall;
 use super::firewall::SNATType;
 use super::network;
 use super::network::NetworkInterfaceType;
+use super::network::RouteAction;
 use super::object;
 use super::object::AddressType;
 use super::object::ServiceType;
@@ -72,6 +73,10 @@ macro_db!(
         [ M: allowed_ips, vpn::WireguardPeer, object.addresses; vpn.wireguard.peers ()],
         [ O: endpoint, vpn::WireguardPeer, object.addresses; vpn.wireguard.peers ()],
 
+        // PolicyRoute
+        [ M: source_addresses, network::PolicyRoute, object.addresses; network.policy_routes ()],
+        [ M: destination_addresses, network::PolicyRoute, object.addresses; network.policy_routes ()],
+
         ->
         object::Address
     },
@@ -111,6 +116,10 @@ macro_db!(
         [ E: parent, network::NetworkInterface, network.interfaces; network.interfaces (interface_type, NetworkInterfaceType, Vlan, vlan_parent)],
         [ EM: members, network::NetworkInterface, network.interfaces; network.interfaces (interface_type, NetworkInterfaceType, Bond, bond_members)],
         [ EM: members, network::NetworkInterface, network.interfaces; network.interfaces (interface_type, NetworkInterfaceType, Bridge, bridge_members)],
+
+        // PolicyRoute
+        [ M: source_interfaces, network::PolicyRoute, network.interfaces; network.policy_routes ()],
+
         ->
         network::NetworkInterface
     },
@@ -121,7 +130,12 @@ macro_db!(
         vpn::WireguardPeer
     },
     {
-      [ O: virtual_router, network::NetworkInterface, network.virtual_routers; network.interfaces ()],
-      -> network::VirtualRouter
+        // Interface
+        [ O: virtual_router, network::NetworkInterface, network.virtual_routers; network.interfaces ()],
+
+        // PolicyRoute
+        [ S: source_virtual_router, network::PolicyRoute, network.virtual_routers; network.policy_routes ()],
+        [ E: virtual_router, network::PolicyRoute, network.virtual_routers; network.policy_routes (action, RouteAction, VirtualRouter, destination_virtual_router)],
+        -> network::VirtualRouter
     },
 );

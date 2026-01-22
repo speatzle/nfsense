@@ -12,6 +12,8 @@ pub struct Network {
     #[garde(dive)]
     pub static_routes: Vec<StaticRoute>,
     #[garde(dive)]
+    pub policy_routes: Vec<PolicyRoute>,
+    #[garde(dive)]
     pub virtual_routers: Vec<VirtualRouter>,
 }
 
@@ -60,6 +62,34 @@ pub struct StaticRoute {
     pub destination: String,
     pub metric: u64,
     pub comment: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Validate, Debug)]
+#[garde(context(Config))]
+#[garde(allow_unvalidated)]
+pub struct PolicyRoute {
+    pub name: String,
+    pub source_virtual_router: String,
+    pub source_interfaces: Vec<String>,
+    pub services: Vec<String>,
+    pub source_addresses: Vec<String>,
+    pub negate_source: bool,
+    pub destination_addresses: Vec<String>,
+    pub negate_destination: bool,
+    pub comment: String,
+    pub counter: bool,
+    pub log: bool,
+    pub action: RouteAction,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "snake_case")]
+pub enum RouteAction {
+    Gateway { address: String },
+    Interface { interface: String, gateway: String },
+    VirtualRouter { virtual_router: String },
+    Blackhole,
+    StopPolicyRouting,
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]

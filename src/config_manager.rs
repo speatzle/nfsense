@@ -199,17 +199,19 @@ pub fn generate_default_config(path: &str) -> Result<(), ConfigError> {
     });
     // Rule to allow Webinterface and SSH access after installation
     // TODO Restrict to Private Networks and nessesary ports once default Adresses and Services exist
-    conf.firewall.inbound_rules.push(crate::definitions::firewall::InboundRule {
-        name: "Default Allow Inbound".to_string(),
-        services: vec![],
-        source_addresses: vec![],
-        negate_source: false,
-        destination_addresses: vec![],
-        negate_destination: false,
-        comment: "Default Allow Inbound".to_string(),
-        counter: true,
-        log: true,
-        verdict: crate::definitions::firewall::Verdict::Accept,
-    });
+    conf.firewall
+        .inbound_rules
+        .push(crate::definitions::firewall::InboundRule {
+            name: "Default Allow Inbound".to_string(),
+            services: vec![],
+            source_addresses: vec![],
+            negate_source: false,
+            destination_addresses: vec![],
+            negate_destination: false,
+            comment: "Default Allow Inbound".to_string(),
+            counter: true,
+            log: true,
+            verdict: crate::definitions::firewall::Verdict::Accept,
+        });
     write_config_to_file(path, conf)
 }

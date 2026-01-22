@@ -24,6 +24,7 @@ import INetwork from '~icons/mdi/lan';
 import IVPN from '~icons/mdi/vpn';
 import IRouter from '~icons/mdi/router';
 import ISettings from '~icons/material-symbols/settings';
+import IShield from '~icons/mdi/shield-outline';
 
 
 
@@ -38,7 +39,7 @@ const navRoutesNew = [
     { caption: 'Rules', icon: IRule, href: '/firewall/forward_rules' },
     { caption: 'SNAT', icon: ISNAT, href: '/firewall/source_nat_rules' },
     { caption: 'DNAT', icon: IDNAT, href: '/firewall/destination_nat_rules' },
-    { caption: 'Inbound', icon: IRule, href: '/firewall/inbound_rules' },
+    { caption: 'Inbound', icon: IShield, href: '/firewall/inbound_rules' },
   ] },
   { caption: 'Network', icon: INetwork, children: [
     { caption: 'Interfaces', icon: IEthernet, href: '/network/interfaces' },

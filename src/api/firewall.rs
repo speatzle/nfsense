@@ -1,7 +1,7 @@
 use super::ApiError;
 use crate::{
     create_thing,
-    definitions::firewall::{DestinationNATRule, ForwardRule, SourceNATRule},
+    definitions::firewall::{DestinationNATRule, ForwardRule, InboundRule, SourceNATRule},
     delete_thing_by_index, get_thing_by_index, list_things,
     state::RpcState,
     update_thing_by_index,
@@ -111,6 +111,41 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .register_method(
             "firewall.source_nat_rules.delete",
             delete_thing_by_index!(firewall.source_nat_rules),
+        )
+        .unwrap();
+
+    module
+        .register_method(
+            "firewall.inbound_rules.get",
+            get_thing_by_index!(firewall.inbound_rules),
+        )
+        .unwrap();
+
+    module
+        .register_method::<Result<Vec<InboundRule>, ApiError>, _>(
+            "firewall.inbound_rules.list",
+            list_things!(firewall.inbound_rules),
+        )
+        .unwrap();
+
+    module
+        .register_method(
+            "firewall.inbound_rules.create",
+            create_thing!(firewall.inbound_rules, InboundRule),
+        )
+        .unwrap();
+
+    module
+        .register_method(
+            "firewall.inbound_rules.update",
+            update_thing_by_index!(firewall.inbound_rules, InboundRule),
+        )
+        .unwrap();
+
+    module
+        .register_method(
+            "firewall.inbound_rules.delete",
+            delete_thing_by_index!(firewall.inbound_rules),
         )
         .unwrap();
 }

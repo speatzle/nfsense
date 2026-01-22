@@ -51,6 +51,10 @@ macro_db!(
         [ M: destination_addresses, firewall::SourceNATRule, object.addresses; firewall.source_nat_rules ()],
         [ EO: address, firewall::SourceNATRule, object.addresses; firewall.source_nat_rules (snat_type, SNATType, SNAT, address)],
 
+        // InboundRule
+        [ M: source_addresses, firewall::InboundRule, object.addresses; firewall.inbound_rules ()],
+        [ M: destination_addresses, firewall::InboundRule, object.addresses; firewall.inbound_rules ()],
+
         // StaticRoutes
         [ S: gateway, network::StaticRoute, object.addresses; network.static_routes ()],
         [ S: destination, network::StaticRoute, object.addresses; network.static_routes ()],
@@ -83,6 +87,10 @@ macro_db!(
         [ M: services, firewall::SourceNATRule, object.services; firewall.source_nat_rules ()],
         [ EO: service, firewall::SourceNATRule, object.services; firewall.source_nat_rules (snat_type, SNATType, SNAT, service)],
         [ EM: members, object::Service, object.services; object.services (service_type, ServiceType, Group, members)],
+
+        // InboundRule
+        [ M: services, firewall::InboundRule, object.services; firewall.inbound_rules ()],
+
         ->
         object::Service
     },

@@ -219,6 +219,8 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
         name: { is: 'TextBox', label: 'Name' },
         source_addresses: { is: 'MultiSelect', label: 'Source', props: { searchProvider: GetAddresses } },
         negate_source: { is: 'CheckBox', label: 'Negate Source' },
+        destination_addresses: { is: 'MultiSelect', label: 'Destination', props: { searchProvider: GetAddresses } },
+        negate_destination: { is: 'CheckBox', label: 'Negate Destination' },
         services: { is: 'MultiSelect', label: 'Services', props: { searchProvider: GetServices } },
         verdict: { is: 'EnumInput', label: 'Verdict', props: { variants: {
           'accept': { display: 'Accept' },
@@ -233,6 +235,8 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
         name:'',
         source_addresses: [],
         negate_source: false,
+        destination_addresses: [],
+        negate_destination: false,
         services: [],
         verdict: 'accept',
         counter: true,

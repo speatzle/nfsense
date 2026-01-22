@@ -11,6 +11,8 @@ pub struct Firewall {
     pub destination_nat_rules: Vec<DestinationNATRule>,
     #[garde(dive)]
     pub source_nat_rules: Vec<SourceNATRule>,
+    #[garde(dive)]
+    pub inbound_rules: Vec<InboundRule>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Validate, Debug)]
@@ -62,6 +64,22 @@ pub struct SourceNATRule {
     pub counter: bool,
     pub log: bool,
     pub snat_type: SNATType,
+}
+
+#[derive(Serialize, Deserialize, Clone, Validate, Debug)]
+#[garde(context(Config))]
+#[garde(allow_unvalidated)]
+pub struct InboundRule {
+    pub name: String,
+    pub services: Vec<String>,
+    pub source_addresses: Vec<String>,
+    pub negate_source: bool,
+    pub destination_addresses: Vec<String>,
+    pub negate_destination: bool,
+    pub comment: String,
+    pub counter: bool,
+    pub log: bool,
+    pub verdict: Verdict,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

@@ -384,15 +384,60 @@ pub fn apply_nftables(pending_config: Config, _current_config: Config) -> Result
         ..Default::default()
     }));
 
-    // Inbound temp allow all, Inbound rules should go here
-    batch.add(NfListObject::Rule(schema::Rule {
-        family: NfFamily::INet,
-        table: "nfsense_inet".into(),
-        chain: "inbound".into(),
-        comment: Some("Temp Allow all".into()),
-        expr: vec![Statement::Accept(Some(stmt::Accept {}))].into(),
-        ..Default::default()
-    }));
+    // Inbound Rules
+    for (index, res) in (0u32..).zip(pending_config.firewall.inbound_rules.iter().enumerate()) {
+        let (_, rule) = res;
+
+        let counter_name = format!("inbound_{}", index);
+        if rule.counter {
+            counters.push(counter_name.clone());
+            create_counter(&mut batch, counter_name.clone());
+        }
+
+        let source_addresses = rule.source_addresses(pending_config.clone());
+        let destination_addresses = rule.destination_addresses(pending_config.clone());
+        let services = rule.services(pending_config.clone());
+
+        let services_to_process: Vec<Option<Service>> = if services.is_empty() {
+            vec![None] // One rule with no service
+        } else {
+            services.into_iter().map(Some).collect() // One rule per service
+        };
+
+        for service_option in services_to_process {
+            let mut expression = build_base_rule_expressions(
+                &source_addresses,
+                &destination_addresses,
+                service_option.as_ref(),
+                rule.negate_source,
+                rule.negate_destination,
+                &pending_config,
+            );
+
+            if rule.counter {
+                expression.push(generate_counter_statement(counter_name.clone()));
+            }
+
+            if rule.log {
+                expression.push(generate_log_statement(counter_name.clone()));
+            }
+
+            expression.push(match rule.verdict {
+                Verdict::Accept => Statement::Accept(None),
+                Verdict::Drop => Statement::Drop(None),
+                Verdict::Continue => Statement::Continue(None),
+            });
+
+            batch.add(NfListObject::Rule(schema::Rule {
+                family: NfFamily::INet,
+                table: "nfsense_inet".into(),
+                chain: "inbound".into(),
+                comment: Some(rule.name.clone().into()),
+                expr: expression.into(),
+                ..Default::default()
+            }));
+        }
+    }
 
     counters.push("inbound_default_drop".to_owned());
     create_counter(&mut batch, "inbound_default_drop".to_string());

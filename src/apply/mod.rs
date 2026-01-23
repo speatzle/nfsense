@@ -5,6 +5,7 @@ pub mod kea;
 pub mod networkd;
 pub mod nftables;
 pub mod unbound;
+pub mod util;
 
 #[derive(Error, Debug)]
 pub enum ApplyError {

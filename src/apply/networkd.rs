@@ -1,3 +1,4 @@
+use super::util;
 use super::ApplyError;
 use crate::{
     definitions::{config::Config, network::NetworkInterfaceType},
@@ -171,7 +172,15 @@ pub fn generate_networkd_config_files(
     for interface in &pending_config.vpn.wireguard.interfaces {
         let mut context = Context::new();
         context.insert("interface", &interface);
-        context.insert("peers", &interface.peers(pending_config.clone()));
+        let mut peers = Vec::new();
+        for peer in interface.peers(pending_config.clone()) {
+            let mut temp = peer.clone();
+            temp.allowed_ips =
+                util::convert_addresses_to_strings(peer.allowed_ips(pending_config.clone()));
+            peers.push(temp);
+        }
+
+        context.insert("peers", &peers);
 
         files.push(generate_config_file(
             context,

@@ -7,7 +7,7 @@ use axum::routing::any;
 use axum::{Extension, Router};
 
 use jsonrpsee::core::middleware::{Batch, Notification, RpcServiceBuilder, RpcServiceT};
-use jsonrpsee::server::{stop_channel, Server, ServerConfig};
+use jsonrpsee::server::{stop_channel, Server, ServerConfig, ServerHandle};
 use jsonrpsee::types::Request as RpcRequest;
 use jsonrpsee::RpcModule;
 use tower::Service;
@@ -63,9 +63,9 @@ where
     }
 }
 
-pub fn routes(rpc_module: RpcModule<RpcState>) -> Router<super::super::AppState> {
+pub fn routes(rpc_module: RpcModule<RpcState>) -> (Router<super::super::AppState>, ServerHandle) {
     // Create stop channel for graceful shutdown
-    let (stop_handle, _server_handle) = stop_channel();
+    let (stop_handle, server_handle) = stop_channel();
 
     // Configure the RPC server
     let server_config = ServerConfig::builder()
@@ -102,5 +102,5 @@ pub fn routes(rpc_module: RpcModule<RpcState>) -> Router<super::super::AppState>
         }
     };
 
-    Router::new().route("/api", any(api_handler))
+    (Router::new().route("/api", any(api_handler)), server_handle)
 }

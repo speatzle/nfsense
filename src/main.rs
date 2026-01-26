@@ -15,8 +15,10 @@ use std::env;
 use std::fs;
 use std::net::{IpAddr, Ipv6Addr, SocketAddr};
 use std::path::PathBuf;
+use std::time::Duration;
 use tower_cookies::CookieManagerLayer;
 //use tower_http::services::ServeDir;
+use tokio::signal;
 use tracing::{error, info};
 use tracing_subscriber;
 use web::auth::SessionState;
@@ -80,6 +82,8 @@ async fn main() {
         return;
     }
 
+    let (rpc_router, rpc_handle) = web::rpc::routes(rpc_module);
+
     let webinterface_router = ReverseProxy::new("/", "http://localhost:5173");
     /* TODO add flag to server via proxy for dev purposes, default to static files
     let static_files = ServeDir::new("./assets");
@@ -90,7 +94,7 @@ async fn main() {
 
     // Note: The Router Works Bottom Up, So the auth middleware will only applies to everything above it.
     let main_router = Router::new()
-        .merge(web::rpc::routes(rpc_module))
+        .merge(rpc_router)
         .layer(middleware::from_fn_with_state(
             app_state.clone(),
             web::auth::mw_auth,
@@ -103,10 +107,49 @@ async fn main() {
     let config =
         OpenSSLConfig::from_pem_file(PathBuf::from("cert.pem"), PathBuf::from("key.pem")).unwrap();
 
+    let handle = axum_server::Handle::new();
+
+    let _shutdown_future = shutdown_signal(handle.clone(), rpc_handle);
+
     info!("Server started successfully");
     let addr = SocketAddr::new(IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 0)), 8080);
     axum_server::bind_openssl(addr, config)
+        .handle(handle)
         .serve(main_router.into_make_service())
         .await
         .unwrap();
+}
+// TODO this does not actually handle the signal?
+async fn shutdown_signal(handle: axum_server::Handle, rpc_handle: jsonrpsee::server::ServerHandle) {
+    let ctrl_c = async {
+        signal::ctrl_c()
+            .await
+            .expect("failed to install Ctrl+C handler");
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        signal::unix::signal(signal::unix::SignalKind::terminate())
+            .expect("failed to install signal handler")
+            .recv()
+            .await;
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = ctrl_c => {},
+        _ = terminate => {},
+    }
+
+    tracing::info!("Received termination signal, shutting down");
+    match rpc_handle.stop() {
+        Ok(_) => info!("RPC server stopped successfully"),
+        Err(e) => error!("RPC server stop error: {:?}", e),
+    }
+
+    handle.graceful_shutdown(Some(Duration::from_secs(10)));
+
+    tracing::info!("Shutdown Complete");
 }

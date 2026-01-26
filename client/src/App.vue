@@ -63,7 +63,10 @@ const navRoutesNew = [
       { caption: 'Peers', icon: INodes, href: '/vpn/wireguard.peers' },
     ] },
   ] },
-  { caption: 'Users', icon: IUser, href: '/system/users' },
+  { caption: 'System', icon: ISettings, children: [
+    { caption: 'Users', icon: IUser, href: '/system/users' },
+    { caption: 'Log', icon: IService, href: '/system/logs' },
+  ] },
   { caption: 'Config', icon: IConfig, href: '/config/config' },
 ];
 

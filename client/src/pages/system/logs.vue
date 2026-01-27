@@ -59,7 +59,7 @@ onMounted(async() => {
 });
 
 onBeforeUnmount(() => {
-  websocket.?send(JSON.stringify({ jsonrpc:'2.0', method:'system.log.fw.live.unsubscribe', id:subscriptionId }));
+  websocket?.send(JSON.stringify({ jsonrpc:'2.0', method:'system.log.fw.live.unsubscribe', id:subscriptionId }));
   console.debug('closing log websocket');
   websocket?.close();
 });

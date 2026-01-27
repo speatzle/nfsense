@@ -105,7 +105,8 @@ async function tryLogin() {
   }
   else {
     // TODO Check for MFA here
-    authState = AuthState.Authenticated;
+    //authState = AuthState.Authenticated;
+    checkAuth();
   }
 }
 

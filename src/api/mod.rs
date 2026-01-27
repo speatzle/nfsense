@@ -19,6 +19,9 @@ pub enum ApiError {
     #[error("Not Found")]
     NotFound,
 
+    #[error("Command Error")]
+    CommandError,
+
     //#[error("Already Exists")]
     //AlreadyExists,
     #[error("Hash Error")]
@@ -35,6 +38,9 @@ pub enum ApiError {
 
     #[error(transparent)]
     DbusError(#[from] zbus::Error),
+
+    #[error(transparent)]
+    FromUtf8Error(#[from] std::string::FromUtf8Error),
 }
 
 impl Into<ErrorObject<'static>> for ApiError {

@@ -6,11 +6,24 @@ use crate::{
 };
 use jsonrpsee::types::Params;
 use jsonrpsee::{Extensions, RpcModule};
-use std::process::Command;
+use serde::{Deserialize, Serialize};
+use std::io::Write;
+use std::process::{Command, Stdio};
+use tracing::error;
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct WireguardKeypair {
+    pub privkey: String,
+    pub pubkey: String,
+}
 
 pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method("vpn.wireguard.status", wireguard_status)
+        .unwrap();
+
+    module
+        .register_method("vpn.wireguard.keypair.generate", wireguard_keypair_generate)
         .unwrap();
 
     module
@@ -89,4 +102,47 @@ pub fn wireguard_status(_: Params, _: &RpcState, _: &Extensions) -> Result<Strin
         Ok(out) => Ok(String::from_utf8_lossy(&out.stdout).to_string()),
         Err(err) => Err(ApiError::IOError(err)),
     }
+}
+
+pub fn wireguard_keypair_generate(
+    _: Params,
+    _: &RpcState,
+    _: &Extensions,
+) -> Result<WireguardKeypair, ApiError> {
+    let genkey_output = Command::new("wg").arg("genkey").output()?;
+    if !genkey_output.status.success() {
+        error!(
+            "Failed to generate private key: {}",
+            String::from_utf8_lossy(&genkey_output.stderr)
+        );
+        return Err(ApiError::CommandError);
+    }
+
+    let privkey = String::from_utf8(genkey_output.stdout)?.trim().to_string();
+
+    let mut pubkey_child = Command::new("wg")
+        .arg("pubkey")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()?;
+
+    if let Some(mut stdin) = pubkey_child.stdin.take() {
+        stdin.write_all(privkey.as_bytes())?;
+    }
+
+    let pubkey_output = pubkey_child.wait_with_output()?;
+
+    if !pubkey_output.status.success() {
+        error!(
+            "Failed to generate private key: {}",
+            String::from_utf8_lossy(&pubkey_output.stderr)
+        );
+        return Err(ApiError::CommandError);
+    }
+    let pubkey = String::from_utf8(pubkey_output.stdout)?.trim().to_string();
+
+    Ok(WireguardKeypair {
+        privkey: privkey,
+        pubkey: pubkey,
+    })
 }

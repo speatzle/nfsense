@@ -43,6 +43,14 @@ pub struct KeaDHCPv4 {
 pub struct KeaInterfaces {
     #[serde(rename = "interfaces")]
     pub interfaces: Vec<String>,
+    #[serde(rename = "dhcp-socket-type")]
+    pub dhcp_socket_type: String,
+    #[serde(rename = "service-sockets-require-all")]
+    pub service_sockets_require_all: bool,
+    #[serde(rename = "service-sockets-max-retries")]
+    pub service_sockets_max_retries: u64,
+    #[serde(rename = "service-sockets-retry-wait-time")]
+    pub service_sockets_retry_wait_time: u64,
 }
 
 #[derive(Serialize, Clone, Debug)]
@@ -90,7 +98,13 @@ pub fn apply_kea(pending_config: Config, _current_config: Config) -> Result<(), 
             valid_lifetime: 4000,
             renew_timer: 1000,
             rebind_timer: 2000,
-            interfaces_config: KeaInterfaces { interfaces: vec![] },
+            interfaces_config: KeaInterfaces {
+                interfaces: vec![],
+                dhcp_socket_type: "raw".to_owned(),
+                service_sockets_require_all: true,
+                service_sockets_max_retries: 3,
+                service_sockets_retry_wait_time: 5000,
+            },
             lease_database: KeaLeases {
                 database_type: "memfile".to_string(),
                 persist: true,

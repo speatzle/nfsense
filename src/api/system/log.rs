@@ -8,10 +8,15 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use std::sync::Arc;
-use tracing::{error, trace};
+use std::sync::{Arc, Mutex};
+use std::thread;
+use tokio::sync::broadcast;
+use tracing::{error, info, trace, warn};
 
 const ULOG_SOCKET_PATH: &str = "/run/ulog/ulogd.socket";
+const CHANNEL_CAPACITY: usize = 2000;
+
+static LOG_BROADCASTER: Mutex<Option<broadcast::Sender<LogEntry>>> = Mutex::new(None);
 
 pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
@@ -25,7 +30,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
 }
 
 #[derive(Serialize, Clone)]
-#[serde(tag = "ip.protocol")]
+#[serde(tag = "protocol")]
 enum LogEntry {
     ICMP(LogICMP),
     TCP(LogTCP),
@@ -36,134 +41,134 @@ enum LogEntry {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 struct LogICMP {
     timestamp: String,
-    #[serde(rename = "oob.prefix")]
+    #[serde(alias = "oob.prefix")]
     prefix: String,
-    #[serde(rename = "oob.family")]
+    #[serde(alias = "oob.family")]
     family: u32,
-    #[serde(rename = "oob.in")]
+    #[serde(alias = "oob.in")]
     input_interface: String,
-    #[serde(rename = "oob.out")]
+    #[serde(alias = "oob.out")]
     output_interface: String,
-    #[serde(rename = "ip.ttl")]
+    #[serde(alias = "ip.ttl")]
     ttl: u32,
-    #[serde(rename = "src_ip")]
+    #[serde(alias = "src_ip")]
     source_ip: String,
-    #[serde(rename = "dest_ip")]
+    #[serde(alias = "dest_ip")]
     destination_ip: String,
-    #[serde(rename = "mac.saddr.str")]
+    #[serde(alias = "mac.saddr.str")]
     source_mac: String,
-    #[serde(rename = "mac.daddr.str")]
+    #[serde(alias = "mac.daddr.str")]
     destination_mac: String,
-    #[serde(rename = "icmp.type")]
+    #[serde(alias = "icmp.type")]
     _type: u32,
-    #[serde(rename = "icmp.code")]
+    #[serde(alias = "icmp.code")]
     code: u32,
-    #[serde(rename = "icmp.echoid")]
+    #[serde(alias = "icmp.echoid")]
     echo_id: u32,
-    #[serde(rename = "icmp.echoseq")]
+    #[serde(alias = "icmp.echoseq")]
     echo_sequence: u32,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 struct LogTCP {
     timestamp: String,
-    #[serde(rename = "oob.prefix")]
+    #[serde(alias = "oob.prefix")]
     prefix: String,
-    #[serde(rename = "oob.family")]
+    #[serde(alias = "oob.family")]
     family: u32,
-    #[serde(rename = "oob.in")]
+    #[serde(alias = "oob.in")]
     input_interface: String,
-    #[serde(rename = "oob.out")]
+    #[serde(alias = "oob.out")]
     output_interface: String,
-    #[serde(rename = "ip.ttl")]
+    #[serde(alias = "ip.ttl")]
     ttl: u32,
-    #[serde(rename = "src_ip")]
+    #[serde(alias = "src_ip")]
     source_ip: String,
-    #[serde(rename = "dest_ip")]
+    #[serde(alias = "dest_ip")]
     destination_ip: String,
-    #[serde(rename = "mac.saddr.str")]
+    #[serde(alias = "mac.saddr.str")]
     source_mac: String,
-    #[serde(rename = "mac.daddr.str")]
+    #[serde(alias = "mac.daddr.str")]
     destination_mac: String,
-    #[serde(rename = "src_port")]
+    #[serde(alias = "src_port")]
     source_port: u32,
-    #[serde(rename = "dest_port")]
+    #[serde(alias = "dest_port")]
     destination_port: u32,
-    #[serde(rename = "tcp.window")]
+    #[serde(alias = "tcp.window")]
     tcp_window: u32,
-    #[serde(rename = "tcp.offset")]
+    #[serde(alias = "tcp.offset")]
     tcp_offset: u32,
-    #[serde(rename = "tcp.reserved")]
+    #[serde(alias = "tcp.reserved")]
     tcp_reserved: u32,
-    #[serde(rename = "tcp.urg")]
+    #[serde(alias = "tcp.urg")]
     tcp_urg: u32,
-    #[serde(rename = "tcp.ack")]
+    #[serde(alias = "tcp.ack")]
     tcp_ack: u32,
-    #[serde(rename = "tcp.psh")]
+    #[serde(alias = "tcp.psh")]
     tcp_psh: u32,
-    #[serde(rename = "tcp.rst")]
+    #[serde(alias = "tcp.rst")]
     tcp_rst: u32,
-    #[serde(rename = "tcp.syn")]
+    #[serde(alias = "tcp.syn")]
     tcp_syn: u32,
-    #[serde(rename = "tcp.fin")]
+    #[serde(alias = "tcp.fin")]
     typ_fin: u32,
-    #[serde(rename = "tcp.csum")]
+    #[serde(alias = "tcp.csum")]
     typ_checksum: u32,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 struct LogUDP {
     timestamp: String,
-    #[serde(rename = "oob.prefix")]
+    #[serde(alias = "oob.prefix")]
     prefix: String,
-    #[serde(rename = "oob.family")]
+    #[serde(alias = "oob.family")]
     family: u32,
-    #[serde(rename = "oob.in")]
+    #[serde(alias = "oob.in")]
     input_interface: String,
-    #[serde(rename = "oob.out")]
+    #[serde(alias = "oob.out")]
     output_interface: String,
-    #[serde(rename = "ip.ttl")]
+    #[serde(alias = "ip.ttl")]
     ttl: u32,
-    #[serde(rename = "src_ip")]
+    #[serde(alias = "src_ip")]
     source_ip: String,
-    #[serde(rename = "dest_ip")]
+    #[serde(alias = "dest_ip")]
     destination_ip: String,
-    #[serde(rename = "mac.saddr.str")]
+    #[serde(alias = "mac.saddr.str")]
     source_mac: String,
-    #[serde(rename = "mac.daddr.str")]
+    #[serde(alias = "mac.daddr.str")]
     destination_mac: String,
-    #[serde(rename = "src_port")]
+    #[serde(alias = "src_port")]
     source_port: u32,
-    #[serde(rename = "dest_port")]
+    #[serde(alias = "dest_port")]
     destination_port: u32,
-    #[serde(rename = "udp.len")]
+    #[serde(alias = "udp.len")]
     udp_length: u32,
-    #[serde(rename = "udp.csum")]
+    #[serde(alias = "udp.csum")]
     udp_checksum: u32,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 struct LogUnknown {
-    #[serde(rename = "ip.protocol")]
+    #[serde(alias = "ip.protocol")]
     protocol: u32,
     timestamp: String,
-    #[serde(rename = "oob.prefix")]
+    #[serde(alias = "oob.prefix")]
     prefix: String,
-    #[serde(rename = "oob.family")]
+    #[serde(alias = "oob.family")]
     family: u32,
-    #[serde(rename = "oob.in")]
+    #[serde(alias = "oob.in")]
     input_interface: String,
-    #[serde(rename = "oob.out")]
+    #[serde(alias = "oob.out")]
     output_interface: String,
-    #[serde(rename = "ip.ttl")]
+    #[serde(alias = "ip.ttl")]
     ttl: u32,
-    #[serde(rename = "src_ip")]
+    #[serde(alias = "src_ip")]
     source_ip: String,
-    #[serde(rename = "dest_ip")]
+    #[serde(alias = "dest_ip")]
     destination_ip: String,
-    #[serde(rename = "mac.saddr.str")]
+    #[serde(alias = "mac.saddr.str")]
     source_mac: String,
-    #[serde(rename = "mac.daddr.str")]
+    #[serde(alias = "mac.daddr.str")]
     destination_mac: String,
 }
 
@@ -182,64 +187,124 @@ impl<'de> serde::Deserialize<'de> for LogEntry {
     }
 }
 
+fn get_or_spawn_broadcaster() -> broadcast::Sender<LogEntry> {
+    let mut guard = LOG_BROADCASTER.lock().unwrap();
+
+    if let Some(tx) = &*guard {
+        return tx.clone();
+    }
+
+    let (tx, _) = broadcast::channel(CHANNEL_CAPACITY);
+    let tx_for_thread = tx.clone();
+
+    trace!("Spawning dedicated OS thread for log reading");
+
+    // OS thread as to not block tokio
+    thread::spawn(move || {
+        log_reader_thread(tx_for_thread);
+    });
+
+    *guard = Some(tx.clone());
+    tx
+}
+
+fn log_reader_thread(tx: broadcast::Sender<LogEntry>) {
+    let file = match File::open(ULOG_SOCKET_PATH) {
+        Ok(f) => f,
+        Err(e) => {
+            error!("Could not open log socket {}: {}", ULOG_SOCKET_PATH, e);
+            // Reset Mutex so we can start again
+            let mut guard = LOG_BROADCASTER.lock().unwrap();
+            *guard = None;
+            return;
+        }
+    };
+
+    let reader = BufReader::new(file);
+
+    for line_result in reader.lines() {
+        let line = match line_result {
+            Ok(l) => l,
+            Err(e) => {
+                warn!("Error reading log line: {}", e);
+                break;
+            }
+        };
+
+        // If we don't have a complete line, skip it
+        if !line.starts_with("{") {
+            continue;
+        }
+
+        if let Ok(log_entry) = serde_json::from_str::<LogEntry>(&line) {
+            if tx.send(log_entry).is_err() {
+                let mut guard = LOG_BROADCASTER.lock().unwrap();
+                if tx.receiver_count() == 0 {
+                    info!("No log subscribers left. Stopping dedicated reader thread.");
+                    *guard = None;
+                    return;
+                }
+            }
+        }
+    }
+
+    let mut guard = LOG_BROADCASTER.lock().unwrap();
+    *guard = None;
+    warn!("Log reader thread exited (EOF/Pipe Closed)");
+}
+
 pub async fn subscribe_fw_live_log<'a>(
     _: Params<'a>,
     pending_sink: PendingSubscriptionSink,
     _state: Arc<RpcState>,
     _: Extensions,
 ) -> Result<(), SubscriptionError> {
+    let tx = get_or_spawn_broadcaster();
+    let rx = tx.subscribe();
+    info!("Log Receiver count: {}", tx.receiver_count());
+
     let sink = match pending_sink.accept().await {
         Ok(sink) => sink,
-        Err(err) => {
-            error!("Failed to accept subscription: {}", err);
-            return Err(SubscriptionError::from(format!(
-                "Failed to accept subscription: {}",
-                err
-            )));
-        }
+        Err(err) => return Err(SubscriptionError::from(err.to_string())),
     };
 
-    trace!("Spawning Thread for live log");
-    tokio::spawn(live_log_sink(sink));
-
+    tokio::spawn(forward_logs_to_sink(sink, rx));
     Ok(())
 }
 
-async fn live_log_sink(sink: SubscriptionSink) {
-    trace!(
-        "Accepted subscription with ID: {:?}",
-        sink.subscription_id().to_owned()
-    );
+async fn forward_logs_to_sink(sink: SubscriptionSink, mut rx: broadcast::Receiver<LogEntry>) {
+    loop {
+        tokio::select! {
+            val = rx.recv() => {
+                match val {
+                    Ok(log_entry) => {
+                        let msg = match SubscriptionMessage::new(
+                            sink.method_name(),
+                            sink.subscription_id(),
+                            &log_entry,
+                        ) {
+                            Ok(msg) => msg,
+                            Err(_) => break,
+                        };
 
-    let file = File::open(ULOG_SOCKET_PATH).expect("couldn't open file");
-
-    for line in BufReader::new(file).lines() {
-        let line = line.expect("couldn't get line");
-        trace!("Received log line");
-        if !line.starts_with("{") {
-            trace!("Log line does not start with {{ skipping...");
-            continue;
-        }
-        let log_entry: LogEntry = serde_json::from_str(&line).expect("couldn't deserialize");
-
-        let message = match SubscriptionMessage::new(
-            sink.method_name(),
-            sink.subscription_id(),
-            &log_entry,
-        ) {
-            Ok(msg) => msg,
-            Err(err) => {
-                error!("Failed to create subscription message: {}", err);
-                return;
+                        if sink.send(msg).await.is_err() {
+                            break;
+                        }
+                    }
+                    Err(broadcast::error::RecvError::Lagged(skipped)) => {
+                        warn!("Client is lagging. Skipped {} logs.", skipped);
+                    }
+                    Err(broadcast::error::RecvError::Closed) => {
+                        trace!("Log Reader Died");
+                        break;
+                    }
+                }
             }
-        };
-        trace!("Sending log entry to sink");
-        match sink.send(message).await {
-            Ok(_) => {}
-            Err(err) => {
-                error!("Subscription/ Connection was closed: {}", err);
-                return;
+            _ = sink.closed() => {
+                trace!("Log Client disconnected");
+                break;
             }
         }
     }
+    trace!("Stopped forwarding logs");
 }

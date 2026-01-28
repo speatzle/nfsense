@@ -13,8 +13,6 @@ pub fn generate_interface_address_objects(state: &RpcState) -> Vec<Address> {
         .iter()
         .flat_map(|interface| {
             if let StaticAddressingMode { address } = interface.addressing_mode {
-                // Strip the ip out of the network
-                let network = ipnet::IpNet::new(address.network(), address.prefix_len()).unwrap();
                 vec![
                     Address {
                         name: format!("interface_{}_address", interface.name),
@@ -26,7 +24,9 @@ pub fn generate_interface_address_objects(state: &RpcState) -> Vec<Address> {
                     Address {
                         name: format!("interface_{}_network", interface.name),
                         comment: "Auto-generated Interface Network".to_owned(),
-                        address_type: AddressType::Network { network: network },
+                        address_type: AddressType::Network {
+                            network: address.trunc(),
+                        },
                     },
                 ]
             } else {

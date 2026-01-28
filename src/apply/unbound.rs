@@ -31,7 +31,7 @@ pub fn apply_unbound(pending_config: Config, _current_config: Config) -> Result<
         if let AddressingMode::Static { address } =
             &server.interface(pending_config.clone()).addressing_mode
         {
-            subnets.push(address.network().to_string());
+            subnets.push(address.trunc().to_string());
         }
     }
     context.insert("interfaces", &interfaces);

@@ -3,3 +3,11 @@ config.json
 pending.json
 *.pem
 /target
+mkosi/mkosi.cache
+mkosi/mkosi.output
+mkosi/mkosi.local
+mkosi/mkosi.local.conf
+mkosi/mkosi.tools
+mkosi/tools
+mkosi/mkosi.tools.manifest
+mkosi/.mkosi-private

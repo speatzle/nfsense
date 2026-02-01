@@ -1,0 +1,29 @@
+#!/bin/bash
+set -euo pipefail
+
+echo "Build"
+export SHELL=bash
+export HOME=/root
+
+echo "Installing pnpm"
+curl -fsSL https://get.pnpm.io/install.sh | sh -
+source /root/.bashrc
+
+echo "Installing rust"
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+. "/root/.cargo/env"
+
+
+echo "Build Backend"
+cd $SRCDIR
+cargo build --release
+install -D target/release/nfsense "$DESTDIR/usr/sbin/nfsense"
+
+echo "Building Client"
+cd $SRCDIR/client
+CI=true pnpm install --frozen-lockfile
+CI=true pnpm run build
+mkdir -p "$DESTDIR/usr/share/nfsense/html"
+cp -r dist/* "$DESTDIR/usr/share/nfsense/html/"
+
+echo "Build Complete"

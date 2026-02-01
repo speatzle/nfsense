@@ -1,0 +1,15 @@
+[Transfer]
+ProtectVersion=%A
+
+[Source]
+Type=url-file
+Path=https://download.nfsense.net/sysupdate/v1/
+MatchPattern=nfsense_@v_@u.raw
+
+[Target]
+Type=partition
+Path=auto
+MatchPattern=nfsense_@v
+MatchPartitionType=root
+PartitionFlags=0
+ReadOnly=1

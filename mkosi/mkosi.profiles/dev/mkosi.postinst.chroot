@@ -1,0 +1,43 @@
+#!/bin/bash
+set -euo pipefail
+
+echo "Unbound Control Setup"
+unbound-control-setup
+
+echo "Enable First Time Setup"
+cat <<EOT >> /root/.profile
+if [ -f /root/first-time-setup ]
+then
+    /usr/lib/first-time-setup
+fi
+EOT
+
+export SHELL=bash
+export HOME=/root
+echo "Installing pnpm"
+curl -fsSL https://get.pnpm.io/install.sh | sh -
+source /root/.bashrc
+
+echo "Installing rust"
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+. "/root/.cargo/env"
+
+echo "Copy Source to image"
+rsync -av --progress $SRCDIR/ /opt/nfsense \
+    --exclude mkosi \
+    --exclude target \
+    --exclude config.json \
+    --exclude pending.json \
+    --delete
+
+ls /opt/nfsense
+
+echo "Build Backend"
+cd /opt/nfsense
+cargo build
+
+echo "Generate SSL Certificates"
+openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -sha256 -days 3650 -nodes -subj "/C=XX/ST=StateName/L=CityName/O=CompanyName/OU=CompanySectionName/CN=CommonNameOrHostname"
+
+echo "Generate Default config"
+/opt/nfsense/target/debug/nfsense generate-default

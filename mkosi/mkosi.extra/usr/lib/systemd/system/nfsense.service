@@ -1,0 +1,13 @@
+[Unit]
+Description=nfsense api
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/var/lib/nfsense
+ExecStart=/usr/sbin/nfsense
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,14 @@
+[Unit]
+Description=nfsense api
+ConditionPathExists=/opt/nfsense
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/nfsense
+ExecStart=/opt/nfsense/target/debug/nfsense
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

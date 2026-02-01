@@ -1,0 +1,19 @@
+[Transfer]
+ProtectVersion=%A
+
+[Source]
+Type=url-file
+Path=https://download.nfsense.net/sysupdate/v1/
+MatchPattern=nfsense_@v.efi
+
+[Target]
+Type=regular-file
+Path=/EFI/Linux
+PathRelativeTo=boot
+MatchPattern=nfsense_@v+@l-@d.efi \
+           nfsense_@v+@l.efi \
+           nfsense_@v.efi
+Mode=0644
+TriesLeft=3
+TriesDone=0
+InstancesMax=2

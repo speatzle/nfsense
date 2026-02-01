@@ -1,0 +1,14 @@
+[Unit]
+Description=nfsense client
+ConditionPathExists=/opt/nfsense/client
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/nfsense/client
+ExecStart=/root/.local/share/pnpm/pnpm run dev --host 0.0.0.0
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

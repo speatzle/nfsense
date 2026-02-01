@@ -16,9 +16,9 @@ use std::fs;
 use std::net::{IpAddr, Ipv6Addr, SocketAddr};
 use std::path::PathBuf;
 use std::time::Duration;
-use tower_cookies::CookieManagerLayer;
-//use tower_http::services::ServeDir;
 use tokio::signal;
+use tower_cookies::CookieManagerLayer;
+use tower_http::services::{ServeDir, ServeFile};
 use tracing::{error, info};
 use tracing_subscriber;
 use web::auth::SessionState;
@@ -34,6 +34,10 @@ mod state;
 mod templates;
 mod validation;
 mod web;
+
+pub const CLIENT_INDEX_PATH: &str = "/usr/share/nfsense/html/index.html";
+pub const CLIENT_FAVICON_PATH: &str = "/usr/share/nfsense/html/favicon.svg";
+pub const CLIENT_ASSETS_PATH: &str = "/usr/share/nfsense/html/assets";
 
 #[tokio::main]
 async fn main() {
@@ -84,13 +88,17 @@ async fn main() {
 
     let (rpc_router, rpc_handle) = web::rpc::routes(rpc_module);
 
-    let webinterface_router = ReverseProxy::new("/", "http://localhost:5173");
-    /* TODO add flag to server via proxy for dev purposes, default to static files
-    let static_files = ServeDir::new("./assets");
-    Router::new()
-            .route("/", get(|| async {"hello"}))
-            .nest_service("/static", static_files)
-            */
+    let mut webinterface_router = Router::new()
+        .nest_service("/assets", ServeDir::new(CLIENT_ASSETS_PATH))
+        .route_service("/favicon.svg", ServeFile::new(CLIENT_FAVICON_PATH))
+        .fallback_service(ServeFile::new(CLIENT_INDEX_PATH));
+
+    // Reverse proxy to dev webinterface
+    if args.len() > 1 && args[1] == "dev-webinterface" {
+        info!("Proxing to dev webinterface");
+        webinterface_router =
+            Router::new().fallback_service(ReverseProxy::new("/", "http://localhost:5173"));
+    }
 
     // Note: The Router Works Bottom Up, So the auth middleware will only applies to everything above it.
     let main_router = Router::new()

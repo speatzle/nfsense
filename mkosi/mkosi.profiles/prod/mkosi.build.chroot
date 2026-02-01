@@ -19,6 +19,10 @@ cd $SRCDIR
 cargo build --release
 install -D target/release/nfsense "$DESTDIR/usr/sbin/nfsense"
 
+echo Copy Templates
+mkdir -p "$DESTDIR/usr/share/nfsense/templates/"
+cp -r src/templates/* "$DESTDIR/usr/share/nfsense/templates/"
+
 echo "Building Client"
 cd $SRCDIR/client
 CI=true pnpm install --frozen-lockfile

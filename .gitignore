@@ -1,3 +1,4 @@
+.pnpm-store
 config.json
 pending.json
 *.pem

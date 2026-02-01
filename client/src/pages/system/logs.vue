@@ -25,7 +25,7 @@ async function load(){
   websocket = new WebSocket('/api');
   websocket.addEventListener('open', () => {
     console.debug('ws connected', websocket);
-    websocket.send(JSON.stringify({ jsonrpc:'2.0', method:'system.logs.fw.live.subscribe', id:msgId }));
+    websocket?.send(JSON.stringify({ jsonrpc:'2.0', method:'system.logs.fw.live.subscribe', id:msgId }));
 
     console.debug('ws message sent!');
   });

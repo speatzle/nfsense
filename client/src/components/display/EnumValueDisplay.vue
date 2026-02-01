@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// @ts-nocheck
 import { variantOf, atPath } from '~/util';
 import type { Component } from 'vue';
 

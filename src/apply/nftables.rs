@@ -14,7 +14,7 @@ use nftables::types::{NfChainPolicy, NfChainType, NfFamily, NfHook};
 use nftables::{batch::Batch, helper, schema};
 use std::io::Write;
 use std::process::Command;
-use tracing::{error, info};
+use tracing::{error, info, warn};
 
 const NFTABLES_CONFIG_PATH: &str = "/etc/nfsense/nftables.conf";
 const NFTABLES_CT_DNAT_MARK_OFFSET: u32 = 1000;
@@ -848,38 +848,45 @@ pub fn apply_nftables(pending_config: Config, _current_config: Config) -> Result
     // TODO save current counter state in case of disaster (not when reverting!)
 
     // Get existing counters
-    let current_counters = helper::get_current_ruleset_with_args(
+    let option_current_counters = match helper::get_current_ruleset_with_args(
         helper::DEFAULT_NFT,
         vec!["list", "counters", "table", "inet", "nfsense_inet"],
-    )
-    .unwrap();
+    ) {
+        Ok(c) => Some(c.objects),
+        Err(e) => {
+            warn!("Get current counters failed: {}", e);
+            None
+        }
+    };
 
-    // Check each current counter and delete those that shouldn't exist
-    for cc in current_counters.objects.iter() {
-        match cc {
-            NfObject::ListObject(NfListObject::Counter(ref counter)) => {
-                let mut should_exist = false;
+    if let Some(current_counters) = option_current_counters {
+        // Check each current counter and delete those that shouldn't exist
+        for cc in current_counters.iter() {
+            match cc {
+                NfObject::ListObject(NfListObject::Counter(ref counter)) => {
+                    let mut should_exist = false;
 
-                // Check if this counter should exist in our expected counters list
-                for expected_counter in &counters {
-                    if counter.name == *expected_counter {
-                        should_exist = true;
-                        break;
+                    // Check if this counter should exist in our expected counters list
+                    for expected_counter in &counters {
+                        if counter.name == *expected_counter {
+                            should_exist = true;
+                            break;
+                        }
+                    }
+
+                    // Delete counter if it shouldn't exist
+                    if !should_exist {
+                        info!("Deleting counter {}", counter.name);
+                        batch.delete(NfListObject::Counter(schema::Counter {
+                            family: NfFamily::INet,
+                            table: "nfsense_inet".into(),
+                            name: counter.name.clone(),
+                            ..Default::default()
+                        }));
                     }
                 }
-
-                // Delete counter if it shouldn't exist
-                if !should_exist {
-                    info!("Deleting counter {}", counter.name);
-                    batch.delete(NfListObject::Counter(schema::Counter {
-                        family: NfFamily::INet,
-                        table: "nfsense_inet".into(),
-                        name: counter.name.clone(),
-                        ..Default::default()
-                    }));
-                }
+                _ => {}
             }
-            _ => {}
         }
     }
 

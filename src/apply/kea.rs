@@ -11,8 +11,8 @@ use std::io::Write;
 use std::process::Command;
 use tracing::info;
 
-const KEA_V4_CONFIG_PATH: &str = "/etc/kea/kea-dhcp4.conf";
-// const KEA_V6_CONFIG_PATH: &str = "/etc/kea/kea-dhcp6.conf";
+const KEA_V4_CONFIG_PATH: &str = "/run/nfsense/kea/kea-dhcp4.conf";
+// const KEA_V6_CONFIG_PATH: &str = "/run/nfsense/kea/kea-dhcp6.conf";
 
 #[derive(Serialize, Clone, Debug)]
 pub struct KeaConfig {
@@ -92,7 +92,11 @@ pub struct KeaOption {
     pub data: String,
 }
 
-pub fn apply_kea(pending_config: Config, _current_config: Config) -> Result<(), ApplyError> {
+pub fn generate_kea(
+    apply: bool,
+    pending_config: Config,
+    _current_config: Config,
+) -> Result<(), ApplyError> {
     let mut conf: KeaConfig = KeaConfig {
         dhcpv4: KeaDHCPv4 {
             valid_lifetime: 4000,
@@ -259,19 +263,23 @@ pub fn apply_kea(pending_config: Config, _current_config: Config) -> Result<(), 
     let mut f = std::fs::File::create(KEA_V4_CONFIG_PATH)?;
     f.write_all(config_data.as_bytes())?;
 
-    info!("Restarting Kea");
-    match Command::new("systemctl")
-        .arg("restart")
-        .arg("kea-dhcp4-server")
-        .output()
-    {
-        Ok(out) => {
-            if out.status.success() {
-                Ok(())
-            } else {
-                Err(ApplyError::ServiceRestartFailed)
+    if apply {
+        info!("Restarting Kea");
+        match Command::new("systemctl")
+            .arg("restart")
+            .arg("kea-dhcp4-server")
+            .output()
+        {
+            Ok(out) => {
+                if out.status.success() {
+                    Ok(())
+                } else {
+                    Err(ApplyError::ServiceRestartFailed)
+                }
             }
+            Err(err) => Err(ApplyError::IOError(err)),
         }
-        Err(err) => Err(ApplyError::IOError(err)),
+    } else {
+        Ok(())
     }
 }

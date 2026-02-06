@@ -9,7 +9,7 @@ use std::{error::Error, io::Write};
 use tera::Context;
 use tracing::{error, info};
 
-const NETWORKD_CONFIG_PATH: &str = "/etc/systemd/network";
+const NETWORKD_CONFIG_PATH: &str = "/run/systemd/network";
 
 pub struct File {
     pub name: String,
@@ -32,7 +32,11 @@ pub fn create_files_in_folder(path: &str, files: Vec<File>) -> std::io::Result<(
     Ok(())
 }
 
-pub fn apply_networkd(pending_config: Config, current_config: Config) -> Result<(), ApplyError> {
+pub fn generate_networkd(
+    apply: bool,
+    pending_config: Config,
+    current_config: Config,
+) -> Result<(), ApplyError> {
     let files = generate_networkd_config_files(pending_config, current_config)?;
 
     info!("Deleting old Networkd Configs");
@@ -47,20 +51,24 @@ pub fn apply_networkd(pending_config: Config, current_config: Config) -> Result<
         Err(err) => return Err(ApplyError::IOError(err)),
     }
 
-    info!("Restarting Networkd");
-    match Command::new("systemctl")
-        .arg("restart")
-        .arg("systemd-networkd")
-        .output()
-    {
-        Ok(out) => {
-            if out.status.success() {
-                Ok(())
-            } else {
-                Err(ApplyError::ServiceRestartFailed)
+    if apply {
+        info!("Restarting Networkd");
+        match Command::new("systemctl")
+            .arg("restart")
+            .arg("systemd-networkd")
+            .output()
+        {
+            Ok(out) => {
+                if out.status.success() {
+                    Ok(())
+                } else {
+                    Err(ApplyError::ServiceRestartFailed)
+                }
             }
+            Err(err) => Err(ApplyError::IOError(err)),
         }
-        Err(err) => Err(ApplyError::IOError(err)),
+    } else {
+        Ok(())
     }
 }
 

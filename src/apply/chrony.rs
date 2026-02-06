@@ -8,10 +8,14 @@ use std::{error::Error, io::Write};
 use tera::Context;
 use tracing::{error, info};
 
-const CHRONY_CONFIG_PATH: &str = "/etc/chrony/conf.d/chrony-nfsense.conf";
+const CHRONY_CONFIG_PATH: &str = "/run/nfsense/chrony/chrony.conf";
 const CHRONY_TEMPLATE_PATH: &str = "chrony/chrony.conf";
 
-pub fn apply_chrony(pending_config: Config, _current_config: Config) -> Result<(), ApplyError> {
+pub fn generate_chrony(
+    apply: bool,
+    pending_config: Config,
+    _current_config: Config,
+) -> Result<(), ApplyError> {
     let config_data;
     let mut context = Context::new();
     let mut subnets = vec![];
@@ -46,19 +50,23 @@ pub fn apply_chrony(pending_config: Config, _current_config: Config) -> Result<(
     let mut f = std::fs::File::create(CHRONY_CONFIG_PATH)?;
     f.write_all(config_data.as_bytes())?;
 
-    info!("Restarting Chrony");
-    match Command::new("systemctl")
-        .arg("restart")
-        .arg("chronyd")
-        .output()
-    {
-        Ok(out) => {
-            if out.status.success() {
-                Ok(())
-            } else {
-                Err(ApplyError::ServiceRestartFailed)
+    if apply {
+        info!("Restarting Chrony");
+        match Command::new("systemctl")
+            .arg("restart")
+            .arg("chronyd")
+            .output()
+        {
+            Ok(out) => {
+                if out.status.success() {
+                    Ok(())
+                } else {
+                    Err(ApplyError::ServiceRestartFailed)
+                }
             }
+            Err(err) => Err(ApplyError::IOError(err)),
         }
-        Err(err) => Err(ApplyError::IOError(err)),
+    } else {
+        Ok(())
     }
 }

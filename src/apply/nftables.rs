@@ -16,7 +16,7 @@ use std::io::Write;
 use std::process::Command;
 use tracing::{error, info, warn};
 
-const NFTABLES_CONFIG_PATH: &str = "/etc/nfsense/nftables.conf";
+const NFTABLES_CONFIG_PATH: &str = "/run/nfsense/nftables/nftables.conf";
 const NFTABLES_CT_DNAT_MARK_OFFSET: u32 = 1000;
 const NFTABLES_LOG_GROUP: u32 = 1;
 
@@ -252,7 +252,13 @@ fn generate_address_expression(
     return Expression::Named(NamedExpression::Set(address_set_items));
 }
 
-pub fn apply_nftables(pending_config: Config, _current_config: Config) -> Result<(), ApplyError> {
+// TODO find a way to generate without apply. Since we can't save the json format to disk due to includes.
+// Convert via nft?
+pub fn generate_nftables(
+    apply: bool,
+    pending_config: Config,
+    _current_config: Config,
+) -> Result<(), ApplyError> {
     // TODO add a uuid to rules to be able to identify them and their counters to prevent rule reordering swapping counter values
     // Also usefull for log matching
     let mut batch = Batch::new();

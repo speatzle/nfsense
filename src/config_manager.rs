@@ -29,18 +29,19 @@ pub enum ConfigError {
     IOError(#[from] std::io::Error),
 }
 
-pub const CURRENT_CONFIG_PATH: &str = "config.json";
-pub const PENDING_CONFIG_PATH: &str = "pending.json";
+pub const CURRENT_CONFIG_PATH: &str = "/var/lib/nfsense/config.json";
+pub const PENDING_CONFIG_PATH: &str = "/var/lib/nfsense/pending.json";
 
-static APPLY_FUNCTIONS: &'static [fn(
+static GENERATE_FUNCTIONS: &'static [fn(
+    apply: bool,
     pending_config: Config,
     current_config: Config,
 ) -> Result<(), super::apply::ApplyError>] = &[
-    super::apply::networkd::apply_networkd,
-    super::apply::nftables::apply_nftables,
-    super::apply::kea::apply_kea,
-    super::apply::chrony::apply_chrony,
-    super::apply::unbound::apply_unbound,
+    super::apply::networkd::generate_networkd,
+    super::apply::nftables::generate_nftables,
+    super::apply::kea::generate_kea,
+    super::apply::chrony::generate_chrony,
+    super::apply::unbound::generate_unbound,
 ];
 
 #[derive(Clone)]
@@ -104,14 +105,19 @@ impl ConfigManager {
         let mut data = self.shared_data.lock().unwrap();
 
         // TODO Improve Error Handling
-        for apply_function in APPLY_FUNCTIONS {
-            match (apply_function)(data.pending_config.clone(), data.current_config.clone()) {
+        for apply_function in GENERATE_FUNCTIONS {
+            match (apply_function)(
+                true,
+                data.pending_config.clone(),
+                data.current_config.clone(),
+            ) {
                 Ok(_) => info!("Applied"),
                 Err(e) => {
                     error!("Ran into an error while applying, Reverting to current config... Error: {}", e);
 
-                    for apply_function in APPLY_FUNCTIONS {
+                    for apply_function in GENERATE_FUNCTIONS {
                         match (apply_function)(
+                            true,
                             // These are swapped for revert
                             data.current_config.clone(),
                             data.pending_config.clone(),
@@ -138,6 +144,40 @@ impl ConfigManager {
         data.current_config = data.pending_config.clone();
         data.changelog = Vec::new();
         Ok(())
+    }
+
+    pub fn generate_current(&mut self) -> Result<(), ConfigError> {
+        let data = self.shared_data.lock().unwrap();
+
+        let mut errors = vec![];
+        // TODO use null config as start? force full generation
+        for apply_function in GENERATE_FUNCTIONS {
+            match (apply_function)(
+                false,
+                data.current_config.clone(),
+                data.current_config.clone(),
+            ) {
+                Ok(_) => info!("Generated"),
+                Err(e) => {
+                    error!(
+                        "Ran into an error while generating, Proceeding with next System anyway. Error: {}",
+                        e
+                    );
+                    errors.push(e);
+                }
+            }
+        }
+
+        if errors.len() != 0 {
+            info!("Generate Finished with errors.");
+            // TODO improve the errors
+            Err(ConfigError::ApplyError(
+                crate::apply::ApplyError::ConfigCheckFailed,
+            ))
+        } else {
+            info!("Generate Done.");
+            Ok(())
+        }
     }
 
     pub fn discard_pending_changes(&mut self) -> Result<(), ConfigError> {

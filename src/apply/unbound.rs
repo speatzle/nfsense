@@ -11,10 +11,14 @@ use std::{error::Error, io::Write};
 use tera::Context;
 use tracing::{error, info};
 
-const UNBOUND_CONFIG_PATH: &str = "/etc/unbound/unbound.conf";
+const UNBOUND_CONFIG_PATH: &str = "/run/nfsense/unbound/unbound.conf";
 const UNBOUND_TEMPLATE_PATH: &str = "unbound/unbound.conf";
 
-pub fn apply_unbound(pending_config: Config, _current_config: Config) -> Result<(), ApplyError> {
+pub fn generate_unbound(
+    apply: bool,
+    pending_config: Config,
+    _current_config: Config,
+) -> Result<(), ApplyError> {
     let config_data;
     let mut context = Context::new();
     let mut interfaces = vec![];
@@ -57,19 +61,23 @@ pub fn apply_unbound(pending_config: Config, _current_config: Config) -> Result<
     let mut f = std::fs::File::create(UNBOUND_CONFIG_PATH)?;
     f.write_all(config_data.as_bytes())?;
 
-    info!("Restarting Unbound");
-    match Command::new("systemctl")
-        .arg("restart")
-        .arg("unbound")
-        .output()
-    {
-        Ok(out) => {
-            if out.status.success() {
-                Ok(())
-            } else {
-                Err(ApplyError::ServiceRestartFailed)
+    if apply {
+        info!("Restarting Unbound");
+        match Command::new("systemctl")
+            .arg("restart")
+            .arg("unbound")
+            .output()
+        {
+            Ok(out) => {
+                if out.status.success() {
+                    Ok(())
+                } else {
+                    Err(ApplyError::ServiceRestartFailed)
+                }
             }
+            Err(err) => Err(ApplyError::IOError(err)),
         }
-        Err(err) => Err(ApplyError::IOError(err)),
+    } else {
+        Ok(())
     }
 }

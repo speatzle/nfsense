@@ -9,4 +9,4 @@ SocketUser=ulog
 SocketGroup=root
 
 [Install]
-WantedBy=ulogd.service
+WantedBy=ulogd2.service

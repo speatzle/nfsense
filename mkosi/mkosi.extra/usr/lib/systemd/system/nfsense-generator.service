@@ -1,0 +1,18 @@
+[Unit]
+Description=Generate runtime configuration files
+DefaultDependencies=no
+After=local-fs.target systemd-tmpfiles-setup.service
+Before=basic.target
+
+# TODO, retry boot? Alternate system version
+#OnFailure=emergency.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/nfsense generate-current-config
+# TODO Do this in a seperate service? Generate earlier? delay networkd?
+ExecStartPost=/usr/bin/networkctl reload
+RemainAfterExit=yes
+
+[Install]
+WantedBy=basic.target

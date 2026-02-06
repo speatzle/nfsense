@@ -1,0 +1,30 @@
+#!/bin/bash
+
+set -euo pipefail
+prefix="${IMAGE_ID}_${IMAGE_VERSION}"
+
+cd "$OUTPUTDIR"
+
+
+for f in "${prefix}".usr-*.raw.zst; do
+    [ -e "$f" ] || continue
+
+    new="$(echo "$f" | sed -E 's/(\.usr-[^.]+)(\.[^.]+)\.raw\.zst/\1.raw.zst/')"
+
+    if [ "$f" != "$new" ]; then
+        echo "  rename: $f → $new"
+        mv "$f" "$new"
+    fi
+done
+
+raw_zst="${prefix}.raw.zst"
+raw_img="${prefix}.raw"
+
+checksum_file="${prefix}.SHA256SUMS"
+
+echo "regenerating $checksum_file"
+
+{
+    ls *.raw.zst 2>/dev/null | sort
+    ls "${prefix}.efi" 2>/dev/null || true
+} | xargs sha256sum > "$checksum_file"

@@ -1,0 +1,19 @@
+#!/bin/bash
+
+echo "Setup OS release"
+cat > /usr/lib/os-release <<EOF
+PRETTY_NAME="$IMAGE_ID $IMAGE_VERSION"
+NAME="$IMAGE_ID"
+VERSION="$IMAGE_VERSION"
+ID="$IMAGE_ID"
+HOME_URL="https://nfsense.net"
+SUPPORT_URL="https://github.com/speatzle/nfsense/issues"
+BUG_REPORT_URL="https://github.com/speatzle/nfsense/issues"
+EOF
+
+
+echo "Setup Journald"
+cat > /etc/systemd/journald.conf <<EOF
+ForwardToConsole=yes
+ForwardToWall=yes
+EOF

@@ -1,0 +1,16 @@
+[Unit]
+Description=Initialize nfsense configuration and certificates on first boot
+ConditionFirstBoot=yes
+DefaultDependencies=no
+After=local-fs.target systemd-tmpfiles-setup.service
+Before=nfsense-generator.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/nfsense generate-default
+ExecStart=/usr/bin/openssl req -x509 -newkey rsa:4096 -keyout /var/lib/nfsense/key.pem -out /var/lib/nfsense/cert.pem -sha256 -days 3650 -nodes -subj "/C=XX/ST=StateName/L=CityName/O=CompanyName/OU=CompanySectionName/CN=CommonNameOrHostname"
+
+RemainAfterExit=yes
+
+[Install]
+WantedBy=nfsense-generator.service

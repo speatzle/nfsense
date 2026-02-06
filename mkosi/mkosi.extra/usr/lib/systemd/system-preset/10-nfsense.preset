@@ -1,0 +1,6 @@
+enable nftables.service
+enable systemd-networkd
+enable nfsense.service
+disable unbound-resolvconf.service
+disable kea-dhcp-ddns.service
+disable chronyd-restricted.service

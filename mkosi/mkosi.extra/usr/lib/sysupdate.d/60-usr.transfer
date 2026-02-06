@@ -1,15 +1,16 @@
 [Transfer]
 ProtectVersion=%A
+Verify=no
 
 [Source]
 Type=url-file
 Path=https://download.nfsense.net/sysupdate/v1/
-MatchPattern=nfsense_@v_@u.verity.xz
+MatchPattern=nfsense_@v.usr-x86-64.raw.zst
 
 [Target]
 Type=partition
 Path=auto
-MatchPattern=nfsense_@v_verity
-MatchPartitionType=root-verity
+MatchPattern=nfsense_@v
+MatchPartitionType=usr
 PartitionFlags=0
 ReadOnly=1

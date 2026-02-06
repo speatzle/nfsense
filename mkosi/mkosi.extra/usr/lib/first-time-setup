@@ -13,12 +13,13 @@ ask_yes_no() {
 
 
 echo "First Time Setup"
-QUESTION="Change the Keyboard layout?"
-if ask_yes_no; then
-  dpkg-reconfigure keyboard-configuration
-  setupcon -k -f
-fi
+echo "Change keyboard layout if required with 'loadkeys'. example: 'loadkeys de-latin1'"
+echo "List interfaces with 'ip a' to find your management interface"
+echo "Set a ip with 'ip addr add [ip]/[cidr] dev [interface]'"
+echo "Enable interface with 'ip link set [interface] up'"
+echo "Set default route with ip with 'ip route add 0.0.0.0/0 via [gateway] dev [interface]'"
+echo "The Webinterface should now be available under 'https://[ip]:4444'"
+echo "Please Create the interface and route via the Webinterface again and Apply changes to complete the setup"
 
-clear
 echo "First Time Setup Complete! Have fun."
 rm -f "/root/first-time-setup"

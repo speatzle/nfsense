@@ -1,4 +1,0 @@
-enable nftables.service
-enable systemd-networkd
-enable nfsense.service
-enable serial-getty@ttyS0

@@ -4,6 +4,7 @@ use jsonrpsee::RpcModule;
 mod log;
 mod power;
 mod service;
+pub mod update;
 mod user;
 
 pub fn register_methods(module: &mut RpcModule<RpcState>) {
@@ -11,4 +12,5 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     user::register_methods(module);
     service::register_methods(module);
     log::register_methods(module);
+    update::register_methods(module);
 }

@@ -66,6 +66,7 @@ const navRoutesNew = [
   { caption: 'System', icon: ISettings, children: [
     { caption: 'Users', icon: IUser, href: '/system/users' },
     { caption: 'Log', icon: IService, href: '/system/logs' },
+    { caption: 'Updates', icon: IService, href: '/system/updates' },
   ] },
   { caption: 'Config', icon: IConfig, href: '/config/config' },
 ];

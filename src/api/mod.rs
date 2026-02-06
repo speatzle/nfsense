@@ -41,6 +41,12 @@ pub enum ApiError {
 
     #[error(transparent)]
     FromUtf8Error(#[from] std::string::FromUtf8Error),
+
+    #[error(transparent)]
+    UpdateError(#[from] system::update::UpdateError),
+
+    #[error(transparent)]
+    JsonError(#[from] serde_json::Error),
 }
 
 impl Into<ErrorObject<'static>> for ApiError {

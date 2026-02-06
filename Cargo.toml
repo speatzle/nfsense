@@ -34,6 +34,7 @@ zbus_systemd = { version = "0.25701.0", features = [
     "resolve1",
     "hostname1",
     "timedate1",
+    "sysupdate1",
 ] }
 nftables = "0.6.3"
 axum-server = { version = "0.7.2", features = ["tls-openssl"] }

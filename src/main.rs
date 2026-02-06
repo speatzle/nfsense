@@ -38,6 +38,8 @@ mod web;
 pub const CLIENT_INDEX_PATH: &str = "/usr/share/nfsense/html/index.html";
 pub const CLIENT_FAVICON_PATH: &str = "/usr/share/nfsense/html/favicon.svg";
 pub const CLIENT_ASSETS_PATH: &str = "/usr/share/nfsense/html/assets";
+pub const HTTPS_CERT_PATH: &str = "/var/lib/nfsense/cert.pem";
+pub const HTTPS_KEY_PATH: &str = "/var/lib/nfsense/key.pem";
 
 #[tokio::main]
 async fn main() {
@@ -63,6 +65,17 @@ async fn main() {
     let session_state = SessionState {
         sessions: Arc::new(RwLock::new(HashMap::new())),
     };
+
+    if args.len() > 1 && args[1] == "generate-current-config" {
+        match config_manager.clone().generate_current() {
+            Ok(_) => info!("Done! Exiting..."),
+            Err(_) => {
+                error!("Failed to Generate config.");
+                std::process::exit(1);
+            }
+        }
+        return;
+    }
 
     info!("Connecting to System dbus...");
     let dbus_conn = zbus::Connection::system().await.unwrap();
@@ -112,15 +125,18 @@ async fn main() {
         .merge(webinterface_router)
         .layer(CookieManagerLayer::new());
 
-    let config =
-        OpenSSLConfig::from_pem_file(PathBuf::from("cert.pem"), PathBuf::from("key.pem")).unwrap();
+    let config = OpenSSLConfig::from_pem_file(
+        PathBuf::from(HTTPS_CERT_PATH),
+        PathBuf::from(HTTPS_KEY_PATH),
+    )
+    .unwrap();
 
     let handle = axum_server::Handle::new();
 
     let _shutdown_future = shutdown_signal(handle.clone(), rpc_handle);
 
     info!("Server started successfully");
-    let addr = SocketAddr::new(IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 0)), 8080);
+    let addr = SocketAddr::new(IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 0)), 4444);
     axum_server::bind_openssl(addr, config)
         .handle(handle)
         .serve(main_router.into_make_service())

@@ -2,6 +2,7 @@ use crate::api::ApiError;
 use crate::state::RpcState;
 use jsonrpsee::{types::Params, Extensions, RpcModule};
 use serde::{Deserialize, Serialize};
+use std::process::Command;
 use std::sync::Arc;
 use thiserror::Error;
 use tracing::error;
@@ -50,9 +51,26 @@ pub struct UpdateJob {
     pub progress: u32,
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct UpdateParam {
+    pub version: String,
+}
+
 pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_async_method("system.update.status", get_update_status)
+        .unwrap();
+
+    module
+        .register_async_method("system.update.vacuum", vacuum_updates)
+        .unwrap();
+
+    module
+        .register_async_method("system.update.install", install_update)
+        .unwrap();
+
+    module
+        .register_async_method("system.update.set_default_boot", set_default_boot)
         .unwrap();
 }
 
@@ -95,4 +113,68 @@ pub async fn get_update_status<'a>(
 
     error!("Did not find Update Target host!");
     Err(UpdateError::TargetNotFound.into())
+}
+
+pub async fn vacuum_updates<'a>(
+    _: Params<'a>,
+    _state: Arc<RpcState>,
+    _: Extensions,
+) -> Result<(), ApiError> {
+    let sysupdate_manager = zbus_systemd::sysupdate1::ManagerProxy::new(&_state.dbus_conn).await?;
+    let targets = sysupdate_manager.list_targets().await?;
+    for (_class, name, path) in targets {
+        if name == "host" {
+            let sysupdate_target =
+                zbus_systemd::sysupdate1::TargetProxy::new(&_state.dbus_conn, path).await?;
+            sysupdate_target.vacuum().await?;
+            return Ok(());
+        }
+    }
+
+    error!("Did not find Update Target host!");
+    Err(UpdateError::TargetNotFound.into())
+}
+
+pub async fn install_update<'a>(
+    params: Params<'a>,
+    _state: Arc<RpcState>,
+    _: Extensions,
+) -> Result<(), ApiError> {
+    let param: UpdateParam = params.parse().map_err(ApiError::ParameterDeserialize)?;
+    let sysupdate_manager = zbus_systemd::sysupdate1::ManagerProxy::new(&_state.dbus_conn).await?;
+    let targets = sysupdate_manager.list_targets().await?;
+    for (_class, name, path) in targets {
+        if name == "host" {
+            let sysupdate_target =
+                zbus_systemd::sysupdate1::TargetProxy::new(&_state.dbus_conn, path).await?;
+
+            sysupdate_target.update(param.version, 0).await?;
+            return Ok(());
+        }
+    }
+
+    error!("Did not find Update Target host!");
+    Err(UpdateError::TargetNotFound.into())
+}
+
+pub async fn set_default_boot<'a>(
+    params: Params<'a>,
+    _state: Arc<RpcState>,
+    _: Extensions,
+) -> Result<(), ApiError> {
+    let param: UpdateParam = params.parse().map_err(ApiError::ParameterDeserialize)?;
+    match Command::new("bootctl")
+        .arg("set-default")
+        .arg(format!("nfsense_{}.efi", param.version))
+        .output()
+    {
+        Ok(out) => {
+            if out.status.success() {
+                Ok(())
+            } else {
+                Err(ApiError::CommandError)
+            }
+        }
+        Err(err) => Err(ApiError::IOError(err)),
+    }
 }

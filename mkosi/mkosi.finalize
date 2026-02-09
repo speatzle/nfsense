@@ -7,7 +7,16 @@ curl https://mirrors.edge.kernel.org/pub/linux/utils/kbd/kbd-2.5.1.tar.gz -o /tm
 cd /tmp/ && tar xzf kbd-2.5.1.tar.gz
 cp -Rp /tmp/kbd-2.5.1/data/keymaps/* "$BUILDROOT/usr/share/keymaps/"
 
+# Delete machine-id to make it unique per install and trigger first-boot
+#rm -r "$BUILDROOT/etc/machine-id"
+truncate -s 0 "$BUILDROOT/etc/machine-id"
+# Link it to /var
+#ln -sr "$BUILDROOT/etc/machine-id" "$BUILDROOT/var/machine-id"
+
 mkdir -p "$BUILDROOT/usr/share/factory/"
 cp --archive --no-target-directory --update=none "$BUILDROOT/etc" "$BUILDROOT/usr/share/factory/etc"
 cp --archive --no-target-directory --update=none "$BUILDROOT/root" "$BUILDROOT/usr/share/factory/root"
-ln -sr "$BUILDROOT/usr" "$BUILDROOT/usr/share/factory/usr"
+#ln -sr "$BUILDROOT/usr" "$BUILDROOT/usr/share/factory/usr"
+
+# Delete /var since we generate it on first boot
+#rm -rf "$BUILDROOT/var"

@@ -1,6 +1,6 @@
 #!/bin/bash
 set -euo pipefail
-IMAGE_VERSION="git$(date --utc +%Y%m%d%H%M)-$(git rev-parse --short=10 HEAD)"
+IMAGE_VERSION="g$(git rev-parse --short=10 HEAD)"
 #IMAGE_VERSION="v0.0.1"
 
 rm -f mkosi/mkosi.output/nfsense* initrd*
@@ -39,6 +39,6 @@ qemu-img convert -p -f raw -O qcow2 -c "$RAW_FILE" "$QCOW2_FILE"
 qemu-img resize "$QCOW2_FILE" 32G
 
 echo "Calculate hash for qcow2"
-sha256sum "$QCOW2_FILE" >> "nfsense_${IMAGE_VERSION}.SHA256SUM"
+sha256sum "$QCOW2_FILE" >> "mkosi/mkosi.output/nfsense_${IMAGE_VERSION}.SHA256SUMS"
 
 echo "Done"

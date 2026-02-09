@@ -4,7 +4,7 @@ Verify=no
 
 [Source]
 Type=url-file
-Path=https://download.nfsense.net/sysupdate/v1/
+Path=https://download.nfsense.net/sysupdate/v1/%a/
 MatchPattern=nfsense_@v.efi
 
 [Target]

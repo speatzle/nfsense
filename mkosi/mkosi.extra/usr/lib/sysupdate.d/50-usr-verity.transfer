@@ -4,13 +4,13 @@ Verify=no
 
 [Source]
 Type=url-file
-Path=https://download.nfsense.net/sysupdate/v1/
-MatchPattern=nfsense_@v.usr-x86-64-verity.raw.zst
+Path=https://download.nfsense.net/sysupdate/v1/%a/
+MatchPattern=nfsense_@v.uv.@u.raw.zst
 
 [Target]
 Type=partition
 Path=auto
-MatchPattern=nfsense_@v_verity
+MatchPattern=%M_@v_uv
 MatchPartitionType=usr-verity
 PartitionFlags=0
 ReadOnly=1

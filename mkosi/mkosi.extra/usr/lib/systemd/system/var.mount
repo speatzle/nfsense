@@ -1,0 +1,17 @@
+[Unit]
+Description=Persistent Var Partition
+Documentation=man:systemd.mount(5)
+DefaultDependencies=no
+Conflicts=umount.target
+Before=systemd-tmpfiles-setup.service local-fs.target umount.target
+After=systemd-repart.service
+
+[Mount]
+# We target the partition by the Label defined in your repart config
+What=/dev/disk/by-partlabel/nfsense_var
+Where=/var
+Type=ext4
+Options=defaults,nosuid,nodev,noexec
+
+[Install]
+WantedBy=local-fs.target

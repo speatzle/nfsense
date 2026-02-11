@@ -14,6 +14,7 @@ use state::AppState;
 use std::env;
 use std::fs;
 use std::net::{IpAddr, Ipv6Addr, SocketAddr};
+use std::path::Path;
 use std::path::PathBuf;
 use std::time::Duration;
 use tokio::signal;
@@ -50,6 +51,10 @@ async fn main() {
 
     if args.len() > 1 && args[1] == "generate-default" {
         info!("Generating default config...");
+        if Path::new(config_manager::CURRENT_CONFIG_PATH).exists() {
+            error!("Default config already exists. Not overwriting.");
+            return;
+        }
         config_manager::generate_default_config(config_manager::CURRENT_CONFIG_PATH).unwrap();
         fs::copy(
             config_manager::CURRENT_CONFIG_PATH,

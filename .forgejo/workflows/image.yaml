@@ -1,0 +1,64 @@
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      gitref:
+        description: "Git Ref to build"
+        required: true
+        type: string
+jobs:
+  image-build:
+    runs-on: nfsense-build
+    container:
+      image: debian:trixie
+      options: --tmpfs /tmpfs:exec
+    steps:
+      - name: install dependencies
+        run: |
+          apt update
+          apt install --yes \
+            nodejs \
+            pipx \
+            curl \
+            git \
+            zstd \
+            qemu-utils
+      - name: checkout code
+        uses: https://data.forgejo.org/actions/checkout@v4
+        with:
+          ref: ${{ inputs.gitref }}
+      - name: setup mkosi
+        run: |
+          pipx install git+https://github.com/systemd/mkosi.git@v26
+      - name: setup cert
+        run: |
+          echo "${{ secrets.SB_CRT }}" > mkosi/mkosi.crt
+          echo "${{ secrets.SB_KEY }}" > mkosi/mkosi.key
+          chmod 600 mkosi/mkosi.key
+      - name: build image
+        run: |
+          export PATH="${PATH}:/root/.local/bin"
+          mkosi --directory mkosi \
+          --workspace-directory=/tmpfs \
+          --profile=prod  \
+          --image-version="g$(git rev-parse --short=10 HEAD)" \
+          --output-directory mkosi.output
+          echo "build done"
+      - name: convert to qcow2
+        run: |
+          COMPRESSED_FILE=$(find mkosi/mkosi.output -name "nfsense_g$(git rev-parse --short=10 HEAD).raw.zst" -print -quit)
+          RAW_FILE="${COMPRESSED_FILE%.zst}"
+          zstd -d -f "$COMPRESSED_FILE" -o "$RAW_FILE"
+          QCOW2_FILE="${RAW_FILE%.raw}.qcow2"
+          qemu-img convert -p -f raw -O qcow2 -c "$RAW_FILE" "$QCOW2_FILE"
+          qemu-img resize "$QCOW2_FILE" 32G
+      - name: upload image
+        uses: https://data.forgejo.org/actions/upload-artifact@v6
+        with:
+          name: disk
+          path: |
+            mkosi.output/nfsense_*.qcow2
+            mkosi.output/nfsense_*.zst
+            mkosi.output/nfsense_*.efi

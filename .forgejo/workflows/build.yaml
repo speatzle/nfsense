@@ -1,0 +1,46 @@
+on: [push]
+jobs:
+  api-build:
+    runs-on: docker
+    container:
+      image: debian:trixie
+    steps:
+      - name: install dependencies
+        run: |
+          apt update
+          apt install --yes \
+            nodejs \
+            gcc \
+            pkg-config \
+            libssl-dev \
+            curl \
+            git \
+      - name: checkout code
+        uses: https://data.forgejo.org/actions/checkout@v4
+      - name: setup rust
+        uses: https://codeberg.org/wackbyte/rust-toolchain@4da5f751804b19f1d50061e0e44cb8b6d449c9af
+        with:
+          toolchain: stable
+      - name: build api
+        run: |
+          cargo build --release
+  client-build:
+    runs-on: docker
+    steps:
+      - name: setup node
+        uses: https://code.forgejo.org/actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: checkout code
+        uses: https://data.forgejo.org/actions/checkout@v4
+      - name: setup pnpm
+        uses: https://github.com/pnpm/action-setup@v4
+        with:
+          version: 10
+      - name: build client
+        run: |
+          cd client
+          pnpm install
+          pnpm run build-only
+          echo "Type Check"
+          pnpm run type-check

@@ -55,7 +55,7 @@ jobs:
           qemu-img convert -p -f raw -O qcow2 -c "$RAW_FILE" "$QCOW2_FILE"
           qemu-img resize "$QCOW2_FILE" 32G
       - name: upload image
-        uses: https://data.forgejo.org/actions/upload-artifact@v6
+        uses: https://data.forgejo.org/forgejo/upload-artifact@v4@v4
         with:
           name: disk
           path: |

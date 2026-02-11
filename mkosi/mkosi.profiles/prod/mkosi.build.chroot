@@ -26,7 +26,7 @@ cp -r src/templates/* "$DESTDIR/usr/share/nfsense/templates/"
 echo "Building Client"
 cd $SRCDIR/client
 CI=true pnpm install --frozen-lockfile
-CI=true pnpm run build
+CI=true pnpm run build-only
 mkdir -p "$DESTDIR/usr/share/nfsense/html"
 cp -r dist/* "$DESTDIR/usr/share/nfsense/html/"
 

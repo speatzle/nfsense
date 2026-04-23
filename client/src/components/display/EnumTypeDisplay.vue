@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { variantOf } from '~/util';
-
 const props = withDefaults(defineProps<{
   data: object | string,
 }>(), {

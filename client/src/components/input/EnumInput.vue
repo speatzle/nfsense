@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { MaybeEnumValue, Variants } from './input';
-import { equals, variantOf, Index } from '~/util';
 
 const props = withDefaults(defineProps<{
   // Two-Way Bindings

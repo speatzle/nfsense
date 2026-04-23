@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useKeyModifier } from '@vueuse/core';
 import type { Component } from 'vue';
-import { equals, atPath } from '~/util';
 
 const shiftState = $(useKeyModifier('Shift'));
 const ctrlState = $(useKeyModifier('Control'));

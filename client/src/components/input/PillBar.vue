@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { Index, MaybeIndex } from '../../util';
-
 const props = withDefaults(defineProps<{
   modelValue?: MaybeIndex,
   default?: MaybeIndex,

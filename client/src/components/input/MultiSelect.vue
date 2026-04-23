@@ -1,6 +1,5 @@
 <!-- Wrapper component that sets "multiple" on DropdownInput to true and declares its type to be an array of any -->
 <script setup lang="ts">
-import { equals, Index } from '../../util';
 import { Options, MaybeSearchProvider } from './input';
 const props = withDefaults(defineProps<{
   // Two-Way Bindings (v-model)

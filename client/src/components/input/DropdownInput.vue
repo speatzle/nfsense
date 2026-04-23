@@ -1,6 +1,5 @@
 <!-- Base component that implements selecting single and multiple values from a list in a type-unsafe manner -->
 <script setup lang="ts">
-import { equals, isNullish, Index } from '../../util';
 import type { Options, MaybeSearchProvider } from './input';
 // --- Prop setup ---
 const props = withDefaults(defineProps<{

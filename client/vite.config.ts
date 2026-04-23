@@ -1,14 +1,14 @@
-import { defineConfig } from 'vite';
-import { fileURLToPath, URL } from 'node:url';
+import { defineConfig } from "vite";
+import { fileURLToPath, URL } from "node:url";
 
-import VueDevTools from 'vite-plugin-vue-devtools';
-import VueMacros from 'vue-macros/vite';
-import Vue from '@vitejs/plugin-vue';
-import AutoImport from 'unplugin-auto-import/vite';
-import Components from 'unplugin-vue-components/vite';
-import Icons from 'unplugin-icons/vite';
-import IconsResolver from 'unplugin-icons/resolver';
-import Pages from 'vite-plugin-pages';
+import VueDevTools from "vite-plugin-vue-devtools";
+import VueMacros from "vue-macros/vite";
+import Vue from "@vitejs/plugin-vue";
+import AutoImport from "unplugin-auto-import/vite";
+import Components from "unplugin-vue-components/vite";
+import Icons from "unplugin-icons/vite";
+import IconsResolver from "unplugin-icons/resolver";
+import Pages from "vite-plugin-pages";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -16,56 +16,44 @@ export default defineConfig({
     VueDevTools(),
     VueMacros({
       reactivityTransform: true,
-      plugins: {
-        vue: Vue(),
-      },
+      plugins: { vue: Vue() },
     }),
     AutoImport({
       include: [/\.[jt]sx?$/, /\.vue$/, /\.vue\?vue/, /\.md$/],
       imports: [
-        'vue',
-        'vue-router',
-        'vue-i18n',
-        'vue/macros',
-        '@vueuse/core',
-        '@vueuse/head',
+        "vue",
+        "vue-router",
+        "vue-i18n",
+        "vue/macros",
+        "@vueuse/core",
+        "@vueuse/head",
         {
-          from: 'vue-toast-notification',
-          imports: ['useToast'],
+          "vue-toast-notification": ["useToast"],
+          "./src/util": ["equals", "isNullish", "variantOf", "atPath", "syncTo"],
         },
+        { from: "./src/util", imports: ["Index", "MaybeIndex"], type: true },
       ],
-      dts: 'src/generated/auto-imports.d.ts',
-      dtsMode: 'overwrite',
-      dirs: ['src/composables'],
+      dts: "src/generated/auto-imports.d.ts",
+      dtsMode: "overwrite",
+      dirs: ["src/composables"],
       vueTemplate: true,
     }),
     Components({
-      extensions: ['vue'],
+      extensions: ["vue"],
       include: [/\.vue$/, /\.vue\?vue/],
-      dts: 'src/generated/components.d.ts',
+      dts: "src/generated/components.d.ts",
       resolvers: [
         IconsResolver(),
-        (componentName: string) => {
-          if (componentName === 'FocusTrap') return { name: 'FocusTrap', from: 'focus-trap-vue' };
+        (comp: string) => {
+          if (comp === "FocusTrap") return { name: "FocusTrap", from: "focus-trap-vue" };
         },
       ],
-      types: [
-        {
-          from: 'focus-trap-vue',
-          names: ['FocusTrap'],
-        },
-      ],
+      types: [{ from: "focus-trap-vue", names: ["FocusTrap"] }],
     }),
     Icons({}),
-    Pages({
-      extensions: ['vue', 'md'],
-    }),
+    Pages({ extensions: ["vue", "md"] }),
   ],
 
   // Easy Imports (Keep in sync with tsconfig.json!)
-  resolve: {
-    alias: {
-      '~': fileURLToPath(new URL('./src', import.meta.url)),
-    },
-  },
+  resolve: { alias: { "~": fileURLToPath(new URL("./src", import.meta.url)) } },
 });

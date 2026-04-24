@@ -1,5 +1,5 @@
 // Helper Types for object keys
-export type Index = string | number | symbol;
+export type Index = string | number;
 export type MaybeIndex = Index | null;
 
 /** Performs a type-agnostic deep comparison of two values by process of elimination. This mainly covers the use cases of Primitives, Objects and Arrays, but not certain builtins like Dates. */
@@ -33,9 +33,22 @@ export function atPath(value: any, path: string): any {
   return value;
 }
 
-/** Returns a closure that assigns its paramater to the target refs value if they're unequal. */
-export function syncTo<T>(target: Ref<T>) {
-  return (val: T) => {
-    if (!equals(target.value, val)) target.value = val;
+/** Readonly Ref with an optional value */
+type RRef<T> = Readonly<Ref<T | undefined>>;
+/** Hooks up a two-way binding between a component prop and a local ref */
+export function syncModel<T>(prop: RRef<T>, local: Ref<T>, emit: (value: T) => void, deep = false) {
+  const updateLocal = (value: T | undefined) => {
+    if (value !== undefined && !equals(value, local.value)) local.value = value;
+  };
+  const updateParent = (value: T) => {
+    if (!equals(value, prop.value)) emit(value);
+  };
+
+  const stopFromProp = watch(prop, updateLocal, { deep });
+  const stopFromLocal = watch(local, updateParent, { deep, immediate: true });
+
+  return () => {
+    stopFromProp();
+    stopFromLocal();
   };
 }

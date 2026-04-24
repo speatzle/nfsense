@@ -4,8 +4,8 @@ const activeTargets = $ref<string[]>([]);
 
 <script setup lang="ts">
 const props = $defineProps<{
-  from?: string,
-  to?: string,
+  from?: string;
+  to?: string;
 }>();
 const { from, to } = $(props);
 
@@ -17,9 +17,9 @@ if (from) {
 
 <template>
   <div v-if="from" :id="'portal-' + from">
-    <slot/>
+    <slot />
   </div>
   <Teleport v-else-if="to && activeTargets.includes(to)" :to="'#portal-' + to">
-    <slot/>
+    <slot />
   </Teleport>
 </template>

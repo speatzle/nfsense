@@ -1,164 +1,158 @@
-import { SearchProvider, Options } from '~/components/input/input';
-import { apiCall } from './api';
+import { SearchProvider, Options } from "~/components/input/input";
+import { apiCall } from "./api";
 
 const GetHardwareInterfaces: SearchProvider = async (_) => {
-  const res = await apiCall('network.links.list', {});
+  const res = await apiCall("network.links.list", {});
   if (res.Error === null) {
-    console.debug('links', res.Data);
+    console.debug("links", res.Data);
     return Object.fromEntries(res.Data.map((r: any) => [r.name, { display: r.name }]));
   } else {
-    console.debug('error', res);
+    console.debug("error", res);
     return {} as Options;
   }
 };
 
 const GetInterfaces: SearchProvider = async (_) => {
-  const res = await apiCall('network.interfaces.list', {});
+  const res = await apiCall("network.interfaces.list", {});
   if (res.Error === null) {
-    console.debug('interfaces', res.Data);
+    console.debug("interfaces", res.Data);
     return Object.fromEntries(res.Data.map((r: any) => [r.name, { display: r.name }]));
   } else {
-    console.debug('error', res);
+    console.debug("error", res);
     return {} as Options;
   }
 };
 
 const GetAddresses: SearchProvider = async (_) => {
-  const res = await apiCall('object.addresses.list', {});
+  const res = await apiCall("object.addresses.list", {});
   if (res.Error === null) {
-    console.debug('addresses', res.Data);
+    console.debug("addresses", res.Data);
     return Object.fromEntries(res.Data.map((r: any) => [r.name, { display: r.name }]));
   } else {
-    console.debug('error', res);
+    console.debug("error", res);
     return {} as Options;
   }
 };
 
 const GetVirtualRouters: SearchProvider = async (_) => {
-  const res = await apiCall('network.virtual_routers.list', {});
+  const res = await apiCall("network.virtual_routers.list", {});
   if (res.Error === null) {
-    console.debug('virtual_routers', res.Data);
+    console.debug("virtual_routers", res.Data);
     return Object.fromEntries(res.Data.map((r: any) => [r.name, { display: r.name }]));
   } else {
-    console.debug('error', res);
+    console.debug("error", res);
     return {} as Options;
   }
 };
 
 const GetServices: SearchProvider = async (_) => {
-  const res = await apiCall('object.services.list', {});
+  const res = await apiCall("object.services.list", {});
   if (res.Error === null) {
-    console.debug('services', res.Data);
+    console.debug("services", res.Data);
     return Object.fromEntries(res.Data.map((r: any) => [r.name, { display: r.name }]));
   } else {
-    console.debug('error', res);
+    console.debug("error", res);
     return {} as Options;
   }
 };
 
 const GetPeers: SearchProvider = async (_) => {
-  const res = await apiCall('vpn.wireguard.peers.list', {});
+  const res = await apiCall("vpn.wireguard.peers.list", {});
   if (res.Error === null) {
-    console.debug('peers', res.Data);
+    console.debug("peers", res.Data);
     return Object.fromEntries(res.Data.map((r: any) => [r.name, { display: r.name }]));
   } else {
-    console.debug('error', res);
+    console.debug("error", res);
     return {} as Options;
   }
 };
 
 const ICMPPacketTypes: SearchProvider = async (_) => {
   return {
-    'echo_reply': { display: 'EchoReply' },
-    'destination_unreachable': { display: 'DestinationUnreachable' },
-    'source_quench': { display: 'SourceQuench' },
-    'redirect': { display: 'Redirect' },
-    'echo_request': { display: 'EchoRequest' },
-    'time_exceeded': { display: 'TimeExceeded' },
-    'parameter_problem': { display: 'ParameterProblem' },
-    'timestamp_request': { display: 'TimestampRequest' },
-    'timestamp_reply': { display: 'TimestampReply' },
-    'info_request': { display: 'InfoRequest' },
-    'info_reply': { display: 'InfoReply' },
-    'address_mask_request': { display: 'AddressMaskRequest' },
-    'address_mask_reply': { display: 'AddressMaskReply' },
-    'router_advertisement': { display: 'RouterAdvertisement' },
-    'router_solicitation': { display: 'RouterSolicitation' },
+    echo_reply: { display: "EchoReply" },
+    destination_unreachable: { display: "DestinationUnreachable" },
+    source_quench: { display: "SourceQuench" },
+    redirect: { display: "Redirect" },
+    echo_request: { display: "EchoRequest" },
+    time_exceeded: { display: "TimeExceeded" },
+    parameter_problem: { display: "ParameterProblem" },
+    timestamp_request: { display: "TimestampRequest" },
+    timestamp_reply: { display: "TimestampReply" },
+    info_request: { display: "InfoRequest" },
+    info_reply: { display: "InfoReply" },
+    address_mask_request: { display: "AddressMaskRequest" },
+    address_mask_reply: { display: "AddressMaskReply" },
+    router_advertisement: { display: "RouterAdvertisement" },
+    router_solicitation: { display: "RouterSolicitation" },
   };
 };
 
+// oxfmt-ignore
 const PortDefinition: object = {
-  'any': { display: 'Any' },
-  'single': {
-    display: 'Single',
-    fields: {
-      port: { is: 'NumberBox', label: 'Port' },
-    },
-  },
-  'range': {
-    display: 'Range',
-    fields: {
-      start_port: { is: 'NumberBox', label: 'Start Port' },
-      end_port: { is: 'NumberBox', label: 'End Port' },
-    },
-  },
+  any: { display: "Any" },
+  single: { display: "Single", fields: { port: { is: "NumberBox", label: "Port" } } },
+  range: { display: "Range", fields: {
+    start_port: { is: "NumberBox", label: "Start Port" },
+    end_port: { is: "NumberBox", label: "End Port" },
+  } },
 };
 
+// oxfmt-ignore
 export const editTypes: { [key: string]: { [key: string]: any } } = {
-  'firewall': {
-    name: 'Firewall',
-    'forward_rules': {
-      name: 'Forward Rule',
-      idType: 'Number',
+  "firewall": {
+    name: "Firewall",
+    "forward_rules": {
+      name: "Forward Rule",
+      idType: "Number",
       fields: {
-        name: { is: 'TextBox', label: 'Name' },
-        source_addresses: { is: 'MultiSelect', label: 'Source', props: { searchProvider: GetAddresses } },
-        negate_source: { is: 'CheckBox', label: 'Negate Source' },
-        destination_addresses: { is: 'MultiSelect', label: 'Destination', props: { searchProvider: GetAddresses } },
-        negate_destination: { is: 'CheckBox', label: 'Negate Destination' },
-        services: { is: 'MultiSelect', label: 'Services', props: { searchProvider: GetServices } },
-        verdict: { is: 'EnumInput', label: 'Verdict', props: { variants: {
-          'accept': { display: 'Accept' },
-          'drop': { display: 'Drop' },
-          'continue': { display: 'Continue' },
+        name: { is: "TextBox", label: "Name" },
+        source_addresses: { is: "MultiSelect", label: "Source", props: { searchProvider: GetAddresses } },
+        negate_source: { is: "CheckBox", label: "Negate Source" },
+        destination_addresses: { is: "MultiSelect", label: "Destination", props: { searchProvider: GetAddresses } },
+        negate_destination: { is: "CheckBox", label: "Negate Destination" },
+        services: { is: "MultiSelect", label: "Services", props: { searchProvider: GetServices } },
+        verdict: { is: "EnumInput", label: "Verdict", props: { variants: {
+          "accept": { display: "Accept" },
+          "drop": { display: "Drop" },
+          "continue": { display: "Continue" },
         } } },
-        counter: { is: 'CheckBox', label: 'Counter' },
-        log: { is: 'CheckBox', label: 'Log' },
-        comment: { is: 'MultilineTextBox', label: 'Comment' },
+        counter: { is: "CheckBox", label: "Counter" },
+        log: { is: "CheckBox", label: "Log" },
+        comment: { is: "MultilineTextBox", label: "Comment" },
       },
       default: {
-        name:'',
+        name:"",
         source_addresses: [],
         negate_source: false,
         destination_addresses: [],
         negate_destination: false,
         services: [],
-        verdict: 'accept',
+        verdict: "accept",
         counter: true,
         log: false,
-        comment: '',
+        comment: "",
       },
     },
-    'destination_nat_rules': {
-      name: 'Destination NAT Rule',
-      idType: 'Number',
+    "destination_nat_rules": {
+      name: "Destination NAT Rule",
+      idType: "Number",
       fields: {
-        name: { is: 'TextBox', label: 'Name' },
-        source_addresses: { is: 'MultiSelect', label: 'Source', props: { searchProvider: GetAddresses } },
-        negate_source: { is: 'CheckBox', label: 'Negate Source' },
-        destination_addresses: { is: 'MultiSelect', label: 'Destination', props: { searchProvider: GetAddresses } },
-        negate_destination: { is: 'CheckBox', label: 'Negate Destination' },
-        services: { is: 'MultiSelect', label: 'Services', props: { searchProvider: GetServices } },
-        dnat_heading: { is: 'Heading', props: { caption: 'DNAT' } },
-        dnat_address: { is: 'SingleSelect', label: 'Destination', props: { searchProvider: GetAddresses } },
-        dnat_service: { is: 'SingleSelect', label: 'Service', props: { searchProvider: GetServices } },
-        automatic_forward_rule: { is: 'CheckBox', label: 'Automatic Forward Rule' },
-        counter: { is: 'CheckBox', label: 'Counter' },
-        log: { is: 'CheckBox', label: 'Log' },
-        comment: { is: 'MultilineTextBox', label: 'Comment' },
+        name: { is: "TextBox", label: "Name" },
+        source_addresses: { is: "MultiSelect", label: "Source", props: { searchProvider: GetAddresses } },
+        negate_source: { is: "CheckBox", label: "Negate Source" },
+        destination_addresses: { is: "MultiSelect", label: "Destination", props: { searchProvider: GetAddresses } },
+        negate_destination: { is: "CheckBox", label: "Negate Destination" },
+        services: { is: "MultiSelect", label: "Services", props: { searchProvider: GetServices } },
+        dnat_heading: { is: "Heading", props: { caption: "DNAT" } },
+        dnat_address: { is: "SingleSelect", label: "Destination", props: { searchProvider: GetAddresses } },
+        dnat_service: { is: "SingleSelect", label: "Service", props: { searchProvider: GetServices } },
+        automatic_forward_rule: { is: "CheckBox", label: "Automatic Forward Rule" },
+        counter: { is: "CheckBox", label: "Counter" },
+        log: { is: "CheckBox", label: "Log" },
+        comment: { is: "MultilineTextBox", label: "Comment" },
       },
       default: {
-        name:'',
+        name:"",
         source_addresses: [],
         negate_source: false,
         destination_addresses: [],
@@ -169,319 +163,319 @@ export const editTypes: { [key: string]: { [key: string]: any } } = {
         automatic_forward_rule: false,
         counter: true,
         log: false,
-        comment: '',
+        comment: "",
       },
     },
-    'source_nat_rules': {
-      name: 'Source NAT Rule',
-      idType: 'Number',
+    "source_nat_rules": {
+      name: "Source NAT Rule",
+      idType: "Number",
       fields: {
-        name: { is: 'TextBox', label: 'Name' },
-        source_addresses: { is: 'MultiSelect', label: 'Source', props: { searchProvider: GetAddresses } },
-        negate_source: { is: 'CheckBox', label: 'Negate Source' },
-        destination_addresses: { is: 'MultiSelect', label: 'Destination', props: { searchProvider: GetAddresses } },
-        negate_destination: { is: 'CheckBox', label: 'Negate Destination' },
-        services: { is: 'MultiSelect', label: 'Services', props: { searchProvider: GetServices } },
-        snat_heading: { is: 'Heading', props: { caption: 'SNAT' } },
-        snat_type: { is: 'EnumInput', label: 'Type', props: { variants: {
-          'masquerade': { display: 'Masquerade' },
-          'snat': {
-            display: 'SNAT',
+        name: { is: "TextBox", label: "Name" },
+        source_addresses: { is: "MultiSelect", label: "Source", props: { searchProvider: GetAddresses } },
+        negate_source: { is: "CheckBox", label: "Negate Source" },
+        destination_addresses: { is: "MultiSelect", label: "Destination", props: { searchProvider: GetAddresses } },
+        negate_destination: { is: "CheckBox", label: "Negate Destination" },
+        services: { is: "MultiSelect", label: "Services", props: { searchProvider: GetServices } },
+        snat_heading: { is: "Heading", props: { caption: "SNAT" } },
+        snat_type: { is: "EnumInput", label: "Type", props: { variants: {
+          "masquerade": { display: "Masquerade" },
+          "snat": {
+            display: "SNAT",
             fields: {
-              address: { is: 'SingleSelect', label: 'Source', props: { searchProvider: GetAddresses } },
-              service: { is: 'SingleSelect', label: 'Service', props: { searchProvider: GetServices } },
+              address: { is: "SingleSelect", label: "Source", props: { searchProvider: GetAddresses } },
+              service: { is: "SingleSelect", label: "Service", props: { searchProvider: GetServices } },
             },
           },
         } } },
-        automatic_forward_rule: { is: 'CheckBox', label: 'Automatic Forward Rule' },
-        counter: { is: 'CheckBox', label: 'Counter' },
-        log: { is: 'CheckBox', label: 'Log' },
-        comment: { is: 'MultilineTextBox', label: 'Comment' },
+        automatic_forward_rule: { is: "CheckBox", label: "Automatic Forward Rule" },
+        counter: { is: "CheckBox", label: "Counter" },
+        log: { is: "CheckBox", label: "Log" },
+        comment: { is: "MultilineTextBox", label: "Comment" },
       },
       default: {
-        name:'',
+        name:"",
         source_addresses: [],
         negate_source: false,
         destination_addresses: [],
         negate_destination: false,
         services: [],
-        snat_type: 'masquerade',
+        snat_type: "masquerade",
         automatic_forward_rule: false,
         counter: true,
         log: false,
-        comment: '',
+        comment: "",
       },
     },
-    'inbound_rules': {
-      name: 'Inbound Rule',
-      idType: 'Number',
+    "inbound_rules": {
+      name: "Inbound Rule",
+      idType: "Number",
       fields: {
-        name: { is: 'TextBox', label: 'Name' },
-        source_addresses: { is: 'MultiSelect', label: 'Source', props: { searchProvider: GetAddresses } },
-        negate_source: { is: 'CheckBox', label: 'Negate Source' },
-        destination_addresses: { is: 'MultiSelect', label: 'Destination', props: { searchProvider: GetAddresses } },
-        negate_destination: { is: 'CheckBox', label: 'Negate Destination' },
-        services: { is: 'MultiSelect', label: 'Services', props: { searchProvider: GetServices } },
-        verdict: { is: 'EnumInput', label: 'Verdict', props: { variants: {
-          'accept': { display: 'Accept' },
-          'drop': { display: 'Drop' },
-          'continue': { display: 'Continue' },
+        name: { is: "TextBox", label: "Name" },
+        source_addresses: { is: "MultiSelect", label: "Source", props: { searchProvider: GetAddresses } },
+        negate_source: { is: "CheckBox", label: "Negate Source" },
+        destination_addresses: { is: "MultiSelect", label: "Destination", props: { searchProvider: GetAddresses } },
+        negate_destination: { is: "CheckBox", label: "Negate Destination" },
+        services: { is: "MultiSelect", label: "Services", props: { searchProvider: GetServices } },
+        verdict: { is: "EnumInput", label: "Verdict", props: { variants: {
+          "accept": { display: "Accept" },
+          "drop": { display: "Drop" },
+          "continue": { display: "Continue" },
         } } },
-        counter: { is: 'CheckBox', label: 'Counter' },
-        log: { is: 'CheckBox', label: 'Log' },
-        comment: { is: 'MultilineTextBox', label: 'Comment' },
+        counter: { is: "CheckBox", label: "Counter" },
+        log: { is: "CheckBox", label: "Log" },
+        comment: { is: "MultilineTextBox", label: "Comment" },
       },
       default: {
-        name:'',
+        name:"",
         source_addresses: [],
         negate_source: false,
         destination_addresses: [],
         negate_destination: false,
         services: [],
-        verdict: 'accept',
+        verdict: "accept",
         counter: true,
         log: false,
-        comment: '',
+        comment: "",
       },
     },
   },
-  'network': {
-    name: 'Network',
-    'interfaces': {
-      name: 'Interface',
+  "network": {
+    name: "Network",
+    "interfaces": {
+      name: "Interface",
       fields: {
-        name: { is: 'TextBox', label: 'Name' },
-        alias: { is: 'TextBox', label: 'Alias' },
-        interface_type: { is: 'EnumInput', label: 'Type', props: { variants: {
-          'hardware': {
-            display: 'Hardware',
+        name: { is: "TextBox", label: "Name" },
+        alias: { is: "TextBox", label: "Alias" },
+        interface_type: { is: "EnumInput", label: "Type", props: { variants: {
+          "hardware": {
+            display: "Hardware",
             fields: {
-              device: { is: 'SingleSelect', label: 'Device', props: { searchProvider: GetHardwareInterfaces } },
+              device: { is: "SingleSelect", label: "Device", props: { searchProvider: GetHardwareInterfaces } },
             },
           },
-          'vlan': {
-            display: 'VLAN',
+          "vlan": {
+            display: "VLAN",
             fields: {
-              parent: { is: 'SingleSelect', label: 'VLAN Parent', props: { searchProvider: GetInterfaces } },
-              id: { is: 'NumberBox', label: 'VLAN ID', props: { min: 1, max: 4094 } },
+              parent: { is: "SingleSelect", label: "VLAN Parent", props: { searchProvider: GetInterfaces } },
+              id: { is: "NumberBox", label: "VLAN ID", props: { min: 1, max: 4094 } },
             },
           },
-          'bond': {
-            display: 'Bond',
+          "bond": {
+            display: "Bond",
             fields: {
-              members: { is: 'MultiSelect', label: 'Members', props: { searchProvider: GetInterfaces } },
+              members: { is: "MultiSelect", label: "Members", props: { searchProvider: GetInterfaces } },
             },
           },
-          'bridge': {
-            display: 'Bridge',
+          "bridge": {
+            display: "Bridge",
             fields: {
-              members: { is: 'MultiSelect', label: 'Members', props: { searchProvider: GetInterfaces } },
+              members: { is: "MultiSelect", label: "Members", props: { searchProvider: GetInterfaces } },
             },
           },
         } } },
-        addressing_mode: { is: 'EnumInput', label: 'Addressing Mode', props: { variants: {
-          'none': { display: 'None' },
-          'static': {
-            display: 'Static',
+        addressing_mode: { is: "EnumInput", label: "Addressing Mode", props: { variants: {
+          "none": { display: "None" },
+          "static": {
+            display: "Static",
             fields: {
-              address: { is: 'TextBox', label: 'Address' },
+              address: { is: "TextBox", label: "Address" },
             },
           },
-          'dhcp': { display: 'DHCP' },
+          "dhcp": { display: "DHCP" },
         } } },
-        virtual_router: { is: 'SingleSelect', label: 'Virtual Router', props: { searchProvider: GetVirtualRouters } },
-        comment: { is: 'MultilineTextBox', label: 'Comment' },
+        virtual_router: { is: "SingleSelect", label: "Virtual Router", props: { searchProvider: GetVirtualRouters } },
+        comment: { is: "MultilineTextBox", label: "Comment" },
       },
     },
-    'static_routes': {
-      name: 'Static Route',
-      idType: 'Number',
+    "static_routes": {
+      name: "Static Route",
+      idType: "Number",
       fields: {
-        name: { is: 'TextBox', label: 'Name' },
-        interface: { is: 'SingleSelect', label: 'Interface', props: { searchProvider: GetInterfaces } },
-        gateway: { is: 'TextBox', label: 'Gateway' },
-        destination: { is: 'TextBox', label: 'Destination' },
-        metric: { is: 'NumberBox', label: 'Metric' },
-        comment: { is: 'MultilineTextBox', label: 'Comment' },
+        name: { is: "TextBox", label: "Name" },
+        interface: { is: "SingleSelect", label: "Interface", props: { searchProvider: GetInterfaces } },
+        gateway: { is: "TextBox", label: "Gateway" },
+        destination: { is: "TextBox", label: "Destination" },
+        metric: { is: "NumberBox", label: "Metric" },
+        comment: { is: "MultilineTextBox", label: "Comment" },
       },
     },
-    'virtual_routers': {
-      name: 'Virtual Routers',
-      idType: 'Number',
+    "virtual_routers": {
+      name: "Virtual Routers",
+      idType: "Number",
       fields: {
-        name: { is: 'TextBox', label: 'Name' },
-        table_id: { is: 'NumberBox', label: 'Table ID' },
-        comment: { is: 'MultilineTextBox', label: 'Comment' },
+        name: { is: "TextBox", label: "Name" },
+        table_id: { is: "NumberBox", label: "Table ID" },
+        comment: { is: "MultilineTextBox", label: "Comment" },
       },
     },
   },
-  'object': {
-    name: 'object',
-    'addresses': {
-      name: 'Address',
+  "object": {
+    name: "object",
+    "addresses": {
+      name: "Address",
       fields: {
-        name: { is: 'TextBox', label: 'Name' },
-        address_type: { is: 'EnumInput', label: 'Type', props: { variants: {
-          'host': {
-            display: 'Host',
+        name: { is: "TextBox", label: "Name" },
+        address_type: { is: "EnumInput", label: "Type", props: { variants: {
+          "host": {
+            display: "Host",
             fields: {
-              address: { is: 'TextBox', label: 'Address' },
+              address: { is: "TextBox", label: "Address" },
             },
           },
-          'range': {
-            display: 'Range',
+          "range": {
+            display: "Range",
             fields: {
-              range: { is: 'TextBox', label: 'Range' },
+              range: { is: "TextBox", label: "Range" },
             },
           },
-          'network': {
-            display: 'Network',
+          "network": {
+            display: "Network",
             fields: {
-              network: { is: 'TextBox', label: 'Network' },
+              network: { is: "TextBox", label: "Network" },
             },
           },
-          'group': {
-            display: 'Group',
+          "group": {
+            display: "Group",
             fields: {
-              members: { is: 'MultiSelect', label: 'Members', props: { searchProvider: GetAddresses } },
+              members: { is: "MultiSelect", label: "Members", props: { searchProvider: GetAddresses } },
             },
           },
         } } },
-        comment: { is: 'MultilineTextBox', label: 'Comment' },
+        comment: { is: "MultilineTextBox", label: "Comment" },
       },
     },
-    'services': {
-      name: 'Service',
+    "services": {
+      name: "Service",
       fields: {
-        name: { is: 'TextBox', label: 'Name' },
-        service_type: { is: 'EnumInput', label: 'Type', props: { variants: {
-          'tcp': {
-            display: 'TCP',
+        name: { is: "TextBox", label: "Name" },
+        service_type: { is: "EnumInput", label: "Type", props: { variants: {
+          "tcp": {
+            display: "TCP",
             fields: {
-              source: { is: 'EnumInput', label: 'Source', props: { variants: PortDefinition } },
-              destination: { is: 'EnumInput', label: 'Destination', props: { variants: PortDefinition } },
+              source: { is: "EnumInput", label: "Source", props: { variants: PortDefinition } },
+              destination: { is: "EnumInput", label: "Destination", props: { variants: PortDefinition } },
             },
           },
-          'udp': {
-            display: 'UDP',
+          "udp": {
+            display: "UDP",
             fields: {
-              source: { is: 'EnumInput', label: 'Source', props: { variants: PortDefinition } },
-              destination: { is: 'EnumInput', label: 'Destination', props: { variants: PortDefinition } },
+              source: { is: "EnumInput", label: "Source", props: { variants: PortDefinition } },
+              destination: { is: "EnumInput", label: "Destination", props: { variants: PortDefinition } },
             },
           },
-          'icmp': {
-            display: 'ICMP',
+          "icmp": {
+            display: "ICMP",
             fields: {
-              ptypes: { is: 'MultiSelect', label: 'Packet Types', props: { searchProvider: ICMPPacketTypes } },
+              ptypes: { is: "MultiSelect", label: "Packet Types", props: { searchProvider: ICMPPacketTypes } },
             },
           },
-          'group': {
-            display: 'Group',
+          "group": {
+            display: "Group",
             fields: {
-              members: { is: 'MultiSelect', label: 'Members', props: { searchProvider: GetServices } },
+              members: { is: "MultiSelect", label: "Members", props: { searchProvider: GetServices } },
             },
           },
         } } },
-        comment: { is: 'MultilineTextBox', label: 'Comment' },
+        comment: { is: "MultilineTextBox", label: "Comment" },
       },
     },
   },
-  'service': {
-    name: 'Service',
-    'dhcp_servers': {
-      name: 'DHCP Server',
-      idType: 'Number',
+  "service": {
+    name: "Service",
+    "dhcp_servers": {
+      name: "DHCP Server",
+      idType: "Number",
       fields: {
-        name: { is: 'TextBox', label: 'Name' },
-        interface: { is: 'SingleSelect', label: 'Interface', props: { searchProvider: GetInterfaces } },
-        pool: { is: 'MultiSelect', label: 'Pool', props: { searchProvider: GetAddresses } },
-        gateway_mode: { is: 'EnumInput', label: 'Gateway Mode', props: { variants: {
-          'none': { display: 'None' },
-          'interface': { display: 'Interface' },
-          'specify': {
-            display: 'Specify',
+        name: { is: "TextBox", label: "Name" },
+        interface: { is: "SingleSelect", label: "Interface", props: { searchProvider: GetInterfaces } },
+        pool: { is: "MultiSelect", label: "Pool", props: { searchProvider: GetAddresses } },
+        gateway_mode: { is: "EnumInput", label: "Gateway Mode", props: { variants: {
+          "none": { display: "None" },
+          "interface": { display: "Interface" },
+          "specify": {
+            display: "Specify",
             fields: {
-              gateway: { is: 'SingleSelect', label: 'Gateway', props: { searchProvider: GetAddresses } },
+              gateway: { is: "SingleSelect", label: "Gateway", props: { searchProvider: GetAddresses } },
             },
           },
         } } },
-        dns_server_mode: { is: 'EnumInput', label: 'DNS Server Mode', props: { variants: {
-          'none': { display: 'None' },
-          'interface': { display: 'Interface' },
-          'specify': {
-            display: 'Specify',
+        dns_server_mode: { is: "EnumInput", label: "DNS Server Mode", props: { variants: {
+          "none": { display: "None" },
+          "interface": { display: "Interface" },
+          "specify": {
+            display: "Specify",
             fields: {
-              dns_servers: { is: 'MultiSelect', label: 'DNS Servers', props: { searchProvider: GetAddresses } },
+              dns_servers: { is: "MultiSelect", label: "DNS Servers", props: { searchProvider: GetAddresses } },
             },
           },
         } } },
-        ntp_server_mode: { is: 'EnumInput', label: 'NTP Server Mode', props: { variants: {
-          'none': { display: 'None' },
-          'interface': { display: 'Interface' },
-          'specify': {
-            display: 'Specify',
+        ntp_server_mode: { is: "EnumInput", label: "NTP Server Mode", props: { variants: {
+          "none": { display: "None" },
+          "interface": { display: "Interface" },
+          "specify": {
+            display: "Specify",
             fields: {
-              ntp_servers: { is: 'MultiSelect', label: 'NTP Servers', props: { searchProvider: GetAddresses } },
+              ntp_servers: { is: "MultiSelect", label: "NTP Servers", props: { searchProvider: GetAddresses } },
             },
           },
         } } },
-        lease_time: { is: 'NumberBox', label: 'Lease Time' },
-        comment: { is: 'MultilineTextBox', label: 'Comment' },
+        lease_time: { is: "NumberBox", label: "Lease Time" },
+        comment: { is: "MultilineTextBox", label: "Comment" },
       },
     },
-    'ntp_servers': {
-      name: 'NTP Server',
-      idType: 'Number',
+    "ntp_servers": {
+      name: "NTP Server",
+      idType: "Number",
       fields: {
-        name: { is: 'TextBox', label: 'Name' },
-        interface: { is: 'SingleSelect', label: 'Interface', props: { searchProvider: GetInterfaces } },
-        comment: { is: 'MultilineTextBox', label: 'Comment' },
+        name: { is: "TextBox", label: "Name" },
+        interface: { is: "SingleSelect", label: "Interface", props: { searchProvider: GetInterfaces } },
+        comment: { is: "MultilineTextBox", label: "Comment" },
       },
     },
-    'dns_servers': {
-      name: 'DNS Server',
-      idType: 'Number',
+    "dns_servers": {
+      name: "DNS Server",
+      idType: "Number",
       fields: {
-        name: { is: 'TextBox', label: 'Name' },
-        interface: { is: 'SingleSelect', label: 'Interface', props: { searchProvider: GetInterfaces } },
-        comment: { is: 'MultilineTextBox', label: 'Comment' },
+        name: { is: "TextBox", label: "Name" },
+        interface: { is: "SingleSelect", label: "Interface", props: { searchProvider: GetInterfaces } },
+        comment: { is: "MultilineTextBox", label: "Comment" },
       },
     },
   },
-  'vpn': {
-    name: 'VPN',
-    'wireguard.interfaces': {
-      name: 'Wireguard Interface',
+  "vpn": {
+    name: "VPN",
+    "wireguard.interfaces": {
+      name: "Wireguard Interface",
       fields: {
-        name: { is: 'TextBox', label: 'Name' },
-        public_key: { is: 'TextBox', label: 'Public Key' },
-        private_key: { is: 'TextBox', label: 'Private Key' },
-        listen_port: { is: 'NumberBox', label: 'Listen Port' },
-        peers: { is: 'MultiSelect', label: 'Peers', props: { searchProvider: GetPeers } },
-        comment: { is: 'MultilineTextBox', label: 'Comment' },
+        name: { is: "TextBox", label: "Name" },
+        public_key: { is: "TextBox", label: "Public Key" },
+        private_key: { is: "TextBox", label: "Private Key" },
+        listen_port: { is: "NumberBox", label: "Listen Port" },
+        peers: { is: "MultiSelect", label: "Peers", props: { searchProvider: GetPeers } },
+        comment: { is: "MultilineTextBox", label: "Comment" },
       },
     },
-    'wireguard.peers': {
-      name: 'Wireguard Peer',
+    "wireguard.peers": {
+      name: "Wireguard Peer",
       fields: {
-        name: { is: 'TextBox', label: 'Name' },
-        public_key: { is: 'TextBox', label: 'Public Key' },
-        preshared_key: { is: 'TextBox', label: 'Preshared Key' },
-        allowed_ips: { is: 'MultiSelect', label: 'Allowed IPs', props: { searchProvider: GetAddresses } },
-        endpoint: { is: 'TextBox', label: 'Endpoint' },
-        persistent_keepalive: { is: 'NumberBox', label: 'Persistent Keepalive' },
-        comment: { is: 'MultilineTextBox', label: 'Comment' },
+        name: { is: "TextBox", label: "Name" },
+        public_key: { is: "TextBox", label: "Public Key" },
+        preshared_key: { is: "TextBox", label: "Preshared Key" },
+        allowed_ips: { is: "MultiSelect", label: "Allowed IPs", props: { searchProvider: GetAddresses } },
+        endpoint: { is: "TextBox", label: "Endpoint" },
+        persistent_keepalive: { is: "NumberBox", label: "Persistent Keepalive" },
+        comment: { is: "MultilineTextBox", label: "Comment" },
       },
     },
   },
-  'system': {
-    name: 'System',
-    'users': {
-      name: 'User',
+  "system": {
+    name: "System",
+    "users": {
+      name: "User",
       fields: {
-        name: { is: 'TextBox', label: 'Name' },
-        password: { is: 'TextBox', label: 'Password' },
-        comment: { is: 'MultilineTextBox', label: 'Comment' },
+        name: { is: "TextBox", label: "Name" },
+        password: { is: "TextBox", label: "Password" },
+        comment: { is: "MultilineTextBox", label: "Comment" },
       },
     },
   },

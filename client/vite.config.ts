@@ -29,7 +29,7 @@ export default defineConfig({
         "@vueuse/head",
         {
           "vue-toast-notification": ["useToast"],
-          "./src/util": ["equals", "isNullish", "variantOf", "atPath", "syncTo"],
+          "~/util": ["equals", "isNullish", "variantOf", "atPath", "syncModel"],
         },
         { from: "./src/util", imports: ["Index", "MaybeIndex"], type: true },
       ],

@@ -11,41 +11,37 @@ const msgId = $ref(Math.floor(Math.random() * 100000));
 let subscriptionId = $ref(0);
 
 const columns = [
-  { heading: 'Protocol', path: 'protocol' },
-  { heading: 'Source IP', path: 'source_ip' },
-  { heading: 'Source Port', path: 'source_port' },
-  { heading: 'Destination IP', path: 'destination_ip' },
-  { heading: 'Destination Port', path: 'destination_port' },
-  { heading: 'Rule', path: 'prefix' },
-  { heading: 'Timestamp', path: 'timestamp' },
+  { heading: "Protocol", path: "protocol" },
+  { heading: "Source IP", path: "source_ip" },
+  { heading: "Source Port", path: "source_port" },
+  { heading: "Destination IP", path: "destination_ip" },
+  { heading: "Destination Port", path: "destination_port" },
+  { heading: "Rule", path: "prefix" },
+  { heading: "Timestamp", path: "timestamp" },
 ];
 
-async function load(){
+async function load() {
   loading = true;
-  websocket = new WebSocket('/api');
-  websocket.addEventListener('open', () => {
-    console.debug('ws connected', websocket);
-    websocket?.send(JSON.stringify({ jsonrpc:'2.0', method:'system.logs.fw.live.subscribe', id:msgId }));
+  websocket = new WebSocket("/api");
+  websocket.addEventListener("open", () => {
+    console.debug("ws connected", websocket);
+    websocket?.send(
+      JSON.stringify({ jsonrpc: "2.0", method: "system.logs.fw.live.subscribe", id: msgId }),
+    );
 
-    console.debug('ws message sent!');
+    console.debug("ws message sent!");
   });
 
-  websocket.addEventListener('close', (e) => {
-    console.debug('DISCONNECTED', e);
-  });
-
-  websocket.addEventListener('error', (e) => {
-    console.debug('ERROR',e);
-  });
+  websocket.addEventListener("close", (e) => console.debug("DISCONNECTED", e));
+  websocket.addEventListener("error", (e) => console.debug("ERROR", e));
 
   websocket.onmessage = (e) => {
-    console.debug('ws message', e);
+    console.debug("ws message", e);
     const data = JSON.parse(e.data);
 
-    if (data.method === 'system.logs.fw.live.event') {
+    if (data.method === "system.logs.fw.live.event") {
       subscriptionId = data.params.subscription;
       logs.push(data.params.result);
-
     }
 
     return false;
@@ -53,20 +49,28 @@ async function load(){
   loading = false;
 }
 
-
-onMounted(async() => {
-  load();
-});
+onMounted(load);
 
 onBeforeUnmount(() => {
-  websocket?.send(JSON.stringify({ jsonrpc:'2.0', method:'system.log.fw.live.unsubscribe', id:subscriptionId }));
-  console.debug('closing log websocket');
+  websocket?.send(
+    JSON.stringify({
+      jsonrpc: "2.0",
+      method: "system.log.fw.live.unsubscribe",
+      id: subscriptionId,
+    }),
+  );
+  console.debug("closing log websocket");
   websocket?.close();
 });
-
 </script>
 
 <template>
-  <TableView v-model:data="logs" title="Logs" :columns="columns" :loading="loading" :table-props="{sort:true, sortSelf: true}">
+  <TableView
+    v-model:data="logs"
+    title="Logs"
+    :columns="columns"
+    :loading="loading"
+    :table-props="{ sort: true, sortSelf: true }"
+  >
   </TableView>
 </template>

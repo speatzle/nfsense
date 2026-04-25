@@ -4,53 +4,60 @@ import { apiCall } from "../../../../api";
 import getPlugins from "../../../../plugins";
 const p = getPlugins();
 
-const props = $defineProps<{ subsystem: string; entity: string; id: string | number }>();
-const { subsystem, entity, id } = $(props);
+const props = defineProps<{ subsystem: string; entity: string; id: string | number }>();
 
-let vm = $ref({} as any); // TODO: Add proper type
-let loading = $ref(true);
+let $vm = {} as any; // TODO: Add proper type
+let $loading = true;
 
 async function load() {
-  loading = true;
+  $loading = true;
   let res: any;
-  if (editTypes[subsystem][entity].idType == "Number")
-    res = await apiCall(`${subsystem}.${entity}.get`, { index: (id as number) - 0 });
-  else res = await apiCall(`${subsystem}.${entity}.get`, { name: id });
+  if (editTypes[props.subsystem][props.entity].idType == "Number")
+    res = await apiCall(`${props.subsystem}.${props.entity}.get`, {
+      index: (props.id as number) - 0,
+    });
+  else res = await apiCall(`${props.subsystem}.${props.entity}.get`, { name: props.id });
 
   if (res.Error === null) {
     console.debug("update data", res.Data);
-    vm = res.Data;
+    $vm = res.Data;
   } else console.debug("error", res);
-  loading = false;
+  $loading = false;
 }
 
 async function update() {
-  console.debug("value", vm);
+  console.debug("value", $vm);
   let res: any;
 
-  if (editTypes[subsystem][entity].idType === "Number")
-    res = await apiCall(`${subsystem}.${entity}.update`, { index: Number(id), thing: vm });
-  else if (id === vm.name || confirm("Do you want to change the name & all references?"))
-    res = await apiCall(`${subsystem}.${entity}.update`, { name: id, thing: vm });
+  if (editTypes[props.subsystem][props.entity].idType === "Number")
+    res = await apiCall(`${props.subsystem}.${props.entity}.update`, {
+      index: Number(props.id),
+      thing: $vm,
+    });
+  else if (props.id === $vm.name || confirm("Do you want to change the name & all references?"))
+    res = await apiCall(`${props.subsystem}.${props.entity}.update`, {
+      name: props.id,
+      thing: $vm,
+    });
 
   if (res.Error === null) {
-    p.toast.success(`Updated ${editTypes[subsystem][entity].name}`);
+    p.toast.success(`Updated ${editTypes[props.subsystem][props.entity].name}`);
     p.router.go(-1);
   } else console.debug("error", res);
 }
 
 onMounted(async () => {
-  if (editTypes[subsystem][entity]) load();
+  if (editTypes[props.subsystem][props.entity]) load();
 });
 </script>
 <template>
-  <p v-if="loading">Loading...</p>
-  <div v-else-if="editTypes[subsystem][entity]">
-    <PageHeader :title="'Update ' + editTypes[subsystem][entity].name"> </PageHeader>
+  <p v-if="$loading">Loading...</p>
+  <div v-else-if="editTypes[props.subsystem][props.entity]">
+    <PageHeader :title="'Update ' + editTypes[props.subsystem][props.entity].name"> </PageHeader>
     <NicerForm
-      v-model="vm"
+      v-model="$vm"
       class="scroll cl-secondary"
-      :fields="editTypes[subsystem][entity].fields"
+      :fields="editTypes[props.subsystem][props.entity].fields"
     />
     <div class="actions">
       <div class="flex-grow" />
@@ -59,7 +66,7 @@ onMounted(async () => {
       <button @click="$router.go(-1)">Discard</button>
       <div class="flex-grow" />
     </div>
-    <p>{{ vm }}</p>
+    <pre v-text="JSON.stringify($vm, null, 2)" />
   </div>
   <div v-else>
     <PageHeader title="Error" />

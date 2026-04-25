@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
-/// <reference types="vue-macros/macros-global" />
 /// <reference types="unplugin-icons/types/vue" />
 /// <reference types="vite-plugin-pages/client" />
+/// <reference types="unplugin-reactive-vue/types" />
 declare module "*.vue" {
   import type { DefineComponent } from "vue";
   const component: DefineComponent<object, object, any>;

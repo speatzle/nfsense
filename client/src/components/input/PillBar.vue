@@ -21,8 +21,8 @@ const emit = defineEmits<{
   (e: "update:modelValue", value: MaybeIndex): void;
 }>();
 
-let modelValue = $ref(props.modelValue !== undefined ? props.modelValue : props.default);
-syncModel(toRef(props, "modelValue"), $$(modelValue), (v) => emit("update:modelValue", v));
+let $modelValue = props.modelValue !== undefined ? props.modelValue : props.default;
+syncModel(toRef(props, "modelValue"), $$($modelValue), (v) => emit("update:modelValue", v));
 </script>
 
 <template>
@@ -31,8 +31,8 @@ syncModel(toRef(props, "modelValue"), $$(modelValue), (v) => emit("update:modelV
       v-for="[index, option] of Object.entries(props.options)"
       :key="index"
       class="option"
-      :class="{ selected: modelValue === index }"
-      @click="() => (modelValue = index)"
+      :class="{ selected: $modelValue === index }"
+      @click="() => ($modelValue = index)"
     >
       <component :is="option.icon" />
       {{ option.display }}

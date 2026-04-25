@@ -9,12 +9,11 @@ const props = withDefaults(
     noSpacer: false,
   },
 );
-const { title, noSpacer } = $(props);
-watchEffect(() => useTitle(`${title} - nfSense`));
+watchEffect(() => useTitle(`${props.title} - nfSense`));
 </script>
 <template>
   <Portal to="page-header">
-    <h1 v-if="title !== ''" :class="{ 'flex-grow': !noSpacer }" v-text="title" />
+    <h1 v-if="props.title !== ''" :class="{ 'flex-grow': !props.noSpacer }" v-text="props.title" />
     <slot />
   </Portal>
 </template>

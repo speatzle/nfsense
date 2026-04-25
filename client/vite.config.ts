@@ -2,7 +2,7 @@ import { defineConfig } from "vite";
 import { fileURLToPath, URL } from "node:url";
 
 import VueDevTools from "vite-plugin-vue-devtools";
-import VueMacros from "vue-macros/vite";
+import ReactiveVue from "unplugin-reactive-vue/vite";
 import Vue from "@vitejs/plugin-vue";
 import AutoImport from "unplugin-auto-import/vite";
 import Components from "unplugin-vue-components/vite";
@@ -13,18 +13,15 @@ import Pages from "vite-plugin-pages";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
+    ReactiveVue({}),
     VueDevTools(),
-    VueMacros({
-      reactivityTransform: true,
-      plugins: { vue: Vue() },
-    }),
+    Vue(),
     AutoImport({
       include: [/\.[jt]sx?$/, /\.vue$/, /\.vue\?vue/, /\.md$/],
       imports: [
         "vue",
         "vue-router",
         "vue-i18n",
-        "vue/macros",
         "@vueuse/core",
         "@vueuse/head",
         {

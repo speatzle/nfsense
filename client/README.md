@@ -16,7 +16,7 @@ We encourage any potential contributor to familiarize themselves with these tool
 - Vue 3: Frontend Framework
 - Vite: Dev and Build Tool
 - Typescript: Adds Type Information to JS
-- Vue Macros: Replacement for the deprecated experimental Reactivity Transform feature of Vue 3
+- Reactive Vue: Replacement for the deprecated experimental Reactivity Transform feature of Vue 3
 
 ### Important Dependencies
 These libraries aren't mandatory to be able to work on the nfSense web client, this listing is merely meant to pre-empt redundancies.

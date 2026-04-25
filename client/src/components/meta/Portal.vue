@@ -1,25 +1,21 @@
-<script lang="ts">
-const activeTargets = $ref<string[]>([]);
-</script>
-
 <script setup lang="ts">
-const props = $defineProps<{
+import { $activeTargets } from "./portal";
+const props = defineProps<{
   from?: string;
   to?: string;
 }>();
-const { from, to } = $(props);
 
-if (from) {
-  onMounted(() => activeTargets.push(from));
-  onBeforeUnmount(() => activeTargets.splice(activeTargets.indexOf(from), 1));
+if (props.from) {
+  onMounted(() => $activeTargets.push(props.from!));
+  onBeforeUnmount(() => $activeTargets.splice($activeTargets.indexOf(props.from!), 1));
 }
 </script>
 
 <template>
-  <div v-if="from" :id="'portal-' + from">
+  <div v-if="props.from" :id="'portal-' + props.from">
     <slot />
   </div>
-  <Teleport v-else-if="to && activeTargets.includes(to)" :to="'#portal-' + to">
+  <Teleport v-else-if="props.to && $activeTargets.includes(props.to)" :to="'#portal-' + props.to">
     <slot />
   </Teleport>
 </template>

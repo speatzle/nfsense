@@ -8,17 +8,17 @@ type ServiceStatus = {
   status: string;
 };
 
-let serviceStatus: ServiceStatus[] = $ref([]);
-let loading = $ref(false);
+let $serviceStatus: ServiceStatus[] = [];
+let $loading = false;
 
 async function load() {
-  loading = true;
+  $loading = true;
   const res = await apiCall("system.services.status", {});
   if (res.Error === null) {
     console.debug("services staus", res.Data);
-    serviceStatus = res.Data;
+    $serviceStatus = res.Data;
   } else console.debug("error", res);
-  loading = false;
+  $loading = false;
 }
 
 async function restart() {
@@ -39,10 +39,10 @@ onMounted(load);
 <template>
   <div style="overflow-y: auto">
     <PageHeader title="Dashboard"> </PageHeader>
-    <template v-if="!loading">
+    <template v-if="!$loading">
       <button @click="shutdown">Shutdown</button>
       <button @click="restart">Restart</button>
-      <div v-for="(status, index) in serviceStatus" :key="index">
+      <div v-for="(status, index) in $serviceStatus" :key="index">
         <p>{{ status.name }}: {{ status.status }}</p>
       </div>
     </template>

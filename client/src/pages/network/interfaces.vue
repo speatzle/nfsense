@@ -5,9 +5,9 @@ import ArrayDisplay from "~/components/display/ArrayDisplay.vue";
 import EnumTypeDisplay from "~/components/display/EnumTypeDisplay.vue";
 const p = getPlugins();
 
-let interfaces = $ref({} as any); // TODO: Add proper type
-let loading = $ref(false);
-const selection = $ref([] as number[]);
+let $interfaces = {} as any; // TODO: Add proper type
+let $loading = false;
+const $selection = [] as number[];
 
 // oxfmt-ignore
 const columns = [
@@ -24,33 +24,37 @@ const columns = [
   { heading: "Comment", path: "comment" },
 ];
 
-const displayData = $computed(() => {
-  const data = [];
-  for (const index in interfaces) {
-    data.push({
-      name: interfaces[index].name,
-      alias: interfaces[index].alias,
-      interface_type: interfaces[index].interface_type,
-      addressing_mode: interfaces[index].addressing_mode,
-      address: interfaces[index].address,
-      comment: interfaces[index].comment,
-    });
-  }
-  return data;
-});
+const $displayData = $(
+  computed(() => {
+    const data = [];
+    for (const index in $interfaces) {
+      data.push({
+        name: $interfaces[index].name,
+        alias: $interfaces[index].alias,
+        interface_type: $interfaces[index].interface_type,
+        addressing_mode: $interfaces[index].addressing_mode,
+        address: $interfaces[index].address,
+        comment: $interfaces[index].comment,
+      });
+    }
+    return data;
+  }),
+);
 
 async function load() {
-  loading = true;
+  $loading = true;
   const res = await apiCall("network.interfaces.list", {});
   if (res.Error === null) {
     console.debug("interfaces", res.Data);
-    interfaces = res.Data;
+    $interfaces = res.Data;
   } else console.debug("error", res);
-  loading = false;
+  $loading = false;
 }
 
 async function deleteInterface() {
-  const res = await apiCall("network.interfaces.delete", { name: displayData[selection[0]].name });
+  const res = await apiCall("network.interfaces.delete", {
+    name: $displayData[$selection[0]].name,
+  });
   if (res.Error === null) {
     console.debug("deleted interface");
   } else console.debug("error", res);
@@ -58,7 +62,7 @@ async function deleteInterface() {
 }
 
 async function editInterface() {
-  p.router.push(`/network/interfaces/edit/${displayData[selection[0]].name}`);
+  p.router.push(`/network/interfaces/edit/${$displayData[$selection[0]].name}`);
 }
 
 onMounted(load);
@@ -66,16 +70,16 @@ onMounted(load);
 
 <template>
   <TableView
-    v-model:selection="selection"
-    v-model:data="displayData"
+    v-model:selection="$selection"
+    v-model:data="$displayData"
     title="Interfaces"
     :columns="columns"
-    :loading="loading"
+    :loading="$loading"
     :table-props="{ sort: true, sortSelf: true }"
   >
     <button @click="load">Refresh</button>
     <router-link class="button" to="/network/interfaces/edit">Create</router-link>
-    <button :disabled="selection.length != 1" @click="editInterface">Edit</button>
-    <button :disabled="selection.length != 1" @click="deleteInterface">Delete</button>
+    <button :disabled="$selection.length != 1" @click="editInterface">Edit</button>
+    <button :disabled="$selection.length != 1" @click="deleteInterface">Delete</button>
   </TableView>
 </template>

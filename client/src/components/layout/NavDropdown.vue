@@ -30,12 +30,12 @@ const emit = defineEmits<{
 }>();
 
 // Local Variables for Two-Way Binding
-const expanded = $ref(props.expanded ?? false);
-syncModel(toRef(props, "expanded"), $$(expanded), (v) => emit("update:expanded", v));
-const lowerDepth = $ref(0);
+const $expanded = props.expanded ?? false;
+syncModel(toRef(props, "expanded"), $$($expanded), (v) => emit("update:expanded", v));
+const $lowerDepth = 0 as number;
 
 // Sync to v-model
-watchEffect(() => emit("update:expandedDepth", expanded ? (lowerDepth || 0) + 1 : 0));
+watchEffect(() => emit("update:expandedDepth", $expanded ? ($lowerDepth || 0) + 1 : 0));
 
 function tallyChildren(routes: NavRoute[]) {
   let count = routes.length;
@@ -45,10 +45,10 @@ function tallyChildren(routes: NavRoute[]) {
 </script>
 <template>
   <div
-    :class="{ 'nav-dropdown': 1, 'nav-dropdown-expanded': expanded }"
+    :class="{ 'nav-dropdown': 1, 'nav-dropdown-expanded': $expanded }"
     :style="`--predicted-height: ${2.5 * tallyChildren(children)}rem;`"
   >
-    <div class="button" @click="expanded = !expanded">
+    <div class="button" @click="$expanded = !$expanded">
       <component :is="icon" v-if="typeof icon !== 'string'" />
       <template v-else>{{ icon }}</template>
       <span>
@@ -60,7 +60,7 @@ function tallyChildren(routes: NavRoute[]) {
       <NavElements
         :routes="children"
         :click-handler="clickHandler"
-        @update:expanded-depth="(val) => (lowerDepth = val)"
+        @update:expanded-depth="(val) => ($lowerDepth = val)"
       />
     </div>
   </div>

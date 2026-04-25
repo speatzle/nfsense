@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { apiCall } from "../../api";
 
-let staticRoutes = $ref([]);
-let loading = $ref(false);
-const selection = $ref([] as number[]);
+let $staticRoutes = [] as any[];
+let $loading = false;
+const $selection = [] as number[];
 
 const columns = [
   { heading: "Name", path: "name" },
@@ -14,17 +14,17 @@ const columns = [
 ];
 
 async function load() {
-  loading = true;
+  $loading = true;
   const res = await apiCall("network.static_routes.list", {});
   if (res.Error === null) {
     console.debug("staticRoutes", res.Data);
-    staticRoutes = res.Data;
+    $staticRoutes = res.Data;
   } else console.debug("error", res);
-  loading = false;
+  $loading = false;
 }
 
 async function deleteStaticRoutes() {
-  const res = await apiCall("network.static_routes.delete", { index: selection[0] });
+  const res = await apiCall("network.static_routes.delete", { index: $selection[0] });
   if (res.Error === null) console.debug("deleted static routes");
   else console.debug("error", res);
 
@@ -36,21 +36,21 @@ onMounted(load);
 
 <template>
   <TableView
-    v-model:selection="selection"
-    v-model:data="staticRoutes"
+    v-model:selection="$selection"
+    v-model:data="$staticRoutes"
     title="Static Routes"
     :columns="columns"
-    :loading="loading"
+    :loading="$loading"
     :table-props="{ sort: true, sortSelf: true }"
   >
     <button @click="load">Refresh</button>
     <router-link class="button" to="/network/static_routes/edit">Create</router-link>
     <router-link
       class="button"
-      :class="{ disabled: selection.length != 1 }"
-      :to="'/network/static_routes/edit/' + selection[0]"
+      :class="{ disabled: $selection.length != 1 }"
+      :to="'/network/static_routes/edit/' + $selection[0]"
       >Edit</router-link
     >
-    <button :disabled="selection.length != 1" @click="deleteStaticRoutes">Delete</button>
+    <button :disabled="$selection.length != 1" @click="deleteStaticRoutes">Delete</button>
   </TableView>
 </template>

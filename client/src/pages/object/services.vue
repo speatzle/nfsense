@@ -7,9 +7,9 @@ import PortServiceDisplay from "~/components/display/PortServiceDisplay.vue";
 import ArrayDisplay from "~/components/display/ArrayDisplay.vue";
 const p = getPlugins();
 
-let services = $ref({} as any); // TODO: Add proper type
-let loading = $ref(false);
-const selection = $ref([] as number[]);
+let $services = {} as any; // TODO: Add proper type
+let $loading = false;
+const $selection = [] as number[];
 
 const serviceValueDefinition: { [key: string]: { path: string; component?: Component } } = {
   tcp: { path: "tcp", component: PortServiceDisplay },
@@ -26,30 +26,32 @@ const columns = [
   { heading: "Comment", path: "comment" },
 ];
 
-const displayData = $computed(() => {
-  const data = [];
-  for (const index in services) {
-    data.push({
-      name: services[index].name,
-      service_type: services[index].service_type,
-      comment: services[index].comment,
-    });
-  }
-  return data;
-});
+const $displayData = $(
+  computed(() => {
+    const data = [];
+    for (const index in $services) {
+      data.push({
+        name: $services[index].name,
+        service_type: $services[index].service_type,
+        comment: $services[index].comment,
+      });
+    }
+    return data;
+  }),
+);
 
 async function load() {
-  loading = true;
+  $loading = true;
   const res = await apiCall("object.services.list", {});
   if (res.Error === null) {
     console.debug("services", res.Data);
-    services = res.Data;
+    $services = res.Data;
   } else console.debug("error", res);
-  loading = false;
+  $loading = false;
 }
 
 async function deleteService() {
-  const res = await apiCall("object.services.delete", { name: displayData[selection[0]].name });
+  const res = await apiCall("object.services.delete", { name: $displayData[$selection[0]].name });
   if (res.Error === null) console.debug("deleted service");
   else console.debug("error", res);
 
@@ -57,7 +59,7 @@ async function deleteService() {
 }
 
 async function editService() {
-  p.router.push(`/object/services/edit/${displayData[selection[0]].name}`);
+  p.router.push(`/object/services/edit/${$displayData[$selection[0]].name}`);
 }
 
 onMounted(load);
@@ -65,16 +67,16 @@ onMounted(load);
 
 <template>
   <TableView
-    v-model:selection="selection"
-    v-model:data="displayData"
+    v-model:selection="$selection"
+    v-model:data="$displayData"
     title="Services"
     :columns="columns"
-    :loading="loading"
+    :loading="$loading"
     :table-props="{ sort: true, sortSelf: true }"
   >
     <button @click="load">Refresh</button>
     <router-link class="button" to="/object/services/edit">Create</router-link>
-    <button :disabled="selection.length != 1" @click="editService">Edit</button>
-    <button :disabled="selection.length != 1" @click="deleteService">Delete</button>
+    <button :disabled="$selection.length != 1" @click="editService">Edit</button>
+    <button :disabled="$selection.length != 1" @click="deleteService">Delete</button>
   </TableView>
 </template>

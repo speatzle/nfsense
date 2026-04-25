@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import { apiCall } from "../../api";
 
-let status = $ref("");
-let loading = $ref(false);
+let $status = "";
+let $loading = false;
 
 async function load() {
-  loading = true;
+  $loading = true;
   const res = await apiCall("vpn.wireguard.status", {});
   if (res.Error === null) {
     console.debug("status", res.Data);
-    status = res.Data;
+    $status = res.Data;
   } else console.debug("error", res);
-  loading = false;
+  $loading = false;
 }
 
 onMounted(load);
@@ -20,8 +20,8 @@ onMounted(load);
 <template>
   <div style="overflow-y: auto">
     <PageHeader title="Wireguard Status"> </PageHeader>
-    <template v-if="!loading">
-      <div v-for="(line, index) in status.split('\n')" :key="index">
+    <template v-if="!$loading">
+      <div v-for="(line, index) in $status.split('\n')" :key="index">
         <p>{{ line }}</p>
       </div>
     </template>

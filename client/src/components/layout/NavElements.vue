@@ -21,11 +21,11 @@ withDefaults(
 const emit = defineEmits<{
   (e: "update:expandedDepth", value: number): void;
 }>();
-const lowerDepths: { [index: number]: number } = $ref({});
+const $lowerDepths = {} as { [index: number]: number };
 watch(
-  $$(lowerDepths),
+  $$($lowerDepths),
   () =>
-    emit("update:expandedDepth", Math.max(...Object.entries(lowerDepths).map((x) => x[1])) ?? 0),
+    emit("update:expandedDepth", Math.max(...Object.entries($lowerDepths).map((x) => x[1])) ?? 0),
   { deep: true },
 );
 </script>
@@ -46,7 +46,7 @@ watch(
         v-else
         v-bind="route"
         :click-handler="clickHandler"
-        @update:expanded-depth="(val) => (lowerDepths[index] = val)"
+        @update:expanded-depth="(val) => ($lowerDepths[index] = val)"
       />
     </template>
   </template>

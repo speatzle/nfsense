@@ -8,7 +8,7 @@ const testValues: Options = {
   a: { display: "Option a" },
   z: { display: "Option z" },
 };
-const vm: any = $ref({ Multiple: [1] });
+const $vm: any = { Multiple: [1] };
 
 function genSP(indexIsChar: boolean): SearchProvider {
   return async (o) => {
@@ -23,7 +23,7 @@ function genSP(indexIsChar: boolean): SearchProvider {
   <div>
     <PageHeader title="Test Page" />
     <NicerForm
-      v-model="vm"
+      v-model="$vm"
       :fields="{
         Single: {
           is: 'SingleSelect',
@@ -72,11 +72,11 @@ function genSP(indexIsChar: boolean): SearchProvider {
         },
       }"
     />
-    {{ vm }}
+    {{ $vm }}
     <button
       @click="
         () => {
-          vm.Multiple = [1];
+          $vm.Multiple = [1];
         }
       "
     >
@@ -85,7 +85,7 @@ function genSP(indexIsChar: boolean): SearchProvider {
     <button
       @click="
         () => {
-          vm.Multiple = [42];
+          $vm.Multiple = [42];
         }
       "
     >
@@ -94,7 +94,7 @@ function genSP(indexIsChar: boolean): SearchProvider {
     <button
       @click="
         () => {
-          vm.IP = { 'static-ipv4': { ip: '192.168.69.2/24', gw: '192.168.69.1' } };
+          $vm.IP = { 'static-ipv4': { ip: '192.168.69.2/24', gw: '192.168.69.1' } };
         }
       "
     >

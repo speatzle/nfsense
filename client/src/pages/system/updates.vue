@@ -5,9 +5,9 @@ const p = getPlugins();
 
 type UpdateStatus = any;
 
-let updateStatus: UpdateStatus = $ref(null);
-const selection = $ref([] as any[]);
-let loading = $ref(false);
+let $updateStatus: UpdateStatus = null;
+const $selection = [] as number[];
+let $loading = false as boolean;
 
 const columns = [
   { heading: "Version", path: "version" },
@@ -20,16 +20,16 @@ const columns = [
 ];
 
 async function load() {
-  loading = true;
+  $loading = true;
   const res = await apiCall("system.update.status", {});
   if (res.Error === null) {
     console.debug("update status", res.Data);
-    updateStatus = res.Data;
+    $updateStatus = res.Data;
   } else {
     console.debug("error", res);
-    updateStatus = null;
+    $updateStatus = null;
   }
-  loading = false;
+  $loading = false;
 }
 
 async function vacuum() {
@@ -42,7 +42,7 @@ async function vacuum() {
 
 async function install() {
   const res = await apiCall("system.update.install", {
-    version: updateStatus.available_updates[selection[0]].version,
+    version: $updateStatus.available_updates[$selection[0]].version,
   });
   if (res.Error === null) {
     console.debug("install triggered");
@@ -53,7 +53,7 @@ async function install() {
 
 async function setDefaultBoot() {
   const res = await apiCall("system.update.set_default_boot", {
-    version: updateStatus.available_updates[selection[0]].version,
+    version: $updateStatus.available_updates[$selection[0]].version,
   });
   if (res.Error === null) {
     console.debug("setting default boot");
@@ -63,7 +63,7 @@ async function setDefaultBoot() {
 
 async function details() {
   // TODO show changelog
-  alert(`Content: ${updateStatus.available_updates[selection[0]].content}`);
+  alert(`Content: ${$updateStatus.available_updates[$selection[0]].content}`);
 }
 
 onMounted(load);
@@ -71,27 +71,27 @@ onMounted(load);
 
 <template>
   <div>
-    <template v-if="!loading">
-      <div v-if="updateStatus">
-        Current Version: {{ updateStatus.current_version }}
-        <div v-if="updateStatus.job">
-          Job ID: {{ updateStatus.job.id }} Type: {{ updateStatus.job.type }} Progress:
-          {{ updateStatus.job.progress }}
+    <template v-if="!$loading">
+      <div v-if="$updateStatus">
+        Current Version: {{ $updateStatus.current_version }}
+        <div v-if="$updateStatus.job">
+          Job ID: {{ $updateStatus.job.id }} Type: {{ $updateStatus.job.type }} Progress:
+          {{ $updateStatus.job.progress }}
         </div>
       </div>
     </template>
     <TableView
-      v-model:selection="selection"
-      v-model:data="updateStatus.available_updates"
+      v-model:selection="$selection"
+      v-model:data="$updateStatus.available_updates"
       title="Updates"
       :columns="columns"
-      :loading="loading"
+      :loading="$loading"
     >
       <button @click="load">Refresh</button>
       <button @click="vacuum">Vacuum</button>
       <button
         :disabled="
-          !(selection.length == 1 && !updateStatus.available_updates[selection[0]].installed)
+          !($selection.length == 1 && !$updateStatus.available_updates[$selection[0]].installed)
         "
         @click="install"
       >
@@ -99,13 +99,13 @@ onMounted(load);
       </button>
       <button
         :disabled="
-          !(selection.length == 1 && updateStatus.available_updates[selection[0]].installed)
+          !($selection.length == 1 && $updateStatus.available_updates[$selection[0]].installed)
         "
         @click="setDefaultBoot"
       >
         Set as Default Boot
       </button>
-      <button :disabled="selection.length != 1" @click="details">Details</button>
+      <button :disabled="$selection.length != 1" @click="details">Details</button>
     </TableView>
   </div>
 </template>

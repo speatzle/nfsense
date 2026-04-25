@@ -18,28 +18,27 @@ const props = withDefaults(
     headingLevel: 2,
   },
 );
-const { fields } = $(props);
 
 const emit = defineEmits<{
   (e: "update:modelValue", value: Record<Index, any>): void;
 }>();
 
 // Local Variables for Two-Way bindings
-let modelValue = $ref(props.modelValue ?? props.default);
+let $modelValue = props.modelValue ?? props.default;
 // Sync from v-model
 onMounted(() => {
   watch(
     () => props.modelValue,
     (val) => {
-      if (equals(val, modelValue)) return;
-      modelValue = Object.assign({}, val ?? props.default);
+      if (equals(val, $modelValue)) return;
+      $modelValue = Object.assign({}, val ?? props.default);
     },
     { deep: true, immediate: true },
   );
 });
 // Sync to v-model
 watch(
-  $$(modelValue),
+  $$($modelValue),
   (val) => {
     if (equals(val, props.modelValue)) return;
     emit("update:modelValue", Object.assign({}, val));
@@ -52,11 +51,11 @@ watch(
   <div class="form">
     <component :is="`h${headingLevel}`" v-if="heading">{{ heading }}</component>
     <div class="form inner-form">
-      <template v-for="[index, field] of Object.entries(fields)" :key="index">
+      <template v-for="[index, field] of Object.entries(props.fields)" :key="index">
         <label v-if="field.label && field.is !== 'EnumInput'" v-text="field.label" />
         <component
           :is="field.is"
-          v-model="modelValue[index]"
+          v-model="$modelValue[index]"
           :default="props.default[index]"
           v-bind="
             field.is === 'EnumInput'

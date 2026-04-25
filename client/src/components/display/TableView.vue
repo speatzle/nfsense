@@ -1,36 +1,48 @@
 <script setup lang="ts">
-
-const props = defineModels<{
-  title: string,
-  loading: boolean,
+const props = defineProps<{
+  title: string;
+  loading: boolean;
   columns?: {
-    heading: string,
-    path: string,
-    component?: Component,
-  }[],
-  data: Record<string, any>[],
-  tableProps: any,
-  selection?: number[],
-}>();
+    heading: string;
+    path: string;
+    component?: Component;
+  }[];
+  tableProps?: any;
 
-const { title, loading, columns, data, selection, tableProps } = $(props);
+  // Two-Way Bindings
+  data: Record<string, any>[];
+  selection?: number[];
+}>();
 
 const emit = defineEmits<{
-  (event: 'draggedRow', draggedRow: number, draggedOverRow: number): void,
+  (event: "draggedRow", draggedRow: number, draggedOverRow: number): void;
+  (event: "update:data", value: Record<string, any>[]): void;
+  (event: "update:selection", value: number[]): void;
 }>();
 
-async function draggedRow(draggedRow: number, draggedOverRow: number) {
-  emit('draggedRow', draggedRow, draggedOverRow);
-}
+let $data = props.data;
+syncModel(toRef(props, "data"), $$($data), (v) => emit("update:data", v));
+let $selection = props.selection ?? [];
+syncModel(toRef(props, "selection"), $$($selection), (v) => emit("update:selection", v));
 
+async function draggedRow(draggedRow: number, draggedOverRow: number) {
+  emit("draggedRow", draggedRow, draggedOverRow);
+}
 </script>
 
 <template>
   <div>
-    <PageHeader :title="title">
-      <slot/>
+    <PageHeader :title="props.title">
+      <slot />
     </PageHeader>
-    <div v-if="loading" >Loading...</div>
-    <NiceTable v-else v-model:selection="selection" :columns="columns" v-bind="tableProps" :data="data" @dragged-row="draggedRow"/>
+    <div v-if="props.loading">Loading...</div>
+    <NiceTable
+      v-else
+      v-model:selection="$selection"
+      :columns="props.columns"
+      v-bind="props.tableProps"
+      v-model:data="$data"
+      @dragged-row="draggedRow"
+    />
   </div>
 </template>

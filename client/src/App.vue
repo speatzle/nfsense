@@ -32,8 +32,8 @@ enum NavState {
   Collapsed,
 }
 const NavStateCount = 3;
-let navState = $ref(NavState.Open);
-const reducedDynamicWidth = $ref(2.5);
+let $navState = NavState.Open as NavState;
+const $reducedDynamicWidth = 2.5 as number;
 
 // oxfmt-ignore
 const navRoutesNew = [
@@ -79,31 +79,31 @@ enum AuthState {
   MfaRequired,
   Authenticated,
 }
-let authState = $ref(AuthState.Unauthenticated);
-let loginDisabled = $ref(true);
+let $authState = AuthState.Unauthenticated as AuthState;
+let $loginDisabled = true;
 
-const username = $ref("");
-let password = $ref("");
+const $username = "";
+let $password = "";
 
 const mobileMedia = window.matchMedia("only screen and (max-width: 768px)");
-if (mobileMedia.matches) navState = NavState.Collapsed;
+if (mobileMedia.matches) $navState = NavState.Collapsed;
 
 function collapseNavIfMobile() {
-  if (mobileMedia.matches && navState === NavState.Open)
+  if (mobileMedia.matches && $navState === NavState.Open)
     // Give new page time to find initial left before transitioning
-    setTimeout(() => (navState = NavState.Collapsed), 0);
+    setTimeout(() => ($navState = NavState.Collapsed), 0);
 }
 
 function toggleNavState() {
-  navState = (navState + 1) % NavStateCount;
-  if (mobileMedia.matches && navState === NavState.Reduced) navState++;
+  $navState = ($navState + 1) % NavStateCount;
+  if (mobileMedia.matches && $navState === NavState.Reduced) $navState++;
 }
 
 async function tryLogin() {
-  loginDisabled = true;
-  const res = await authenticate(username, password);
-  password = "";
-  loginDisabled = false;
+  $loginDisabled = true;
+  const res = await authenticate($username, $password);
+  $password = "";
+  $loginDisabled = false;
   if (res.error != null) console.info("authentication error");
   else {
     // TODO Check for MFA here
@@ -114,21 +114,21 @@ async function tryLogin() {
 
 async function tryLogout() {
   console.info("Logging out...");
-  authState = AuthState.Unauthenticated;
+  $authState = AuthState.Unauthenticated;
   logout();
 }
 
 function UnauthorizedCallback() {
   console.info("Unauthenticated");
-  authState = AuthState.Unauthenticated;
+  $authState = AuthState.Unauthenticated;
 }
 
 async function checkAuth() {
   console.info("Checking Auth State...");
   const res = await checkAuthentication();
-  authState = res.auth;
-  loginDisabled = false;
-  if (authState === AuthState.Authenticated) console.info("Already Authenticated ", authState);
+  $authState = res.auth;
+  $loginDisabled = false;
+  if ($authState === AuthState.Authenticated) console.info("Already Authenticated ", $authState);
   else if (res.error == null) console.info("Unauthorized");
   else console.info("Check Authentication error", res.error);
 }
@@ -138,7 +138,7 @@ onMounted(async () => {
   await checkAuth();
   setInterval(
     function () {
-      if (authState === AuthState.Authenticated && !document.hidden) checkAuth();
+      if ($authState === AuthState.Authenticated && !document.hidden) checkAuth();
     }.bind(this),
     120000,
   );
@@ -147,13 +147,13 @@ onMounted(async () => {
 
 <template>
   <div
-    v-if="authState === AuthState.Authenticated"
-    :style="`--reduced-dynamic-width: ${reducedDynamicWidth}rem;`"
+    v-if="$authState === AuthState.Authenticated"
+    :style="`--reduced-dynamic-width: ${$reducedDynamicWidth}rem;`"
     :class="{
       layout: 1,
-      'nav-state-open': navState === NavState.Open,
-      'nav-state-collapsed': navState === NavState.Collapsed,
-      'nav-state-reduced': navState === NavState.Reduced,
+      'nav-state-open': $navState === NavState.Open,
+      'nav-state-collapsed': $navState === NavState.Collapsed,
+      'nav-state-reduced': $navState === NavState.Reduced,
     }"
   >
     <button class="nav-head cl-secondary cl-force-dark" @click="toggleNavState">
@@ -169,7 +169,7 @@ onMounted(async () => {
           <NavElements
             :routes="navRoutesNew"
             :click-handler="collapseNavIfMobile"
-            @update:expanded-depth="(val) => (reducedDynamicWidth = 2.5 + 0.5 * val)"
+            @update:expanded-depth="(val) => ($reducedDynamicWidth = 2.5 + 0.5 * val)"
           />
         </div>
       </div>
@@ -180,7 +180,7 @@ onMounted(async () => {
       </div>
     </div>
 
-    <router-view v-if="authState === AuthState.Authenticated" v-slot="{ Component, route }">
+    <router-view v-if="$authState === AuthState.Authenticated" v-slot="{ Component, route }">
       <Transition name="fade">
         <component :is="Component" :key="{ route }" class="page-content pad gap" />
       </Transition>
@@ -188,29 +188,29 @@ onMounted(async () => {
   </div>
 
   <Transition name="fade">
-    <div v-if="authState === AuthState.Unauthenticated" class="login">
+    <div v-if="$authState === AuthState.Unauthenticated" class="login">
       <FocusTrap>
         <form
-          :disabled="loginDisabled"
+          :disabled="$loginDisabled"
           class="cl-secondary"
           @submit="($event) => $event.preventDefault()"
         >
           <h1>nfSense Login</h1>
-          <h2 :hidden="!loginDisabled">Logging in...</h2>
-          <label for="username" :hidden="loginDisabled" v-text="'Username'" />
+          <h2 :hidden="!$loginDisabled">Logging in...</h2>
+          <label for="username" :hidden="$loginDisabled" v-text="'Username'" />
           <input
-            v-model="username"
+            v-model="$username"
             name="username"
-            :hidden="loginDisabled"
-            :disabled="loginDisabled"
+            :hidden="$loginDisabled"
+            :disabled="$loginDisabled"
           />
-          <label for="password" :hidden="loginDisabled" v-text="'Password'" />
+          <label for="password" :hidden="$loginDisabled" v-text="'Password'" />
           <input
-            v-model="password"
+            v-model="$password"
             name="password"
             type="password"
-            :hidden="loginDisabled"
-            :disabled="loginDisabled"
+            :hidden="$loginDisabled"
+            :disabled="$loginDisabled"
           />
           <button @click="tryLogin">Login</button>
         </form>

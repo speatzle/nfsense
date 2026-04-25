@@ -3,12 +3,12 @@
 //import getPlugins from '../../plugins';
 //const p = getPlugins();
 
-const logs = $ref([] as any[]); // TODO: Add proper type
-let loading = $ref(false);
+const $logs = [] as any[]; // TODO: Add proper type
+let $loading = false;
 let websocket: WebSocket | undefined = undefined;
 
-const msgId = $ref(Math.floor(Math.random() * 100000));
-let subscriptionId = $ref(0);
+const $msgId = Math.floor(Math.random() * 100000);
+let $subscriptionId = 0;
 
 const columns = [
   { heading: "Protocol", path: "protocol" },
@@ -21,12 +21,12 @@ const columns = [
 ];
 
 async function load() {
-  loading = true;
+  $loading = true;
   websocket = new WebSocket("/api");
   websocket.addEventListener("open", () => {
     console.debug("ws connected", websocket);
     websocket?.send(
-      JSON.stringify({ jsonrpc: "2.0", method: "system.logs.fw.live.subscribe", id: msgId }),
+      JSON.stringify({ jsonrpc: "2.0", method: "system.logs.fw.live.subscribe", id: $msgId }),
     );
 
     console.debug("ws message sent!");
@@ -40,13 +40,13 @@ async function load() {
     const data = JSON.parse(e.data);
 
     if (data.method === "system.logs.fw.live.event") {
-      subscriptionId = data.params.subscription;
-      logs.push(data.params.result);
+      $subscriptionId = data.params.subscription;
+      $logs.push(data.params.result);
     }
 
     return false;
   };
-  loading = false;
+  $loading = false;
 }
 
 onMounted(load);
@@ -56,7 +56,7 @@ onBeforeUnmount(() => {
     JSON.stringify({
       jsonrpc: "2.0",
       method: "system.log.fw.live.unsubscribe",
-      id: subscriptionId,
+      id: $subscriptionId,
     }),
   );
   console.debug("closing log websocket");
@@ -66,10 +66,10 @@ onBeforeUnmount(() => {
 
 <template>
   <TableView
-    v-model:data="logs"
+    v-model:data="$logs"
     title="Logs"
     :columns="columns"
-    :loading="loading"
+    :loading="$loading"
     :table-props="{ sort: true, sortSelf: true }"
   >
   </TableView>

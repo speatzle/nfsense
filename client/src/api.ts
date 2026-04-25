@@ -3,7 +3,7 @@ import JsonRPC from "simple-jsonrpc-js";
 import axios from "axios";
 import { useToast } from "vue-toast-notification";
 
-const $toast = useToast();
+const toast = useToast();
 
 const jrpc = new JsonRPC.connect_xhr("/api");
 // let socket = new WebSocket("ws://"+ window.location.host +"/ws/api");
@@ -24,7 +24,7 @@ export async function apiCall(method: string, params: Record<string, any>): Prom
   } catch (ex: any) {
     if (ex.code === 401) UnauthorizedCallback();
     else {
-      $toast.error(`${method}: ${ex.message}`);
+      toast.error(`${method}: ${ex.message}`);
       console.debug("[API] Error   ", method, ex);
     }
     return { Data: null, Error: ex };

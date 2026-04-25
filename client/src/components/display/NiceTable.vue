@@ -2,8 +2,8 @@
 import { useKeyModifier } from "@vueuse/core";
 import type { Component, WatchOptions } from "vue";
 
-const shiftState = $(useKeyModifier("Shift"));
-const ctrlState = $(useKeyModifier("Control"));
+const $shiftState = $(useKeyModifier("Shift"));
+const $ctrlState = $(useKeyModifier("Control"));
 
 const props = withDefaults(
   defineProps<{
@@ -47,70 +47,72 @@ const emit = defineEmits<{
 }>();
 
 // Hook up two-way bindings
-let data = $ref(props.data);
-syncModel(toRef(props, "data"), $$(data), (v) => emit("update:data", v), true);
-let sort = $ref(props.sort);
-syncModel(toRef(props, "sort"), $$(sort), (v) => emit("update:sort", v));
-let sortBy = $ref(props.sortBy);
-syncModel(toRef(props, "sortBy"), $$(sortBy), (v) => emit("update:sortBy", v));
-let sortDesc = $ref(props.sortDesc);
-syncModel(toRef(props, "sortDesc"), $$(sortDesc), (v) => emit("update:sortDesc", v));
-let selection = $ref(props.selection);
-syncModel(toRef(props, "selection"), $$(selection), (v) => emit("update:selection", v), true);
+let $data = props.data;
+syncModel(toRef(props, "data"), $$($data), (v) => emit("update:data", v), true);
+let $sort = props.sort;
+syncModel(toRef(props, "sort"), $$($sort), (v) => emit("update:sort", v));
+let $sortBy = props.sortBy;
+syncModel(toRef(props, "sortBy"), $$($sortBy), (v) => emit("update:sortBy", v));
+let $sortDesc = props.sortDesc;
+syncModel(toRef(props, "sortDesc"), $$($sortDesc), (v) => emit("update:sortDesc", v));
+let $selection = props.selection;
+syncModel(toRef(props, "selection"), $$($selection), (v) => emit("update:selection", v), true);
 
-const displayData = $computed(() =>
-  props.sortSelf && sortBy !== ""
-    ? data?.sort((a, b) => {
-        // TODO Determine whether sorting a copy is necessary
-        selection = [];
-        let result;
-        if (a[sortBy ?? ""] > b[sortBy ?? ""]) result = 1;
-        else if (a[sortBy ?? ""] === b[sortBy ?? ""]) result = 0;
-        else result = -1;
+const $displayData = $(
+  computed(() =>
+    props.sortSelf && $sortBy !== ""
+      ? $data?.sort((a, b) => {
+          // TODO Determine whether sorting a copy is necessary
+          $selection = [];
+          let result;
+          if (a[$sortBy ?? ""] > b[$sortBy ?? ""]) result = 1;
+          else if (a[$sortBy ?? ""] === b[$sortBy ?? ""]) result = 0;
+          else result = -1;
 
-        if (sortDesc) return -result;
-        return result;
-      })
-    : data,
+          if ($sortDesc) return -result;
+          return result;
+        })
+      : $data,
+  ),
 );
 
 function toggleSorting(columnName: string) {
-  if (!sort) return;
-  if (columnName === sortBy) sortDesc = !sortDesc;
-  else [sortDesc, sortBy] = [false, columnName];
+  if (!$sort) return;
+  if (columnName === $sortBy) $sortDesc = !$sortDesc;
+  else [$sortDesc, $sortBy] = [false, columnName];
 }
 
 function toggleRowSelection(index: number) {
-  if (!selection || !selection.length) selection = [index];
-  else if (shiftState) {
+  if (!$selection || !$selection.length) $selection = [index];
+  else if ($shiftState) {
     // Selection becomes a range including the highest, lowest and clicked row
-    const points = [Math.max(...selection), Math.min(...selection), index];
+    const points = [Math.max(...$selection), Math.min(...$selection), index];
     const [max, min] = [Math.max(...points), Math.min(...points)];
-    selection = Array.from({ length: max - min + 1 }, (_, i) => i + min);
-  } else if (ctrlState)
+    $selection = Array.from({ length: max - min + 1 }, (_, i) => i + min);
+  } else if ($ctrlState)
     // Toggle the presence of the row in the selection
-    selection = selection.includes(index)
-      ? selection.filter((i) => i !== index)
-      : [...selection, index];
-  else selection = selection.includes(index) ? [] : [index]; // Toggle between selection of none and this row
+    $selection = $selection.includes(index)
+      ? $selection.filter((i) => i !== index)
+      : [...$selection, index];
+  else $selection = $selection.includes(index) ? [] : [index]; // Toggle between selection of none and this row
 }
 
-let draggedRow = $ref(-1);
-let draggedOverRow = $ref(-1);
+let $draggedRow = -1;
+let $draggedOverRow = -1;
 function dragDropRow() {
-  if (data) {
-    const row = data[draggedRow];
-    data.splice(draggedRow, 1);
-    data.splice(draggedOverRow, 0, row);
-    data = [...data];
+  if ($data) {
+    const row = $data[$draggedRow];
+    $data.splice($draggedRow, 1);
+    $data.splice($draggedOverRow, 0, row);
+    $data = [...$data];
     // Don't emit if we are at the same spot
-    if (draggedRow !== draggedOverRow) emit("draggedRow", draggedRow, draggedOverRow);
+    if ($draggedRow !== $draggedOverRow) emit("draggedRow", $draggedRow, $draggedOverRow);
   }
 
   // Reset Drag & Remove Selection
-  draggedRow = 0;
-  draggedOverRow = 0;
-  selection = [];
+  $draggedRow = 0;
+  $draggedOverRow = 0;
+  $selection = [];
 }
 </script>
 
@@ -125,9 +127,9 @@ function dragDropRow() {
         >
           <div class="flex-row">
             {{ heading }}
-            <template v-if="sort">
-              <i-mdi-arrow-down v-if="path === sortBy && sortDesc" />
-              <i-mdi-arrow-up v-else-if="path === sortBy" />
+            <template v-if="$sort">
+              <i-mdi-arrow-down v-if="path === $sortBy && $sortDesc" />
+              <i-mdi-arrow-up v-else-if="path === $sortBy" />
             </template>
           </div>
         </th>
@@ -135,18 +137,18 @@ function dragDropRow() {
     </thead>
     <tbody>
       <tr
-        v-for="(row, index) in displayData"
+        v-for="(row, index) in $displayData"
         :key="index"
         :draggable="draggable"
         :class="{
-          selected: (selection ?? []).includes(index),
-          'dragged-over-before': index === draggedOverRow && draggedOverRow < draggedRow,
-          'dragged-over-after': index === draggedOverRow && draggedOverRow > draggedRow,
+          selected: ($selection ?? []).includes(index),
+          'dragged-over-before': index === $draggedOverRow && $draggedOverRow < $draggedRow,
+          'dragged-over-after': index === $draggedOverRow && $draggedOverRow > $draggedRow,
         }"
         @click="() => toggleRowSelection(index)"
         @dblclick="() => emit('rowAction', index)"
-        @dragstart="() => (draggedRow = index)"
-        @dragenter="() => (draggedOverRow = index)"
+        @dragstart="() => ($draggedRow = index)"
+        @dragenter="() => ($draggedOverRow = index)"
         @dragend="() => dragDropRow()"
       >
         <td v-for="col of columns" :key="col.path">

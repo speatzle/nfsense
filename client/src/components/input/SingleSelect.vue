@@ -29,19 +29,19 @@ const emit = defineEmits<{
 }>();
 
 // Hook up two-way bindings
-let mVal = $ref(props.modelValue !== undefined ? props.modelValue : props.default);
-syncModel(toRef(props, "modelValue"), $$(mVal), (v) => emit("update:modelValue", v), true);
-let search = $ref(props.search);
-syncModel(toRef(props, "search"), $$(search), (v) => emit("update:search", v));
-let options = $ref(props.options);
-syncModel(toRef(props, "options"), $$(options), (v) => emit("update:options", v), true);
+let $mVal = props.modelValue !== undefined ? props.modelValue : props.default;
+syncModel(toRef(props, "modelValue"), $$($mVal), (v) => emit("update:modelValue", v), true);
+let $search = props.search;
+syncModel(toRef(props, "search"), $$($search), (v) => emit("update:search", v));
+let $options = props.options;
+syncModel(toRef(props, "options"), $$($options), (v) => emit("update:options", v), true);
 </script>
 
 <template>
   <DropdownInput
-    v-model="mVal"
+    v-model="$mVal"
     :multiple="false"
-    :options="options"
+    :options="$options"
     :search-provider="searchProvider"
   />
 </template>

@@ -4,9 +4,9 @@ import getPlugins from "../../plugins";
 import ArrayDisplay from "~/components/display/ArrayDisplay.vue";
 const p = getPlugins();
 
-let servers = $ref([]);
-const loading = $ref(false);
-const selection = $ref([] as number[]);
+let $servers = [] as any[];
+const $loading = false;
+const $selection = [] as number[];
 
 const columns = [
   { heading: "Interface", path: "interface" },
@@ -17,13 +17,13 @@ const columns = [
 async function load() {
   const res = await apiCall("service.dhcp_servers.list", {});
   if (res.Error === null) {
-    servers = res.Data;
-    console.debug("rules", servers);
+    $servers = res.Data;
+    console.debug("rules", $servers);
   } else console.debug("error", res);
 }
 
 async function deleteRule() {
-  const res = await apiCall("service.dhcp_servers.delete", { index: selection[0] });
+  const res = await apiCall("service.dhcp_servers.delete", { index: $selection[0] });
   if (res.Error === null) {
     console.debug("deleted server");
     p.toast.success("Deleted DHCP Server");
@@ -37,22 +37,22 @@ onMounted(load);
 <template>
   <div>
     <TableView
-      v-model:selection="selection"
-      v-model:data="servers"
+      v-model:selection="$selection"
+      v-model:data="$servers"
       title="DHCP Servers"
       :columns="columns"
-      :loading="loading"
+      :loading="$loading"
       :table-props="{ sort: true, sortSelf: true }"
     >
       <button @click="load">Refresh</button>
       <router-link class="button" to="/service/dhcp_servers/edit">Create</router-link>
       <router-link
         class="button"
-        :class="{ disabled: selection.length != 1 }"
-        :to="'/service/dhcp_servers/edit/' + selection[0]"
+        :class="{ disabled: $selection.length != 1 }"
+        :to="'/service/dhcp_servers/edit/' + $selection[0]"
         >Edit</router-link
       >
-      <button :disabled="selection.length != 1" @click="deleteRule">Delete</button>
+      <button :disabled="$selection.length != 1" @click="deleteRule">Delete</button>
     </TableView>
   </div>
 </template>

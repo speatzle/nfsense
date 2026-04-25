@@ -10,12 +10,12 @@ const props = withDefaults(
 );
 const emit = defineEmits<{ (e: "update:modelValue", value: string): void }>();
 
-let mVal = $ref(props.modelValue ?? props.default);
-syncModel(toRef(props, "modelValue"), $$(mVal), (v) => emit("update:modelValue", v));
+let $mVal = props.modelValue ?? props.default;
+syncModel(toRef(props, "modelValue"), $$($mVal), (v) => emit("update:modelValue", v));
 </script>
 
 <template>
-  <textarea v-model="mVal" rows="5" />
+  <textarea v-model="$mVal" rows="5" />
 </template>
 
 <style scoped>

@@ -30,6 +30,9 @@ const emit = defineEmits<{
   (e: "update:options", value: Options): void;
 }>();
 
+const $input = $(useTemplateRef("input"));
+const $inputDiv = $(useTemplateRef("inputDiv"));
+
 // Hook up two-way bindings
 let $search = props.search;
 syncModel(toRef(props, "search"), $$($search), (v) => emit("update:search", v));
@@ -71,13 +74,14 @@ onMounted(() => {
 // Sync to v-model
 watch($$($modelValue), () => emit("update:modelValue", $modelValue), { deep: true });
 
-watch($$(props.multiple), () => ($modelValue = props.multiple ? [] : null));
+watch(
+  () => props.multiple,
+  () => ($modelValue = props.multiple ? [] : null),
+);
 
 // --- Everything Else  ---
 let $expanded = false as boolean;
 let $navigated = 0;
-const $inputDiv = null as HTMLElement | null;
-const $input = null as HTMLElement | null;
 const $valueButton = null as HTMLElement | null;
 
 const $selCount = $(computed(() => $modelValue?.length || 0));

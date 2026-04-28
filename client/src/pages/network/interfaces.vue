@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import { apiCall } from "../../api";
-import getPlugins from "../../plugins";
 import ArrayDisplay from "~/components/display/ArrayDisplay.vue";
 import EnumTypeDisplay from "~/components/display/EnumTypeDisplay.vue";
-const p = getPlugins();
+const p = usePlugins();
 
 let $interfaces = {} as any; // TODO: Add proper type
 let $loading = false;

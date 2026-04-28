@@ -1,4 +1,4 @@
-export default function initiateCommonPlugins() {
+export function usePlugins() {
   const router = useRouter();
   const toast = useToast();
 

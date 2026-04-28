@@ -1,7 +1,6 @@
 <script setup lang="ts">
-//import { apiCall } from '../../api';
-//import getPlugins from '../../plugins';
-//const p = getPlugins();
+//import { apiCall } from '~/api';
+//const p = usePlugins();
 
 const $logs = [] as any[]; // TODO: Add proper type
 let $loading = false;

@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { apiCall } from "../../api";
-
 let $staticRoutes = [] as any[];
 let $loading = false;
 const $selection = [] as number[];

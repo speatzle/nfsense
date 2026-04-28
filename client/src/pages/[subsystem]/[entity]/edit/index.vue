@@ -1,10 +1,7 @@
 <script setup lang="ts">
-import { editTypes } from "../../../../definitions";
-import { apiCall } from "../../../../api";
-import getPlugins from "../../../../plugins";
+import { editTypes } from "~/definitions";
 
-const p = getPlugins();
-const router = useRouter();
+const p = usePlugins();
 
 const props = defineProps<{ subsystem: string; entity: string }>();
 
@@ -33,7 +30,7 @@ async function create() {
       <div class="flex-grow" />
       <button @click="create">Submit</button>
       <div class="space" />
-      <button @click="router.go(-1)">Discard</button>
+      <button @click="p.router.go(-1)">Discard</button>
       <div class="flex-grow" />
     </div>
     <pre v-text="JSON.stringify($vm, null, 2)" />

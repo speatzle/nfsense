@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import { apiCall } from "../../api";
-import getPlugins from "../../plugins";
 import ArrayDisplay from "~/components/display/ArrayDisplay.vue";
-const p = getPlugins();
+const p = usePlugins();
 
 let $rules = [] as any[];
 const $loading = false;

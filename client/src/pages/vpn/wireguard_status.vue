@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { apiCall } from "../../api";
-
 let $status = "";
 let $loading = false;
 

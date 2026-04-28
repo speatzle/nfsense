@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import { editTypes } from "../../../../definitions";
-import { apiCall } from "../../../../api";
-import getPlugins from "../../../../plugins";
-const p = getPlugins();
+import { editTypes } from "~/definitions";
+const p = usePlugins();
 
 const props = defineProps<{ subsystem: string; entity: string; id: string | number }>();
 

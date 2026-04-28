@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { apiCall } from "../../api";
-import getPlugins from "../../plugins";
-const p = getPlugins();
+const p = usePlugins();
 
 let $changelog = [] as any[];
 let $loading = false;

@@ -18,6 +18,7 @@ const props = withDefaults(
     sortSelf?: boolean;
     draggable?: boolean;
     columns?: {
+      // TODO: Merge into a SST
       heading: string;
       path: string;
       component: Component;

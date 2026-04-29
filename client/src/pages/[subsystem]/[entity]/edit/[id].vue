@@ -1,8 +1,14 @@
 <script setup lang="ts">
-import { editTypes } from "~/definitions";
+import { subsystems, type Entity } from "~/definitions";
 const p = usePlugins();
 
-const props = defineProps<{ subsystem: string; entity: string; id: string | number }>();
+const props = defineProps<{
+  subsystem: keyof typeof subsystems;
+  entity: string;
+  id: string | number;
+}>();
+const $subsystem = $(computed(() => subsystems[props.subsystem]));
+const $entity = $(computed(() => ($subsystem.entities as Record<string, Entity>)[props.entity]));
 
 let $vm = {} as any; // TODO: Add proper type
 let $loading = true;
@@ -10,7 +16,7 @@ let $loading = true;
 async function load() {
   $loading = true;
   let res: any;
-  if (editTypes[props.subsystem][props.entity].idType == "Number")
+  if ($entity.idType == "Number")
     res = await apiCall(`${props.subsystem}.${props.entity}.get`, {
       index: (props.id as number) - 0,
     });
@@ -27,7 +33,7 @@ async function update() {
   console.debug("value", $vm);
   let res: any;
 
-  if (editTypes[props.subsystem][props.entity].idType === "Number")
+  if ($entity.idType === "Number")
     res = await apiCall(`${props.subsystem}.${props.entity}.update`, {
       index: Number(props.id),
       thing: $vm,
@@ -39,24 +45,20 @@ async function update() {
     });
 
   if (res.Error === null) {
-    p.toast.success(`Updated ${editTypes[props.subsystem][props.entity].name}`);
+    p.toast.success(`Updated ${$entity.name}`);
     p.router.go(-1);
   } else console.debug("error", res);
 }
 
 onMounted(async () => {
-  if (editTypes[props.subsystem][props.entity]) load();
+  if ($entity) load();
 });
 </script>
 <template>
   <p v-if="$loading">Loading...</p>
-  <div v-else-if="editTypes[props.subsystem][props.entity]">
-    <PageHeader :title="'Update ' + editTypes[props.subsystem][props.entity].name"> </PageHeader>
-    <NicerForm
-      v-model="$vm"
-      class="scroll cl-secondary"
-      :fields="editTypes[props.subsystem][props.entity].fields"
-    />
+  <div v-else-if="$entity">
+    <PageHeader :title="'Update ' + $entity.name"> </PageHeader>
+    <NicerForm v-model="$vm" class="scroll cl-secondary" :fields="$entity.fields" />
     <div class="actions">
       <div class="flex-grow" />
       <button @click="update">Submit</button>

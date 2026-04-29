@@ -1,72 +1,25 @@
-import { SearchProvider, Options } from "~/components/input/input";
+import type { SearchProvider, Fields, Field, Variants } from "~/components/input/input";
 import { apiCall } from "./api";
 
-const GetHardwareInterfaces: SearchProvider = async (_) => {
-  const res = await apiCall("network.links.list", {});
-  if (res.Error === null) {
-    console.debug("links", res.Data);
-    return Object.fromEntries(res.Data.map((r: any) => [r.name, { display: r.name }]));
-  } else {
-    console.debug("error", res);
-    return {} as Options;
-  }
+// --- Search Providers --- //
+const GetEntity = (subsystem: string, entity: string): SearchProvider => {
+  return async (_) => {
+    const res = await apiCall(`${subsystem}.${entity}.list`, {});
+    if (res.Error === null) {
+      console.debug(entity, res.Data);
+      return Object.fromEntries(res.Data.map((r: any) => [r.name, { display: r.name }]));
+    } else {
+      console.debug("error", res);
+      return {};
+    }
+  };
 };
-
-const GetInterfaces: SearchProvider = async (_) => {
-  const res = await apiCall("network.interfaces.list", {});
-  if (res.Error === null) {
-    console.debug("interfaces", res.Data);
-    return Object.fromEntries(res.Data.map((r: any) => [r.name, { display: r.name }]));
-  } else {
-    console.debug("error", res);
-    return {} as Options;
-  }
-};
-
-const GetAddresses: SearchProvider = async (_) => {
-  const res = await apiCall("object.addresses.list", {});
-  if (res.Error === null) {
-    console.debug("addresses", res.Data);
-    return Object.fromEntries(res.Data.map((r: any) => [r.name, { display: r.name }]));
-  } else {
-    console.debug("error", res);
-    return {} as Options;
-  }
-};
-
-const GetVirtualRouters: SearchProvider = async (_) => {
-  const res = await apiCall("network.virtual_routers.list", {});
-  if (res.Error === null) {
-    console.debug("virtual_routers", res.Data);
-    return Object.fromEntries(res.Data.map((r: any) => [r.name, { display: r.name }]));
-  } else {
-    console.debug("error", res);
-    return {} as Options;
-  }
-};
-
-const GetServices: SearchProvider = async (_) => {
-  const res = await apiCall("object.services.list", {});
-  if (res.Error === null) {
-    console.debug("services", res.Data);
-    return Object.fromEntries(res.Data.map((r: any) => [r.name, { display: r.name }]));
-  } else {
-    console.debug("error", res);
-    return {} as Options;
-  }
-};
-
-const GetPeers: SearchProvider = async (_) => {
-  const res = await apiCall("vpn.wireguard.peers.list", {});
-  if (res.Error === null) {
-    console.debug("peers", res.Data);
-    return Object.fromEntries(res.Data.map((r: any) => [r.name, { display: r.name }]));
-  } else {
-    console.debug("error", res);
-    return {} as Options;
-  }
-};
-
+const GetHardwareInterfaces = GetEntity("network", "links");
+const GetInterfaces = GetEntity("network", "interfaces");
+const GetAddresses = GetEntity("object", "addresses");
+const GetVirtualRouters = GetEntity("network", "virtual_routers");
+const GetServices = GetEntity("object", "services");
+const GetPeers = GetEntity("vpn", "wireguard.peers");
 const ICMPPacketTypes: SearchProvider = async (_) => {
   return {
     echo_reply: { display: "EchoReply" },
@@ -87,396 +40,266 @@ const ICMPPacketTypes: SearchProvider = async (_) => {
   };
 };
 
-// oxfmt-ignore
-const PortDefinition: object = {
-  any: { display: "Any" },
-  single: { display: "Single", fields: { port: { is: "NumberBox", label: "Port" } } },
-  range: { display: "Range", fields: {
-    start_port: { is: "NumberBox", label: "Start Port" },
-    end_port: { is: "NumberBox", label: "End Port" },
-  } },
-};
+// --- Definition Helpers ---
+const c = {
+  TextBox: (label) => ({ is: "TextBox", label }),
+  MultilineTextBox: (label) => ({ is: "MultilineTextBox", label }),
+  NumberBox: (label, props?: Record<string, unknown>) => ({ is: "NumberBox", label, props }),
+  CheckBox: (label) => ({ is: "CheckBox", label }),
+  Heading: (caption: string) => ({ is: "Heading", props: { caption } }),
+  SingleSelect: (label, searchProvider: SearchProvider) => ({
+    is: "SingleSelect",
+    label,
+    props: { searchProvider },
+  }),
+  MultiSelect: (label, searchProvider: SearchProvider) => ({
+    is: "MultiSelect",
+    label,
+    props: { searchProvider },
+  }),
+  EnumInput: (label, variants: Variants) => ({ is: "EnumInput", label, props: { variants } }),
+} satisfies { [k: string]: (label: string, ...args: any[]) => Field };
+function toComposableFields<const T extends Record<string, unknown>>(fields: T) {
+  return Object.fromEntries(Object.entries(fields).map(([k, v]) => [k, { [k]: v }])) as {
+    [K in keyof T]: { [P in K]: T[K] };
+  };
+}
 
 // oxfmt-ignore
-export const editTypes: { [key: string]: { [key: string]: any } } = {
-  "firewall": {
-    name: "Firewall",
-    "forward_rules": {
+const _f = {
+  automatic_forward_rule: c.CheckBox("Automatic Forward Rule"),
+  verdict: c.EnumInput("Verdict", {
+    "accept": { display: "Accept" },
+    "drop": { display: "Drop" },
+    "continue": { display: "Continue" },
+  }),
+  interface: c.SingleSelect("Interface", GetInterfaces),
+  public_key: c.TextBox("Public Key"),
+  members: c.MultiSelect("Members", GetInterfaces),
+};
+const f = toComposableFields(_f);
+
+// oxfmt-ignore
+const fs = {
+  rulesCommon: {
+    source_addresses: c.MultiSelect("Source", GetAddresses),
+    negate_source: c.CheckBox("Negate Source"),
+    destination_addresses: c.MultiSelect("Destination", GetAddresses),
+    negate_destination: c.CheckBox("Negate Destination"),
+    services: c.MultiSelect("Services", GetServices),
+    counter: c.CheckBox("Counter"),
+    log: c.CheckBox("Log"),
+  },
+};
+
+function withCommon(fields: Fields) {
+  return {
+    name: c.TextBox("Name"),
+    ...fields,
+    comment: c.MultilineTextBox("Comment"),
+  } as Fields;
+}
+
+// oxfmt-ignore
+const portVariants = {
+  any: { display: "Any" },
+  single: { display: "Single", fields: { port: c.NumberBox("Port") } },
+  range: { display: "Range", fields: {
+    start_port: c.NumberBox("Start Port"),
+    end_port: c.NumberBox("End Port"),
+  } },
+};
+const portFields = {
+  source: c.EnumInput("Source", portVariants),
+  destination: c.EnumInput("Destination", portVariants),
+};
+
+// --- Definitions --- //
+type Subsystem = {
+  name: string;
+  entities: Record<string, Entity>;
+};
+export type Entity = {
+  name: string;
+  idType?: "Number" | "String";
+  fields?: Fields;
+  default?: Record<string, any>;
+  columns?: {
+    // TODO: Merge into a SST
+    heading: string;
+    path: string;
+    component: Component;
+    props: any;
+  }[];
+};
+// oxfmt-ignore
+export const subsystems = {
+  firewall: { name: "Firewall", entities: {
+    forward_rules: {
       name: "Forward Rule",
       idType: "Number",
-      fields: {
-        name: { is: "TextBox", label: "Name" },
-        source_addresses: { is: "MultiSelect", label: "Source", props: { searchProvider: GetAddresses } },
-        negate_source: { is: "CheckBox", label: "Negate Source" },
-        destination_addresses: { is: "MultiSelect", label: "Destination", props: { searchProvider: GetAddresses } },
-        negate_destination: { is: "CheckBox", label: "Negate Destination" },
-        services: { is: "MultiSelect", label: "Services", props: { searchProvider: GetServices } },
-        verdict: { is: "EnumInput", label: "Verdict", props: { variants: {
-          "accept": { display: "Accept" },
-          "drop": { display: "Drop" },
-          "continue": { display: "Continue" },
-        } } },
-        counter: { is: "CheckBox", label: "Counter" },
-        log: { is: "CheckBox", label: "Log" },
-        comment: { is: "MultilineTextBox", label: "Comment" },
-      },
-      default: {
-        name:"",
-        source_addresses: [],
-        negate_source: false,
-        destination_addresses: [],
-        negate_destination: false,
-        services: [],
-        verdict: "accept",
-        counter: true,
-        log: false,
-        comment: "",
-      },
+      fields: withCommon({ ...fs.rulesCommon, ...f.verdict }),
+      default: { verdict: "accept", counter: true },
     },
-    "destination_nat_rules": {
+    destination_nat_rules: {
       name: "Destination NAT Rule",
       idType: "Number",
-      fields: {
-        name: { is: "TextBox", label: "Name" },
-        source_addresses: { is: "MultiSelect", label: "Source", props: { searchProvider: GetAddresses } },
-        negate_source: { is: "CheckBox", label: "Negate Source" },
-        destination_addresses: { is: "MultiSelect", label: "Destination", props: { searchProvider: GetAddresses } },
-        negate_destination: { is: "CheckBox", label: "Negate Destination" },
-        services: { is: "MultiSelect", label: "Services", props: { searchProvider: GetServices } },
-        dnat_heading: { is: "Heading", props: { caption: "DNAT" } },
-        dnat_address: { is: "SingleSelect", label: "Destination", props: { searchProvider: GetAddresses } },
-        dnat_service: { is: "SingleSelect", label: "Service", props: { searchProvider: GetServices } },
-        automatic_forward_rule: { is: "CheckBox", label: "Automatic Forward Rule" },
-        counter: { is: "CheckBox", label: "Counter" },
-        log: { is: "CheckBox", label: "Log" },
-        comment: { is: "MultilineTextBox", label: "Comment" },
-      },
-      default: {
-        name:"",
-        source_addresses: [],
-        negate_source: false,
-        destination_addresses: [],
-        negate_destination: false,
-        services: [],
-        dnat_address: [],
-        dnat_service: [],
-        automatic_forward_rule: false,
-        counter: true,
-        log: false,
-        comment: "",
-      },
+      fields: withCommon({
+        ...fs.rulesCommon,
+        dnat_heading: c.Heading("DNAT"),
+        dnat_address: c.SingleSelect("Destination", GetAddresses),
+        dnat_service: c.SingleSelect("Service", GetServices),
+        ...f.automatic_forward_rule,
+      }),
+      default: { counter: true },
     },
-    "source_nat_rules": {
+    source_nat_rules: {
       name: "Source NAT Rule",
       idType: "Number",
-      fields: {
-        name: { is: "TextBox", label: "Name" },
-        source_addresses: { is: "MultiSelect", label: "Source", props: { searchProvider: GetAddresses } },
-        negate_source: { is: "CheckBox", label: "Negate Source" },
-        destination_addresses: { is: "MultiSelect", label: "Destination", props: { searchProvider: GetAddresses } },
-        negate_destination: { is: "CheckBox", label: "Negate Destination" },
-        services: { is: "MultiSelect", label: "Services", props: { searchProvider: GetServices } },
-        snat_heading: { is: "Heading", props: { caption: "SNAT" } },
-        snat_type: { is: "EnumInput", label: "Type", props: { variants: {
+      fields: withCommon({
+        ...fs.rulesCommon,
+        snat_heading: c.Heading("SNAT"),
+        snat_type: c.EnumInput("Type", {
           "masquerade": { display: "Masquerade" },
-          "snat": {
-            display: "SNAT",
-            fields: {
-              address: { is: "SingleSelect", label: "Source", props: { searchProvider: GetAddresses } },
-              service: { is: "SingleSelect", label: "Service", props: { searchProvider: GetServices } },
-            },
-          },
-        } } },
-        automatic_forward_rule: { is: "CheckBox", label: "Automatic Forward Rule" },
-        counter: { is: "CheckBox", label: "Counter" },
-        log: { is: "CheckBox", label: "Log" },
-        comment: { is: "MultilineTextBox", label: "Comment" },
-      },
-      default: {
-        name:"",
-        source_addresses: [],
-        negate_source: false,
-        destination_addresses: [],
-        negate_destination: false,
-        services: [],
-        snat_type: "masquerade",
-        automatic_forward_rule: false,
-        counter: true,
-        log: false,
-        comment: "",
-      },
+          "snat": { display: "SNAT", fields: {
+            address: c.SingleSelect("Source", GetAddresses),
+            service: c.SingleSelect("Service", GetServices),
+          } },
+        }),
+        ...f.automatic_forward_rule,
+      }),
+      default: { snat_type: "masquerade", counter: true },
     },
-    "inbound_rules": {
+    inbound_rules: {
       name: "Inbound Rule",
       idType: "Number",
-      fields: {
-        name: { is: "TextBox", label: "Name" },
-        source_addresses: { is: "MultiSelect", label: "Source", props: { searchProvider: GetAddresses } },
-        negate_source: { is: "CheckBox", label: "Negate Source" },
-        destination_addresses: { is: "MultiSelect", label: "Destination", props: { searchProvider: GetAddresses } },
-        negate_destination: { is: "CheckBox", label: "Negate Destination" },
-        services: { is: "MultiSelect", label: "Services", props: { searchProvider: GetServices } },
-        verdict: { is: "EnumInput", label: "Verdict", props: { variants: {
-          "accept": { display: "Accept" },
-          "drop": { display: "Drop" },
-          "continue": { display: "Continue" },
-        } } },
-        counter: { is: "CheckBox", label: "Counter" },
-        log: { is: "CheckBox", label: "Log" },
-        comment: { is: "MultilineTextBox", label: "Comment" },
-      },
-      default: {
-        name:"",
-        source_addresses: [],
-        negate_source: false,
-        destination_addresses: [],
-        negate_destination: false,
-        services: [],
-        verdict: "accept",
-        counter: true,
-        log: false,
-        comment: "",
-      },
+      fields: withCommon({ ...fs.rulesCommon, ...f.verdict }),
+      default: { verdict: "accept", counter: true },
     },
-  },
-  "network": {
-    name: "Network",
-    "interfaces": {
+  } },
+  network: { name: "Network", entities: {
+    interfaces: {
       name: "Interface",
-      fields: {
-        name: { is: "TextBox", label: "Name" },
-        alias: { is: "TextBox", label: "Alias" },
-        interface_type: { is: "EnumInput", label: "Type", props: { variants: {
-          "hardware": {
-            display: "Hardware",
-            fields: {
-              device: { is: "SingleSelect", label: "Device", props: { searchProvider: GetHardwareInterfaces } },
-            },
-          },
-          "vlan": {
-            display: "VLAN",
-            fields: {
-              parent: { is: "SingleSelect", label: "VLAN Parent", props: { searchProvider: GetInterfaces } },
-              id: { is: "NumberBox", label: "VLAN ID", props: { min: 1, max: 4094 } },
-            },
-          },
-          "bond": {
-            display: "Bond",
-            fields: {
-              members: { is: "MultiSelect", label: "Members", props: { searchProvider: GetInterfaces } },
-            },
-          },
-          "bridge": {
-            display: "Bridge",
-            fields: {
-              members: { is: "MultiSelect", label: "Members", props: { searchProvider: GetInterfaces } },
-            },
-          },
-        } } },
-        addressing_mode: { is: "EnumInput", label: "Addressing Mode", props: { variants: {
+      fields: withCommon({
+        alias: c.TextBox("Alias"),
+        interface_type: c.EnumInput("Type", {
+          "hardware": { display: "Hardware", fields: { device: c.SingleSelect("Device", GetHardwareInterfaces) } },
+          "vlan": { display: "VLAN", fields: {
+            parent: c.SingleSelect("VLAN Parent", GetInterfaces),
+            id: c.NumberBox("VLAN ID", { min: 1, max: 4094 }),
+          } },
+          "bond": { display: "Bond", fields: { ...f.members } },
+          "bridge": { display: "Bridge", fields: { ...f.members } },
+        }),
+        addressing_mode: c.EnumInput("Addressing Mode", {
           "none": { display: "None" },
-          "static": {
-            display: "Static",
-            fields: {
-              address: { is: "TextBox", label: "Address" },
-            },
-          },
+          "static": { display: "Static", fields: { address: c.TextBox("Address") } },
           "dhcp": { display: "DHCP" },
-        } } },
-        virtual_router: { is: "SingleSelect", label: "Virtual Router", props: { searchProvider: GetVirtualRouters } },
-        comment: { is: "MultilineTextBox", label: "Comment" },
-      },
+        }),
+        virtual_router: c.SingleSelect("Virtual Router", GetVirtualRouters),
+      }),
     },
-    "static_routes": {
+    static_routes: {
       name: "Static Route",
       idType: "Number",
-      fields: {
-        name: { is: "TextBox", label: "Name" },
-        interface: { is: "SingleSelect", label: "Interface", props: { searchProvider: GetInterfaces } },
-        gateway: { is: "TextBox", label: "Gateway" },
-        destination: { is: "TextBox", label: "Destination" },
-        metric: { is: "NumberBox", label: "Metric" },
-        comment: { is: "MultilineTextBox", label: "Comment" },
-      },
+      fields: withCommon({
+        ...f.interface,
+        gateway: c.TextBox("Gateway"),
+        destination: c.TextBox("Destination"),
+        metric: c.NumberBox("Metric"),
+      }),
     },
-    "virtual_routers": {
+    virtual_routers: {
       name: "Virtual Routers",
       idType: "Number",
-      fields: {
-        name: { is: "TextBox", label: "Name" },
-        table_id: { is: "NumberBox", label: "Table ID" },
-        comment: { is: "MultilineTextBox", label: "Comment" },
-      },
+      fields: withCommon({ table_id: c.NumberBox("Table ID") }),
     },
-  },
-  "object": {
-    name: "object",
-    "addresses": {
+  } },
+  object: { name: "Object", entities: {
+    addresses: {
       name: "Address",
-      fields: {
-        name: { is: "TextBox", label: "Name" },
-        address_type: { is: "EnumInput", label: "Type", props: { variants: {
-          "host": {
-            display: "Host",
-            fields: {
-              address: { is: "TextBox", label: "Address" },
-            },
-          },
-          "range": {
-            display: "Range",
-            fields: {
-              range: { is: "TextBox", label: "Range" },
-            },
-          },
-          "network": {
-            display: "Network",
-            fields: {
-              network: { is: "TextBox", label: "Network" },
-            },
-          },
-          "group": {
-            display: "Group",
-            fields: {
-              members: { is: "MultiSelect", label: "Members", props: { searchProvider: GetAddresses } },
-            },
-          },
-        } } },
-        comment: { is: "MultilineTextBox", label: "Comment" },
-      },
+      fields: withCommon({
+        address_type: c.EnumInput("Type", {
+          "host": { display: "Host", fields: { address: c.TextBox("Address") } },
+          "range": { display: "Range", fields: { range: c.TextBox("Range") } },
+          "network": { display: "Network", fields: { network: c.TextBox("Network") } },
+          "group": { display: "Group", fields: { members: c.MultiSelect("Members", GetAddresses) } },
+        }),
+      }),
     },
-    "services": {
+    services: {
       name: "Service",
-      fields: {
-        name: { is: "TextBox", label: "Name" },
-        service_type: { is: "EnumInput", label: "Type", props: { variants: {
-          "tcp": {
-            display: "TCP",
-            fields: {
-              source: { is: "EnumInput", label: "Source", props: { variants: PortDefinition } },
-              destination: { is: "EnumInput", label: "Destination", props: { variants: PortDefinition } },
-            },
-          },
-          "udp": {
-            display: "UDP",
-            fields: {
-              source: { is: "EnumInput", label: "Source", props: { variants: PortDefinition } },
-              destination: { is: "EnumInput", label: "Destination", props: { variants: PortDefinition } },
-            },
-          },
-          "icmp": {
-            display: "ICMP",
-            fields: {
-              ptypes: { is: "MultiSelect", label: "Packet Types", props: { searchProvider: ICMPPacketTypes } },
-            },
-          },
-          "group": {
-            display: "Group",
-            fields: {
-              members: { is: "MultiSelect", label: "Members", props: { searchProvider: GetServices } },
-            },
-          },
-        } } },
-        comment: { is: "MultilineTextBox", label: "Comment" },
-      },
+      fields: withCommon({
+        service_type: c.EnumInput("Type", {
+          "tcp": { display: "TCP", fields: portFields },
+          "udp": { display: "UDP", fields: portFields },
+          "icmp": { display: "ICMP", fields: { ptypes: c.MultiSelect("Packet Types", ICMPPacketTypes) } },
+          "group": { display: "Group", fields: { members: c.MultiSelect("Members", GetServices) } },
+        }),
+      }),
     },
-  },
-  "service": {
-    name: "Service",
-    "dhcp_servers": {
+  } },
+  service: { name: "Service", entities: {
+    dhcp_servers: {
       name: "DHCP Server",
       idType: "Number",
-      fields: {
-        name: { is: "TextBox", label: "Name" },
-        interface: { is: "SingleSelect", label: "Interface", props: { searchProvider: GetInterfaces } },
-        pool: { is: "MultiSelect", label: "Pool", props: { searchProvider: GetAddresses } },
-        gateway_mode: { is: "EnumInput", label: "Gateway Mode", props: { variants: {
+      fields: withCommon({
+        ...f.interface,
+        pool: c.MultiSelect("Pool", GetAddresses),
+        gateway_mode: c.EnumInput("Gateway Mode", {
           "none": { display: "None" },
           "interface": { display: "Interface" },
-          "specify": {
-            display: "Specify",
-            fields: {
-              gateway: { is: "SingleSelect", label: "Gateway", props: { searchProvider: GetAddresses } },
-            },
-          },
-        } } },
-        dns_server_mode: { is: "EnumInput", label: "DNS Server Mode", props: { variants: {
+          "specify": { display: "Specify", fields: { gateway: c.SingleSelect("Gateway", GetAddresses) } },
+        }),
+        dns_server_mode: c.EnumInput("DNS Server Mode", {
           "none": { display: "None" },
           "interface": { display: "Interface" },
-          "specify": {
-            display: "Specify",
-            fields: {
-              dns_servers: { is: "MultiSelect", label: "DNS Servers", props: { searchProvider: GetAddresses } },
-            },
-          },
-        } } },
-        ntp_server_mode: { is: "EnumInput", label: "NTP Server Mode", props: { variants: {
+          "specify": { display: "Specify", fields: { dns_servers: c.MultiSelect("DNS Servers", GetAddresses) } },
+        }),
+        ntp_server_mode: c.EnumInput("NTP Server Mode", {
           "none": { display: "None" },
           "interface": { display: "Interface" },
-          "specify": {
-            display: "Specify",
-            fields: {
-              ntp_servers: { is: "MultiSelect", label: "NTP Servers", props: { searchProvider: GetAddresses } },
-            },
-          },
-        } } },
-        lease_time: { is: "NumberBox", label: "Lease Time" },
-        comment: { is: "MultilineTextBox", label: "Comment" },
-      },
+          "specify": { display: "Specify", fields: { ntp_servers: c.MultiSelect("NTP Servers", GetAddresses) } },
+        }),
+        lease_time: c.NumberBox("Lease Time"),
+      }),
     },
-    "ntp_servers": {
+    ntp_servers: {
       name: "NTP Server",
       idType: "Number",
-      fields: {
-        name: { is: "TextBox", label: "Name" },
-        interface: { is: "SingleSelect", label: "Interface", props: { searchProvider: GetInterfaces } },
-        comment: { is: "MultilineTextBox", label: "Comment" },
-      },
+      fields: withCommon({ ...f.interface }),
     },
-    "dns_servers": {
+    dns_servers: {
       name: "DNS Server",
       idType: "Number",
-      fields: {
-        name: { is: "TextBox", label: "Name" },
-        interface: { is: "SingleSelect", label: "Interface", props: { searchProvider: GetInterfaces } },
-        comment: { is: "MultilineTextBox", label: "Comment" },
-      },
+      fields: withCommon({ ...f.interface }),
     },
-  },
-  "vpn": {
-    name: "VPN",
+  } },
+  vpn: { name: "VPN", entities: {
     "wireguard.interfaces": {
       name: "Wireguard Interface",
-      fields: {
-        name: { is: "TextBox", label: "Name" },
-        public_key: { is: "TextBox", label: "Public Key" },
-        private_key: { is: "TextBox", label: "Private Key" },
-        listen_port: { is: "NumberBox", label: "Listen Port" },
-        peers: { is: "MultiSelect", label: "Peers", props: { searchProvider: GetPeers } },
-        comment: { is: "MultilineTextBox", label: "Comment" },
-      },
+      fields: withCommon({
+        ...f.public_key,
+        private_key: c.TextBox("Private Key"),
+        listen_port: c.NumberBox("Listen Port"),
+        peers: c.MultiSelect("Peers", GetPeers),
+      }),
     },
     "wireguard.peers": {
       name: "Wireguard Peer",
-      fields: {
-        name: { is: "TextBox", label: "Name" },
-        public_key: { is: "TextBox", label: "Public Key" },
-        preshared_key: { is: "TextBox", label: "Preshared Key" },
-        allowed_ips: { is: "MultiSelect", label: "Allowed IPs", props: { searchProvider: GetAddresses } },
-        endpoint: { is: "TextBox", label: "Endpoint" },
-        persistent_keepalive: { is: "NumberBox", label: "Persistent Keepalive" },
-        comment: { is: "MultilineTextBox", label: "Comment" },
-      },
+      fields: withCommon({
+        ...f.public_key,
+        preshared_key: c.TextBox("Preshared Key"),
+        allowed_ips: c.MultiSelect("Allowed IPs", GetAddresses),
+        endpoint: c.TextBox("Endpoint"),
+        persistent_keepalive: c.NumberBox("Persistent Keepalive"),
+      }),
     },
-  },
-  "system": {
-    name: "System",
-    "users": {
+  } },
+  system: { name: "System", entities: {
+    users: {
       name: "User",
-      fields: {
-        name: { is: "TextBox", label: "Name" },
-        password: { is: "TextBox", label: "Password" },
-        comment: { is: "MultilineTextBox", label: "Comment" },
-      },
+      fields: withCommon({ password: c.TextBox("Password") }),
     },
-  },
-};
+  } },
+} as const satisfies Record<string, Subsystem>;

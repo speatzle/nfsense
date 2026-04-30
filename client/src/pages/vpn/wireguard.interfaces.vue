@@ -13,7 +13,7 @@ const columns = [
   { heading: "Comment", path: "comment" },
 ];
 
-const displayData = $(
+const $displayData = $(
   computed(() => {
     const data = [];
     for (const index in $interfaces)
@@ -47,7 +47,7 @@ async function generateKeys() {
 
 async function deleteInterface() {
   const res = await apiCall("vpn.wireguard.interfaces.delete", {
-    name: displayData[$selection[0]].name,
+    name: $displayData[$selection[0]].name,
   });
   if (res.Error === null) console.debug("deleted interface");
   else console.debug("error", res);
@@ -55,7 +55,7 @@ async function deleteInterface() {
 }
 
 async function editInterface() {
-  p.router.push(`/vpn/wireguard.interfaces/edit/${displayData[$selection[0]].name}`);
+  p.router.push(`/vpn/wireguard.interfaces/edit/${$displayData[$selection[0]].name}`);
 }
 
 onMounted(load);
@@ -64,7 +64,7 @@ onMounted(load);
 <template>
   <TableView
     v-model:selection="$selection"
-    v-model:data="displayData"
+    v-model:data="$displayData"
     title="Wireguard Interfaces"
     :columns="columns"
     :loading="$loading"

@@ -1,4 +1,9 @@
 import type { SearchProvider, Fields, Field, Variants } from "~/components/input/input";
+import ArrayDisplay from "~/components/display/ArrayDisplay.vue";
+import ElementDisplay from "~/components/display/ElementDisplay.vue";
+import EnumTypeDisplay from "~/components/display/EnumTypeDisplay.vue";
+import EnumValueDisplay from "~/components/display/EnumValueDisplay.vue";
+import PortServiceDisplay from "~/components/display/PortServiceDisplay.vue";
 import { apiCall } from "./api";
 
 // --- Search Providers --- //
@@ -122,14 +127,16 @@ type Subsystem = {
 export type Entity = {
   name: string;
   idType?: "Number" | "String";
+  ordered?: true;
   fields?: Fields;
   default?: Record<string, any>;
   columns?: {
     // TODO: Merge into a SST
     heading: string;
     path: string;
-    component: Component;
-    props: any;
+    component?: Component;
+    props?: any;
+    componentProp?: string;
   }[];
 };
 // oxfmt-ignore
@@ -138,12 +145,24 @@ export const subsystems = {
     forward_rules: {
       name: "Forward Rule",
       idType: "Number",
+      ordered: true,
       fields: withCommon({ ...fs.rulesCommon, ...f.verdict }),
       default: { verdict: "accept", counter: true },
+      columns: [
+        { heading: 'Name', path: 'name' },
+        { heading: 'Source', path: 'source_addresses', component: markRaw(ArrayDisplay), componentProp: 'data' },
+        { heading: 'Destination', path: 'destination_addresses', component: markRaw(ArrayDisplay), componentProp: 'data' },
+        { heading: 'Service', path: 'services', component: markRaw(ArrayDisplay), componentProp: 'data' },
+        { heading: 'Verdict', path: 'verdict' },
+        { heading: 'Counter', path: 'counter' },
+        { heading: 'Log', path: 'log' },
+        { heading: 'Comment', path: 'comment' },
+      ]
     },
     destination_nat_rules: {
       name: "Destination NAT Rule",
       idType: "Number",
+      ordered: true,
       fields: withCommon({
         ...fs.rulesCommon,
         dnat_heading: c.Heading("DNAT"),
@@ -152,9 +171,20 @@ export const subsystems = {
         ...f.automatic_forward_rule,
       }),
       default: { counter: true },
+      columns: [
+        { heading: 'Name', path: 'name' },
+        { heading: 'Source', path: 'source_addresses', component: markRaw(ArrayDisplay), componentProp: 'data' },
+        { heading: 'Destination', path: 'destination_addresses', component: markRaw(ArrayDisplay), componentProp: 'data' },
+        { heading: 'Service', path: 'services', component: markRaw(ArrayDisplay), componentProp: 'data' },
+        { heading: 'Translated Address', path: 'dnat_address', component: markRaw(ElementDisplay), componentProp: 'data' },
+        { heading: 'Translated Service', path: 'dnat_service', component: markRaw(ElementDisplay), componentProp: 'data' },
+        { heading: 'Counter', path: 'counter' },
+        { heading: 'Comment', path: 'comment' },
+      ]
     },
     source_nat_rules: {
       name: "Source NAT Rule",
+      ordered: true,
       idType: "Number",
       fields: withCommon({
         ...fs.rulesCommon,
@@ -169,12 +199,33 @@ export const subsystems = {
         ...f.automatic_forward_rule,
       }),
       default: { snat_type: "masquerade", counter: true },
+      columns: [
+        { heading: 'Name', path: 'name' },
+        { heading: 'Source', path: 'source_addresses', component: markRaw(ArrayDisplay), componentProp: 'data' },
+        { heading: 'Destination', path: 'destination_addresses', component: markRaw(ArrayDisplay), componentProp: 'data' },
+        { heading: 'Service', path: 'services', component: markRaw(ArrayDisplay), componentProp: 'data' },
+        { heading: 'Type', path: 'snat_type', component: markRaw(EnumTypeDisplay), componentProp: 'data' },
+        { heading: 'Translated Address', path: 'snat_type.snat.address', component: markRaw(ElementDisplay), componentProp: 'data' },
+        { heading: 'Translated Service', path: 'snat_type.snat.service', component: markRaw(ElementDisplay), componentProp: 'data' },
+        { heading: 'Counter', path: 'counter' },
+        { heading: 'Comment', path: 'comment' },
+      ],
     },
     inbound_rules: {
       name: "Inbound Rule",
       idType: "Number",
+      ordered: true,
       fields: withCommon({ ...fs.rulesCommon, ...f.verdict }),
       default: { verdict: "accept", counter: true },
+      columns: [
+        { heading: 'Name', path: 'name' },
+        { heading: 'Source', path: 'source_addresses', component: markRaw(ArrayDisplay), componentProp: 'data' },
+        { heading: 'Service', path: 'services', component: markRaw(ArrayDisplay), componentProp: 'data' },
+        { heading: 'Verdict', path: 'verdict' },
+        { heading: 'Counter', path: 'counter' },
+        { heading: 'Log', path: 'log' },
+        { heading: 'Comment', path: 'comment' },
+      ]
     },
   } },
   network: { name: "Network", entities: {
@@ -198,9 +249,33 @@ export const subsystems = {
         }),
         virtual_router: c.SingleSelect("Virtual Router", GetVirtualRouters),
       }),
+      columns: [
+        { heading: "Name", path: "name" },
+        { heading: "Alias", path: "alias" },
+        { heading: "Type", path: "interface_type", component: markRaw(EnumTypeDisplay), componentProp: "data" },
+        { heading: "Addressing Mode", path: "addressing_mode", component: markRaw(EnumTypeDisplay), componentProp: "data" },
+        { heading: "Address", path: "addressing_mode.static.address" },
+        { heading: "Vlan Parent", path: "interface_type.vlan.parent" },
+        { heading: "Vlan ID", path: "interface_type.vlan.id" },
+        { heading: "Bond Members", path: "interface_type.bond.members", component: markRaw(ArrayDisplay), componentProp: "data" },
+        { heading: "Bridge Members", path: "interface_type.bridge.members", component: markRaw(ArrayDisplay), componentProp: "data" },
+        { heading: "Virtual Router", path: "virtual_router" },
+        { heading: "Comment", path: "comment" },
+      ],
+    },
+    policy_routes: {
+      name: "Policy Route",
+      columns: [
+        { heading: 'Name', path: 'name' },
+        { heading: 'Interface', path: 'interface' },
+        { heading: 'Gateway', path: 'gateway' },
+        { heading: 'Destination', path: 'destination' },
+        { heading: 'Metric', path: 'metric' },
+      ],
     },
     static_routes: {
       name: "Static Route",
+      ordered: true,
       idType: "Number",
       fields: withCommon({
         ...f.interface,
@@ -208,11 +283,24 @@ export const subsystems = {
         destination: c.TextBox("Destination"),
         metric: c.NumberBox("Metric"),
       }),
+      columns: [
+        { heading: "Name", path: "name" },
+        { heading: "Interface", path: "interface" },
+        { heading: "Gateway", path: "gateway" },
+        { heading: "Destination", path: "destination" },
+        { heading: "Metric", path: "metric" },
+      ],
     },
     virtual_routers: {
       name: "Virtual Routers",
+      ordered: true,
       idType: "Number",
       fields: withCommon({ table_id: c.NumberBox("Table ID") }),
+      columns: [
+        { heading: "Name", path: "name" },
+        { heading: "Table ID", path: "table_id" },
+        { heading: "Comment", path: "comment" },
+      ],
     },
   } },
   object: { name: "Object", entities: {
@@ -226,6 +314,17 @@ export const subsystems = {
           "group": { display: "Group", fields: { members: c.MultiSelect("Members", GetAddresses) } },
         }),
       }),
+      columns: [
+        { heading: "Name", path: "name" },
+        { heading: "Type", path: "address_type", component: markRaw(EnumTypeDisplay), componentProp: "data" },
+        { heading: "Value", path: "address_type", component: markRaw(EnumValueDisplay), componentProp: "data", props: { definition: {
+          host: { path: "host.address", component: undefined },
+          range: { path: "range.address", component: undefined },
+          network: { path: "network.network", component: undefined },
+          group: { path: "group.members", component: ArrayDisplay },
+        } } },
+        { heading: "Comment", path: "comment" },
+      ],
     },
     services: {
       name: "Service",
@@ -237,11 +336,28 @@ export const subsystems = {
           "group": { display: "Group", fields: { members: c.MultiSelect("Members", GetServices) } },
         }),
       }),
+      columns: [
+        { heading: "Name", path: "name" },
+        { heading: "Type", path: "service_type", component: markRaw(EnumTypeDisplay), componentProp: "data", props: { definition: {
+            tcp: { path: "tcp", component: PortServiceDisplay },
+            udp: { path: "udp", component: PortServiceDisplay },
+            icmp: { path: "icmp.ptypes", component: undefined },
+            group: { path: "group.members", component: ArrayDisplay },
+        } } },
+        { heading: "Value", path: "service_type", component: markRaw(EnumValueDisplay), componentProp: "data", props: { definition: {
+            tcp: { path: "tcp", component: PortServiceDisplay },
+            udp: { path: "udp", component: PortServiceDisplay },
+            icmp: { path: "icmp.ptypes", component: undefined },
+            group: { path: "group.members", component: ArrayDisplay },
+        } } },
+        { heading: "Comment", path: "comment" },
+      ],
     },
   } },
   service: { name: "Service", entities: {
     dhcp_servers: {
       name: "DHCP Server",
+      ordered: true,
       idType: "Number",
       fields: withCommon({
         ...f.interface,
@@ -263,16 +379,41 @@ export const subsystems = {
         }),
         lease_time: c.NumberBox("Lease Time"),
       }),
-    },
-    ntp_servers: {
-      name: "NTP Server",
-      idType: "Number",
-      fields: withCommon({ ...f.interface }),
+      columns: [
+        { heading: "Interface", path: "interface" },
+        { heading: "Pool", path: "pool", component: markRaw(ArrayDisplay), componentProp: "data" },
+        { heading: "Comment", path: "comment" },
+      ],
     },
     dns_servers: {
       name: "DNS Server",
+      ordered: true,
       idType: "Number",
       fields: withCommon({ ...f.interface }),
+      columns: [
+        { heading: "Interface", path: "interface" },
+        { heading: "Comment", path: "comment" },
+      ],
+    },
+    ntp_servers: {
+      name: "NTP Server",
+      ordered: true,
+      idType: "Number",
+      fields: withCommon({ ...f.interface }),
+      columns: [
+        { heading: "Interface", path: "interface" },
+        { heading: "Comment", path: "comment" },
+      ],
+    },
+  } },
+  system: { name: "System", entities: {
+    users: {
+      name: "User",
+      fields: withCommon({ password: c.TextBox("Password") }),
+      columns: [
+        { heading: "Name", path: "name" },
+        { heading: "Comment", path: "comment" },
+      ],
     },
   } },
   vpn: { name: "VPN", entities: {
@@ -294,12 +435,13 @@ export const subsystems = {
         endpoint: c.TextBox("Endpoint"),
         persistent_keepalive: c.NumberBox("Persistent Keepalive"),
       }),
-    },
-  } },
-  system: { name: "System", entities: {
-    users: {
-      name: "User",
-      fields: withCommon({ password: c.TextBox("Password") }),
+      columns: [
+        { heading: "Name", path: "name" },
+        { heading: "Allowed IPs", path: "allowed_ips", component: markRaw(ArrayDisplay), componentProp: "data" },
+        { heading: "Endpoint", path: "endpoint" },
+        { heading: "Persistent Keepalive", path: "persistent_keepalive" },
+        { heading: "Comment", path: "comment" },
+      ],
     },
   } },
 } as const satisfies Record<string, Subsystem>;

@@ -18,16 +18,11 @@ import Heading from "./components/display/Heading.vue";
 
 import App from "./App.vue";
 import { createHead } from "@vueuse/head";
-import { createRouter, createWebHistory } from "vue-router";
-import routes from "~pages";
 import ToastPlugin from "vue-toast-notification";
 
 const app = createApp(App);
 const head = createHead();
-const router = createRouter({
-  history: createWebHistory(),
-  routes,
-});
+import { router } from "~/router";
 
 app.use(router);
 app.use(head);

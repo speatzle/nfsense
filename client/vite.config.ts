@@ -8,7 +8,6 @@ import AutoImport from "unplugin-auto-import/vite";
 import Components from "unplugin-vue-components/vite";
 import Icons from "unplugin-icons/vite";
 import IconsResolver from "unplugin-icons/resolver";
-import Pages from "vite-plugin-pages";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -50,7 +49,6 @@ export default defineConfig({
       types: [{ from: "focus-trap-vue", names: ["FocusTrap"] }],
     }),
     Icons({}),
-    Pages({ extensions: ["vue", "md"] }),
   ],
 
   // Easy Imports (Keep in sync with tsconfig.json!)

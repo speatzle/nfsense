@@ -21,8 +21,10 @@ pub fn generate_chrony(
     let mut subnets = vec![];
 
     for server in &pending_config.service.ntp_servers {
-        if let AddressingMode::Static { address } =
-            &server.interface(pending_config.clone()).addressing_mode
+        if let AddressingMode::Static { address } = &server
+            .get_interface(&pending_config)
+            .unwrap()
+            .addressing_mode
         {
             subnets.push(address.network().to_string());
             subnets.push(address.trunc().to_string());

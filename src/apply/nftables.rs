@@ -117,7 +117,7 @@ fn generate_service_matcher_statements(service: &Service) -> Vec<Statement<'stat
                 right: Expression::String("icmp".into()),
             }));
         }
-        ServiceType::Group { members: _ } => {
+        ServiceType::Group(_) => {
             // TODO group
         }
     }
@@ -240,10 +240,14 @@ fn generate_address_expression(
                 )));
                 */
             }
-            AddressType::Group { members } => {
-                _ = pending_config;
-                _ = members;
-                // TODO
+            AddressType::Group(group) => {
+                let members: Vec<Address> = group.get_members(&pending_config).cloned().collect();
+                // Recursivly resolve group members
+                if let Expression::Named(NamedExpression::Set(items)) =
+                    generate_address_expression(members, pending_config.clone())
+                {
+                    address_set_items.extend(items);
+                }
             }
         }
     }
@@ -255,7 +259,7 @@ fn generate_address_expression(
 // TODO find a way to generate without apply. Since we can't save the json format to disk due to includes.
 // Convert via nft?
 pub fn generate_nftables(
-    apply: bool,
+    _apply: bool,
     pending_config: Config,
     _current_config: Config,
 ) -> Result<(), ApplyError> {
@@ -296,7 +300,7 @@ pub fn generate_nftables(
     }));
 
     for interface in pending_config.clone().network.interfaces {
-        if let Some(vr) = interface.virtual_router(pending_config.clone()) {
+        if let Some(vr) = interface.get_virtual_router(&pending_config) {
             let mut ifname = interface.name;
             if let NetworkInterfaceType::Hardware { device } = interface.interface_type {
                 ifname = device;
@@ -400,9 +404,15 @@ pub fn generate_nftables(
             create_counter(&mut batch, counter_name.clone());
         }
 
-        let source_addresses = rule.source_addresses(pending_config.clone());
-        let destination_addresses = rule.destination_addresses(pending_config.clone());
-        let services = rule.services(pending_config.clone());
+        let source_addresses: Vec<Address> = rule
+            .get_source_addresses(&pending_config)
+            .cloned()
+            .collect();
+        let destination_addresses: Vec<Address> = rule
+            .get_destination_addresses(&pending_config)
+            .cloned()
+            .collect();
+        let services: Vec<Service> = rule.get_services(&pending_config).cloned().collect();
 
         let services_to_process: Vec<Option<Service>> = if services.is_empty() {
             vec![None] // One rule with no service
@@ -533,9 +543,15 @@ pub fn generate_nftables(
             create_counter(&mut batch, counter_name.clone());
         }
 
-        let source_addresses = rule.source_addresses(pending_config.clone());
-        let destination_addresses = rule.destination_addresses(pending_config.clone());
-        let services = rule.services(pending_config.clone());
+        let source_addresses: Vec<Address> = rule
+            .get_source_addresses(&pending_config)
+            .cloned()
+            .collect();
+        let destination_addresses: Vec<Address> = rule
+            .get_destination_addresses(&pending_config)
+            .cloned()
+            .collect();
+        let services: Vec<Service> = rule.get_services(&pending_config).cloned().collect();
 
         let services_to_process: Vec<Option<Service>> = if services.is_empty() {
             vec![None] // One rule with no service
@@ -575,7 +591,7 @@ pub fn generate_nftables(
             let mut addr = None;
             let mut destination_port = None;
 
-            if let Some(dnataddr) = rule.dnat_address(pending_config.clone()) {
+            if let Some(dnataddr) = rule.get_dnat_address(&pending_config) {
                 match dnataddr.address_type {
                     AddressType::Host { address } => {
                         addr = Some(Expression::String(address.to_string().into()));
@@ -584,17 +600,17 @@ pub fn generate_nftables(
                 }
             }
 
-            if let Some(dnatservice) = rule.dnat_service(pending_config.clone()) {
-                match dnatservice.service_type {
+            if let Some(dnatservice) = rule.get_dnat_service(&pending_config) {
+                match &dnatservice.service_type {
                     ServiceType::TCP { destination, .. } => match destination {
                         PortDefinition::Single { port } => {
-                            destination_port = Some(Expression::Number(port))
+                            destination_port = Some(Expression::Number(*port))
                         }
                         _ => todo!("Unsupported port definition"),
                     },
                     ServiceType::UDP { destination, .. } => match destination {
                         PortDefinition::Single { port } => {
-                            destination_port = Some(Expression::Number(port))
+                            destination_port = Some(Expression::Number(*port))
                         }
                         _ => todo!("Unsupported port definition"),
                     },
@@ -670,9 +686,15 @@ pub fn generate_nftables(
             create_counter(&mut batch, counter_name.clone());
         }
 
-        let source_addresses = rule.source_addresses(pending_config.clone());
-        let destination_addresses = rule.destination_addresses(pending_config.clone());
-        let services = rule.services(pending_config.clone());
+        let source_addresses: Vec<Address> = rule
+            .get_source_addresses(&pending_config)
+            .cloned()
+            .collect();
+        let destination_addresses: Vec<Address> = rule
+            .get_destination_addresses(&pending_config)
+            .cloned()
+            .collect();
+        let services: Vec<Service> = rule.get_services(&pending_config).cloned().collect();
 
         let services_to_process: Vec<Option<Service>> = if services.is_empty() {
             vec![None] // One rule with no service
@@ -702,15 +724,15 @@ pub fn generate_nftables(
                 expression.push(generate_log_statement(counter_name.clone()));
             }
 
-            match rule.snat_type {
+            match &rule.snat_type {
                 SNATType::Masquerade => {
                     expression.push(Statement::Masquerade(None));
                 }
-                SNATType::SNAT { .. } => {
+                SNATType::SNAT(snat) => {
                     let mut source_addr = None;
                     let mut source_port = None;
 
-                    if let Some(address) = rule.snat_type.address(pending_config.clone()) {
+                    if let Some(address) = snat.get_address(&pending_config) {
                         match address.address_type {
                             AddressType::Host { address } => {
                                 source_addr = Some(Expression::String(address.to_string().into()));
@@ -719,17 +741,17 @@ pub fn generate_nftables(
                         }
                     }
 
-                    if let Some(service) = rule.snat_type.service(pending_config.clone()) {
-                        match service.service_type {
+                    if let Some(service) = snat.get_service(&pending_config) {
+                        match &service.service_type {
                             ServiceType::TCP { destination, .. } => match destination {
                                 PortDefinition::Single { port } => {
-                                    source_port = Some(Expression::Number(port))
+                                    source_port = Some(Expression::Number(*port))
                                 }
                                 _ => todo!("Unsupported port definition: {}", service.name),
                             },
                             ServiceType::UDP { destination, .. } => match destination {
                                 PortDefinition::Single { port } => {
-                                    source_port = Some(Expression::Number(port))
+                                    source_port = Some(Expression::Number(*port))
                                 }
                                 _ => todo!("Unsupported port definition: {}", service.name),
                             },
@@ -788,9 +810,15 @@ pub fn generate_nftables(
             create_counter(&mut batch, counter_name.clone());
         }
 
-        let source_addresses = rule.source_addresses(pending_config.clone());
-        let destination_addresses = rule.destination_addresses(pending_config.clone());
-        let services = rule.services(pending_config.clone());
+        let source_addresses: Vec<Address> = rule
+            .get_source_addresses(&pending_config)
+            .cloned()
+            .collect();
+        let destination_addresses: Vec<Address> = rule
+            .get_destination_addresses(&pending_config)
+            .cloned()
+            .collect();
+        let services: Vec<Service> = rule.get_services(&pending_config).cloned().collect();
 
         let services_to_process: Vec<Option<Service>> = if services.is_empty() {
             vec![None] // One rule with no service

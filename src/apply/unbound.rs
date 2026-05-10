@@ -25,16 +25,14 @@ pub fn generate_unbound(
     let mut subnets = vec![];
 
     for server in &pending_config.service.dns_servers {
-        let interface = server.interface(pending_config.clone());
+        let interface = server.get_interface(&pending_config).unwrap();
         if let NetworkInterfaceType::Hardware { device } = interface.interface_type.clone() {
             interfaces.push(device);
         } else {
             interfaces.push(interface.name.clone());
         }
 
-        if let AddressingMode::Static { address } =
-            &server.interface(pending_config.clone()).addressing_mode
-        {
+        if let AddressingMode::Static { address } = &interface.addressing_mode {
             subnets.push(address.trunc().to_string());
         }
     }

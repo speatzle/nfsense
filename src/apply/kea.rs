@@ -122,9 +122,9 @@ pub fn generate_kea(
     for dhcp_server in pending_config.service.dhcp_servers.clone() {
         //TODO find a stable way for the subnet id
         dhcpindex += 1;
-        let interface = dhcp_server.interface(pending_config.clone());
+        let interface = dhcp_server.get_interface(&pending_config).unwrap();
         // TODO specify main ip of interface https://kea.readthedocs.io/en/kea-2.2.0/arm/dhcp4-srv.html#interface-configuration
-        match interface.interface_type {
+        match interface.interface_type.clone() {
             NetworkInterfaceType::Hardware { device } => {
                 conf.dhcpv4.interfaces_config.interfaces.push(device)
             }
@@ -132,7 +132,7 @@ pub fn generate_kea(
                 .dhcpv4
                 .interfaces_config
                 .interfaces
-                .push(interface.name),
+                .push(interface.name.clone()),
         }
 
         let mut subnet = KeaSubnet4 {
@@ -154,17 +154,16 @@ pub fn generate_kea(
                     _ => panic!("Unsupported Address Type"),
                 },
             }),
-            GatewayMode::Specify { .. } => subnet.option_data.push(KeaOption {
-                code: 3,
-                data: match dhcp_server
-                    .gateway_mode
-                    .gateway(pending_config.clone())
-                    .address_type
-                {
-                    AddressType::Host { address } => address.to_string(),
-                    _ => panic!("Unsupported Address Type"),
-                },
-            }),
+            GatewayMode::Specify(specify) => {
+                let gateway = specify.get_gateway(&pending_config).unwrap();
+                subnet.option_data.push(KeaOption {
+                    code: 3,
+                    data: match gateway.address_type {
+                        AddressType::Host { address } => address.to_string(),
+                        _ => panic!("Unsupported Address Type"),
+                    },
+                })
+            }
             GatewayMode::None => (),
         }
 
@@ -176,14 +175,12 @@ pub fn generate_kea(
                     _ => panic!("Unsupported Address Type"),
                 },
             }),
-            DNSServerMode::Specify { .. } => {
+            DNSServerMode::Specify(specify) => {
                 let mut servers = "".to_string();
-                let dns_servers = dhcp_server
-                    .dns_server_mode
-                    .dns_servers(pending_config.clone());
+                let dns_servers: Vec<_> = specify.get_dns_servers(&pending_config).collect();
 
-                for i in 0..dns_servers.len() {
-                    match dns_servers[i].address_type {
+                for (i, dns_server) in dns_servers.iter().enumerate() {
+                    match dns_server.address_type {
                         AddressType::Host { address } => {
                             if i > 0 {
                                 servers += ", ";
@@ -210,14 +207,12 @@ pub fn generate_kea(
                     _ => panic!("Unsupported Address Type"),
                 },
             }),
-            NTPServerMode::Specify { .. } => {
+            NTPServerMode::Specify(specify) => {
                 let mut servers = "".to_string();
-                let ntp_servers = dhcp_server
-                    .ntp_server_mode
-                    .ntp_servers(pending_config.clone());
+                let ntp_servers: Vec<_> = specify.get_ntp_servers(&pending_config).collect();
 
-                for i in 0..ntp_servers.len() {
-                    match ntp_servers[i].address_type {
+                for (i, ntp_server) in ntp_servers.iter().enumerate() {
+                    match ntp_server.address_type {
                         AddressType::Host { address } => {
                             if i > 0 {
                                 servers += ", ";
@@ -236,7 +231,7 @@ pub fn generate_kea(
             NTPServerMode::None => (),
         }
 
-        let pools = dhcp_server.pool(pending_config.clone());
+        let pools: Vec<_> = dhcp_server.get_pool(&pending_config).collect();
         for pool in pools {
             match pool.address_type {
                 AddressType::Host { address } => subnet.pools.push(KeaPool {
@@ -246,7 +241,7 @@ pub fn generate_kea(
                 AddressType::Network { network } => subnet.pools.push(KeaPool {
                     pool: network.to_string(),
                 }),
-                AddressType::Group { .. } => panic!("TODO"),
+                AddressType::Group(_) => panic!("TODO"),
             }
         }
 

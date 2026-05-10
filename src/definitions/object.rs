@@ -4,17 +4,20 @@ use garde::Validate;
 use ipnet::IpNet;
 use serde::{Deserialize, Serialize};
 use std::net::IpAddr;
+use structdb_macros::StructDb;
 
-#[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Default, Debug)]
 #[garde(context(Config))]
 pub struct Object {
+    #[collection(key = "name")]
     #[garde(dive)]
     pub addresses: Vec<Address>,
+    #[collection(key = "name")]
     #[garde(dive)]
     pub services: Vec<Service>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Validate, Debug)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct Address {
@@ -24,16 +27,24 @@ pub struct Address {
     pub comment: String,
 }
 
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default)]
+#[garde(context(Config))]
+#[garde(allow_unvalidated)]
+pub struct AddressGroup {
+    #[requires(Address)]
+    pub members: Vec<String>,
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum AddressType {
     Host { address: IpAddr },
     Range { range: IpAddr },
     Network { network: IpNet },
-    Group { members: Vec<String> },
+    Group(AddressGroup),
 }
 
-#[derive(Serialize, Deserialize, Clone, Validate, Debug)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct Service {
@@ -41,6 +52,14 @@ pub struct Service {
     pub name: String,
     pub service_type: ServiceType,
     pub comment: String,
+}
+
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default)]
+#[garde(context(Config))]
+#[garde(allow_unvalidated)]
+pub struct ServiceGroup {
+    #[requires(Service)]
+    pub members: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -57,9 +76,7 @@ pub enum ServiceType {
     ICMP {
         ptypes: Vec<ICMPPacketTypes>,
     },
-    Group {
-        members: Vec<String>,
-    },
+    Group(ServiceGroup),
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

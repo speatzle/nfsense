@@ -1,28 +1,37 @@
 use super::config::Config;
+use super::object::{Address, Service};
 use garde::Validate;
 use serde::{Deserialize, Serialize};
+use structdb_macros::StructDb;
 
-#[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Default, Debug)]
 #[garde(context(Config))]
 pub struct Firewall {
+    #[collection(key = "name")]
     #[garde(dive)]
     pub forward_rules: Vec<ForwardRule>,
+    #[collection(key = "name")]
     #[garde(dive)]
     pub destination_nat_rules: Vec<DestinationNATRule>,
+    #[collection(key = "name")]
     #[garde(dive)]
     pub source_nat_rules: Vec<SourceNATRule>,
+    #[collection(key = "name")]
     #[garde(dive)]
     pub inbound_rules: Vec<InboundRule>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Validate, Debug)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct ForwardRule {
     pub name: String,
+    #[requires(Service)]
     pub services: Vec<String>,
+    #[requires(Address)]
     pub source_addresses: Vec<String>,
     pub negate_source: bool,
+    #[requires(Address)]
     pub destination_addresses: Vec<String>,
     pub negate_destination: bool,
     pub comment: String,
@@ -31,32 +40,40 @@ pub struct ForwardRule {
     pub verdict: Verdict,
 }
 
-#[derive(Serialize, Deserialize, Clone, Validate, Debug)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct DestinationNATRule {
     pub name: String,
+    #[requires(Service)]
     pub services: Vec<String>,
+    #[requires(Address)]
     pub source_addresses: Vec<String>,
     pub negate_source: bool,
+    #[requires(Address)]
     pub destination_addresses: Vec<String>,
     pub negate_destination: bool,
     pub comment: String,
     pub automatic_forward_rule: bool,
     pub counter: bool,
     pub log: bool,
+    #[requires(Address)]
     pub dnat_address: Option<String>,
+    #[requires(Service)]
     pub dnat_service: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Validate, Debug)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct SourceNATRule {
     pub name: String,
+    #[requires(Service)]
     pub services: Vec<String>,
+    #[requires(Address)]
     pub source_addresses: Vec<String>,
     pub negate_source: bool,
+    #[requires(Address)]
     pub destination_addresses: Vec<String>,
     pub negate_destination: bool,
     pub comment: String,
@@ -66,14 +83,17 @@ pub struct SourceNATRule {
     pub snat_type: SNATType,
 }
 
-#[derive(Serialize, Deserialize, Clone, Validate, Debug)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct InboundRule {
     pub name: String,
+    #[requires(Service)]
     pub services: Vec<String>,
+    #[requires(Address)]
     pub source_addresses: Vec<String>,
     pub negate_source: bool,
+    #[requires(Address)]
     pub destination_addresses: Vec<String>,
     pub negate_destination: bool,
     pub comment: String,
@@ -90,12 +110,19 @@ pub enum Verdict {
     Continue,
 }
 
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default)]
+#[garde(context(Config))]
+#[garde(allow_unvalidated)]
+pub struct SNAT {
+    #[requires(Address)]
+    pub address: Option<String>,
+    #[requires(Service)]
+    pub service: Option<String>,
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "lowercase")]
 pub enum SNATType {
-    SNAT {
-        address: Option<String>,
-        service: Option<String>,
-    },
+    SNAT(SNAT),
     Masquerade,
 }

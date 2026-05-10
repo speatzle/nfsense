@@ -2,15 +2,17 @@ use super::config::Config;
 use crate::validation;
 use garde::Validate;
 use serde::{Deserialize, Serialize};
+use structdb_macros::StructDb;
 
-#[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Default, Debug)]
 #[garde(context(Config))]
 pub struct System {
+    #[collection(key = "name")]
     #[garde(dive)]
     pub users: Vec<User>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Default, Debug)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct User {

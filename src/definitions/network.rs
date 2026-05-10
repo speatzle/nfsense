@@ -1,23 +1,29 @@
 use super::config::Config;
+use super::object::{Address, Service};
 use crate::validation;
 use garde::Validate;
 use ipnet::IpNet;
 use serde::{Deserialize, Serialize};
+use structdb_macros::StructDb;
 
-#[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Default, Debug)]
 #[garde(context(Config))]
 pub struct Network {
+    #[collection(key = "name")]
     #[garde(dive)]
     pub interfaces: Vec<NetworkInterface>,
+    #[collection(key = "name")]
     #[garde(dive)]
     pub static_routes: Vec<StaticRoute>,
+    #[collection(key = "name")]
     #[garde(dive)]
     pub policy_routes: Vec<PolicyRoute>,
+    #[collection(key = "name")]
     #[garde(dive)]
     pub virtual_routers: Vec<VirtualRouter>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Validate, Debug)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct NetworkInterface {
@@ -27,7 +33,33 @@ pub struct NetworkInterface {
     pub comment: String,
     pub interface_type: NetworkInterfaceType,
     pub addressing_mode: AddressingMode,
+    #[requires(VirtualRouter)]
     pub virtual_router: Option<String>,
+}
+
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default)]
+#[garde(context(Config))]
+#[garde(allow_unvalidated)]
+pub struct Vlan {
+    pub id: i32,
+    #[requires(NetworkInterface)]
+    pub parent: String,
+}
+
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default)]
+#[garde(context(Config))]
+#[garde(allow_unvalidated)]
+pub struct Bond {
+    #[requires(NetworkInterface)]
+    pub members: Vec<String>,
+}
+
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default)]
+#[garde(context(Config))]
+#[garde(allow_unvalidated)]
+pub struct Bridge {
+    #[requires(NetworkInterface)]
+    pub members: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -35,9 +67,9 @@ pub struct NetworkInterface {
 pub enum NetworkInterfaceType {
     // TODO figure out how to validate the device since it needs to soft fail
     Hardware { device: String },
-    Vlan { id: i32, parent: String },
-    Bond { members: Vec<String> },
-    Bridge { members: Vec<String> },
+    Vlan(Vlan),
+    Bond(Bond),
+    Bridge(Bridge),
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -51,29 +83,37 @@ pub enum AddressingMode {
     DHCP,
 }
 
-#[derive(Serialize, Deserialize, Clone, Validate, Debug)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct StaticRoute {
     #[garde(custom(validation::validate_name))]
     pub name: String,
+    #[requires(NetworkInterface)]
     pub interface: String,
+    #[requires(Address)]
     pub gateway: String,
+    #[requires(Address)]
     pub destination: String,
     pub metric: u64,
     pub comment: String,
 }
 
-#[derive(Serialize, Deserialize, Clone, Validate, Debug)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct PolicyRoute {
     pub name: String,
+    #[requires(VirtualRouter)]
     pub source_virtual_router: String,
+    #[requires(NetworkInterface)]
     pub source_interfaces: Vec<String>,
+    #[requires(Service)]
     pub services: Vec<String>,
+    #[requires(Address)]
     pub source_addresses: Vec<String>,
     pub negate_source: bool,
+    #[requires(Address)]
     pub destination_addresses: Vec<String>,
     pub negate_destination: bool,
     pub comment: String,
@@ -82,24 +122,50 @@ pub struct PolicyRoute {
     pub action: RouteAction,
 }
 
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default)]
+#[garde(context(Config))]
+#[garde(allow_unvalidated)]
+pub struct RouteActionGateway {
+    #[requires(Address)]
+    pub address: String,
+}
+
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default)]
+#[garde(context(Config))]
+#[garde(allow_unvalidated)]
+pub struct RouteActionInterface {
+    #[requires(NetworkInterface)]
+    pub interface: String,
+    #[requires(Address)]
+    pub gateway: String,
+}
+
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default)]
+#[garde(context(Config))]
+#[garde(allow_unvalidated)]
+pub struct RouteActionVirtualRouter {
+    #[requires(VirtualRouter)]
+    pub virtual_router: String,
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum RouteAction {
-    Gateway { address: String },
-    Interface { interface: String, gateway: String },
-    VirtualRouter { virtual_router: String },
+    Gateway(RouteActionGateway),
+    Interface(RouteActionInterface),
+    VirtualRouter(RouteActionVirtualRouter),
     Blackhole,
     StopPolicyRouting,
 }
 
-#[derive(Serialize, Deserialize, Clone, Validate, Debug)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct Link {
     pub name: String,
 }
 
-#[derive(Serialize, Deserialize, Clone, Validate, Debug)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct VirtualRouter {

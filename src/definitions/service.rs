@@ -1,25 +1,33 @@
 use super::config::Config;
+use super::network::NetworkInterface;
+use super::object::Address;
 use garde::Validate;
 use macaddr::MacAddr8;
 use serde::{Deserialize, Serialize};
+use structdb_macros::StructDb;
 
-#[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Default, Debug)]
 #[garde(context(Config))]
 pub struct Service {
+    #[collection(key = "name")]
     #[garde(dive)]
     pub dhcp_servers: Vec<DHCPServer>,
+    #[collection(key = "name")]
     #[garde(dive)]
     pub dns_servers: Vec<DNSServer>,
+    #[collection(key = "name")]
     #[garde(dive)]
     pub ntp_servers: Vec<NTPServer>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Validate, Debug)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct DHCPServer {
     pub name: String,
+    #[requires(NetworkInterface)]
     pub interface: String,
+    #[requires(Address)]
     pub pool: Vec<String>,
     pub lease_time: u64,
     pub gateway_mode: GatewayMode,
@@ -29,22 +37,32 @@ pub struct DHCPServer {
     pub comment: String,
 }
 
-#[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Default, Debug)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct DNSServer {
     pub name: String,
+    #[requires(NetworkInterface)]
     pub interface: String,
     pub comment: String,
 }
 
-#[derive(Serialize, Deserialize, Clone, Validate, Default, Debug)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Default, Debug)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct NTPServer {
     pub name: String,
+    #[requires(NetworkInterface)]
     pub interface: String,
     pub comment: String,
+}
+
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default)]
+#[garde(context(Config))]
+#[garde(allow_unvalidated)]
+pub struct GatewayModeSpecify {
+    #[requires(Address)]
+    pub gateway: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -52,7 +70,15 @@ pub struct NTPServer {
 pub enum GatewayMode {
     None,
     Interface,
-    Specify { gateway: String },
+    Specify(GatewayModeSpecify),
+}
+
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default)]
+#[garde(context(Config))]
+#[garde(allow_unvalidated)]
+pub struct DNSServerModeSpecify {
+    #[requires(Address)]
+    pub dns_servers: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -60,7 +86,15 @@ pub enum GatewayMode {
 pub enum DNSServerMode {
     None,
     Interface,
-    Specify { dns_servers: Vec<String> },
+    Specify(DNSServerModeSpecify),
+}
+
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default)]
+#[garde(context(Config))]
+#[garde(allow_unvalidated)]
+pub struct NTPServerModeSpecify {
+    #[requires(Address)]
+    pub ntp_servers: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -68,10 +102,10 @@ pub enum DNSServerMode {
 pub enum NTPServerMode {
     None,
     Interface,
-    Specify { ntp_servers: Vec<String> },
+    Specify(NTPServerModeSpecify),
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Debug)]
 pub struct Reservation {
     pub ip_address: String,
     pub hardware_address: MacAddr8,

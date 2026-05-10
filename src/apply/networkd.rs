@@ -93,10 +93,10 @@ pub fn generate_networkd_config_files(
 
     // Step 1 Generate vlan netdev files
     for interface in &pending_config.network.interfaces {
-        if let NetworkInterfaceType::Vlan { id, .. } = &interface.interface_type {
+        if let NetworkInterfaceType::Vlan(vlan) = &interface.interface_type {
             let mut context = Context::new();
             context.insert("name", &interface.name);
-            context.insert("vlan_id", &id);
+            context.insert("vlan_id", &vlan.id);
 
             files.push(generate_config_file(
                 context,
@@ -108,7 +108,7 @@ pub fn generate_networkd_config_files(
 
     // Step 2 Generate bond netdev files
     for interface in &pending_config.network.interfaces {
-        if let NetworkInterfaceType::Bond { .. } = &interface.interface_type {
+        if let NetworkInterfaceType::Bond(bond) = &interface.interface_type {
             let mut context = Context::new();
             context.insert("name", &interface.name);
 
@@ -119,16 +119,13 @@ pub fn generate_networkd_config_files(
             )?);
 
             // Create Membership files
-            for member in interface
-                .interface_type
-                .bond_members(pending_config.clone())
-            {
+            for member in bond.get_members(&pending_config) {
                 let mut context = Context::new();
                 context.insert("bond_name", &interface.name);
 
                 // if interface is a hardware interface then we want to use device instead
-                match member.interface_type {
-                    NetworkInterfaceType::Hardware { device } => context.insert("name", &device),
+                match &member.interface_type {
+                    NetworkInterfaceType::Hardware { device } => context.insert("name", device),
                     _ => context.insert("name", &member.name),
                 };
 
@@ -143,7 +140,7 @@ pub fn generate_networkd_config_files(
 
     // Step 3 Generate bridge netdev files
     for interface in &pending_config.network.interfaces {
-        if let NetworkInterfaceType::Bridge { .. } = &interface.interface_type {
+        if let NetworkInterfaceType::Bridge(bridge) = &interface.interface_type {
             let mut context = Context::new();
             context.insert("name", &interface.name);
 
@@ -154,16 +151,13 @@ pub fn generate_networkd_config_files(
             )?);
 
             // Create Membership files
-            for member in interface
-                .interface_type
-                .bridge_members(pending_config.clone())
-            {
+            for member in bridge.get_members(&pending_config) {
                 let mut context = Context::new();
                 context.insert("bridge_name", &interface.name);
 
                 // if interface is a hardware interface then we want to use device instead
-                match member.interface_type {
-                    NetworkInterfaceType::Hardware { device } => context.insert("name", &device),
+                match &member.interface_type {
+                    NetworkInterfaceType::Hardware { device } => context.insert("name", device),
                     _ => context.insert("name", &member.name),
                 };
 
@@ -181,10 +175,11 @@ pub fn generate_networkd_config_files(
         let mut context = Context::new();
         context.insert("interface", &interface);
         let mut peers = Vec::new();
-        for peer in interface.peers(pending_config.clone()) {
+        for peer in interface.get_peers(&pending_config) {
             let mut temp = peer.clone();
-            temp.allowed_ips =
-                util::convert_addresses_to_strings(peer.allowed_ips(pending_config.clone()));
+            temp.allowed_ips = util::convert_addresses_to_strings(
+                peer.get_allowed_ips(&pending_config).cloned().collect(),
+            );
             peers.push(temp);
         }
 
@@ -212,8 +207,8 @@ pub fn generate_networkd_config_files(
         // TODO Use Backreferenceing instead of loop and if
         for vlan in &pending_config.network.interfaces {
             match &vlan.interface_type {
-                NetworkInterfaceType::Vlan { parent, .. } => {
-                    if parent == &interface.name {
+                NetworkInterfaceType::Vlan(vlan_details) => {
+                    if vlan_details.parent == interface.name {
                         vlans.push(vlan.name.clone());
                     }
                 }

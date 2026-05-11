@@ -4,7 +4,10 @@ use pwhash::sha512_crypt;
 use serde::Serialize;
 use std::fs;
 use std::sync::{Arc, Mutex, MutexGuard};
+use structdb_core::change::Change;
+use structdb_core::Diffable;
 use thiserror::Error;
+use time::OffsetDateTime;
 use tracing::{error, info};
 
 #[derive(Error, Debug)]
@@ -57,21 +60,16 @@ pub struct ConfigTransaction<'a> {
 struct SharedData {
     current_config: Config,
     pending_config: Config,
-    changelog: Vec<Change>,
+    changelog: Vec<ChangeSet>,
+    in_memory: bool, // Used to disable file I/O for testing
 }
 
-#[derive(Clone, Serialize)]
-pub struct Change {
-    pub action: ChangeAction,
-    pub path: &'static str,
-    pub id: String,
-}
-
-#[derive(Clone, Serialize)]
-pub enum ChangeAction {
-    Create,
-    Update,
-    Delete,
+#[derive(Debug, Clone, Serialize)]
+pub struct ChangeSet {
+    pub user: String,
+    #[serde(with = "time::serde::rfc3339")]
+    pub timestamp: OffsetDateTime,
+    pub changes: Vec<Change>,
 }
 
 // Note, using unwarp on a mutex lock is ok since that only errors with mutex poisoning
@@ -85,6 +83,7 @@ impl ConfigManager {
                 pending_config: read_file_to_config(PENDING_CONFIG_PATH)?,
                 // TODO Figure out how to restore changes
                 changelog: Vec::new(),
+                in_memory: false,
             })),
         })
     }
@@ -97,8 +96,12 @@ impl ConfigManager {
         self.shared_data.lock().unwrap().pending_config.clone()
     }
 
-    pub fn get_pending_changelog(&self) -> Vec<Change> {
+    pub fn get_pending_changelog(&self) -> Vec<ChangeSet> {
         self.shared_data.lock().unwrap().changelog.clone()
+    }
+
+    pub fn add_to_changelog(&mut self, change_set: ChangeSet) {
+        self.shared_data.lock().unwrap().changelog.push(change_set);
     }
 
     pub fn apply_pending_changes(&mut self) -> Result<(), ConfigError> {
@@ -138,7 +141,9 @@ impl ConfigManager {
 
         info!("Apply Done.");
 
-        write_config_to_file(CURRENT_CONFIG_PATH, data.pending_config.clone())?;
+        if !data.in_memory {
+            write_config_to_file(CURRENT_CONFIG_PATH, data.pending_config.clone())?;
+        }
         // TODO revert if config save fails
         // TODO Remove Pending Config File
         data.current_config = data.pending_config.clone();
@@ -200,12 +205,25 @@ impl ConfigManager {
 }
 
 impl<'a> ConfigTransaction<'a> {
-    pub fn commit(mut self, change: Change) -> Result<(), ConfigError> {
-        let ch = self.config.clone();
-        ch.validate()?;
-        self.shared_data.pending_config = ch.clone();
-        self.shared_data.changelog.push(change);
-        write_config_to_file(PENDING_CONFIG_PATH, ch.clone())?;
+    pub fn data_mut(&mut self) -> &mut Config {
+        &mut self.config
+    }
+
+    pub fn commit(mut self, changelog: &mut Vec<Change>) -> Result<(), ConfigError> {
+        self.config.validate()?;
+
+        let changes = self
+            .config
+            .diff(&self.shared_data.pending_config, &mut vec![]);
+
+        if !changes.is_empty() {
+            changelog.extend(changes);
+            self.shared_data.pending_config = self.config.clone();
+            if !self.shared_data.in_memory {
+                write_config_to_file(PENDING_CONFIG_PATH, self.config.clone())?;
+            }
+        }
+
         Ok(())
     }
 
@@ -254,4 +272,113 @@ pub fn generate_default_config(path: &str) -> Result<(), ConfigError> {
             verdict: crate::definitions::firewall::Verdict::Accept,
         });
     write_config_to_file(path, conf)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::definitions::system::User;
+    use structdb_core::change::ChangeAction;
+
+    fn create_test_config() -> Config {
+        let mut conf = Config::default();
+        conf.config_version = 1;
+        conf.system.users.push(User {
+            name: "root".to_string(),
+            comment: "Default Admin".to_string(),
+            hash: "somehash".to_string(),
+        });
+        conf
+    }
+
+    impl ConfigManager {
+        fn new_for_test(current_config: Config, pending_config: Config) -> Self {
+            Self {
+                shared_data: Arc::new(Mutex::new(SharedData {
+                    current_config,
+                    pending_config,
+                    changelog: Vec::new(),
+                    in_memory: true,
+                })),
+            }
+        }
+    }
+
+    #[test]
+    fn test_transaction_commit_creates_changes() {
+        let initial_config = create_test_config();
+        let mut manager = ConfigManager::new_for_test(initial_config.clone(), initial_config);
+
+        // Start a transaction
+        let mut tx = manager.start_transaction();
+
+        // Modify the config
+        let new_user = User {
+            name: "testuser".to_string(),
+            comment: "Test user".to_string(),
+            hash: "newhash".to_string(),
+        };
+        tx.data_mut().system.users.push(new_user);
+
+        // Commit the transaction
+        let mut data_changes = Vec::new();
+        let commit_result = tx.commit(&mut data_changes);
+        assert!(commit_result.is_ok());
+
+        // The commit itself should produce changes, but not a ChangeSet
+        assert_eq!(data_changes.len(), 1);
+
+        // The API layer is responsible for wrapping this in a ChangeSet. Let's simulate that.
+        manager.add_to_changelog(ChangeSet {
+            user: "test@test.com".to_string(),
+            timestamp: OffsetDateTime::now_utc(),
+            changes: data_changes,
+        });
+
+        // Verify the changelog
+        let changelog = manager.get_pending_changelog();
+        assert_eq!(changelog.len(), 1);
+
+        let change_set = &changelog[0];
+        assert_eq!(change_set.user, "test@test.com");
+        assert_eq!(change_set.changes.len(), 1);
+
+        let change = &change_set.changes[0];
+        assert_eq!(change.action, ChangeAction::Create);
+        assert_eq!(change.path, "system.users");
+        assert_eq!(change.id, "testuser");
+
+        // Verify that the pending config inside the manager was updated
+        let pending_config = manager.get_pending_config();
+        assert_eq!(pending_config.system.users.len(), 2);
+    }
+
+    #[test]
+    fn test_no_change_no_changes() {
+        let initial_config = create_test_config();
+        let mut manager = ConfigManager::new_for_test(initial_config.clone(), initial_config);
+
+        // Start a transaction, but don't modify anything
+        let tx = manager.start_transaction();
+
+        let mut data_changes = Vec::new();
+        let commit_result = tx.commit(&mut data_changes);
+        assert!(commit_result.is_ok());
+
+        // No changes should be detected
+        assert!(data_changes.is_empty());
+
+        // Simulate API layer logic
+        if !data_changes.is_empty() {
+            manager.add_to_changelog(ChangeSet {
+                user: "test@test.com".to_string(),
+                timestamp: OffsetDateTime::now_utc(),
+                changes: data_changes,
+            });
+        }
+
+        // Verify the changelog is empty
+        let changelog = manager.get_pending_changelog();
+        assert!(changelog.is_empty());
+    }
 }

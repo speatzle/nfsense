@@ -7,6 +7,7 @@ use crate::{
     update_thing_by_index,
 };
 use jsonrpsee::{Extensions, RpcModule};
+use time::OffsetDateTime;
 
 pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
@@ -24,21 +25,21 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "service.dhcp_servers.create",
             create_thing!(service.dhcp_servers, DHCPServer),
         )
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "service.dhcp_servers.update",
             update_thing_by_index!(service.dhcp_servers, DHCPServer),
         )
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "service.dhcp_servers.delete",
             delete_thing_by_index!(service.dhcp_servers),
         )
@@ -59,21 +60,21 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "service.dns_servers.create",
             create_thing!(service.dns_servers, DNSServer),
         )
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "service.dns_servers.update",
             update_thing_by_index!(service.dns_servers, DNSServer),
         )
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "service.dns_servers.delete",
             delete_thing_by_index!(service.dns_servers),
         )
@@ -94,21 +95,21 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "service.ntp_servers.create",
             create_thing!(service.ntp_servers, NTPServer),
         )
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "service.ntp_servers.update",
             update_thing_by_index!(service.ntp_servers, NTPServer),
         )
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "service.ntp_servers.delete",
             delete_thing_by_index!(service.ntp_servers),
         )

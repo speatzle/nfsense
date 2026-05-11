@@ -12,6 +12,7 @@ use jsonrpsee::{
     RpcModule,
 };
 use thiserror::Error;
+
 use tracing::info;
 
 #[derive(Error, Debug)]
@@ -138,15 +139,26 @@ macro_rules! create_thing {
             let mut cm = state.config_manager.clone();
             let mut tx = cm.start_transaction();
 
-            tx.config.$($sub_system).+.push(t);
-            let id = {tx.config.$($sub_system).+.len() - 1}.to_string();
-            tx.commit(crate::config_manager::Change {
-                action: crate::config_manager::ChangeAction::Create,
-                path: stringify!($($sub_system).+),
-                // TODO use name for named ones?
-                id,
-            })
-            .map_err(ApiError::ConfigError)
+            tx.data_mut().$($sub_system).+.push(t);
+
+            // 1. Commit to a temporary vec to get the data changes
+            let mut data_changes = Vec::new();
+            tx.commit(&mut data_changes).map_err(ApiError::ConfigError)?;
+
+            // 2. If the transaction produced changes, wrap them in a ChangeSet
+            if !data_changes.is_empty() {
+                let change_set = crate::config_manager::ChangeSet {
+                    user: "system".to_string(), // TODO: Get user from session/auth context
+                    timestamp: OffsetDateTime::now_utc(),
+                    changes: data_changes,
+                };
+                // 3. Add the complete, user-attributed ChangeSet to the central log
+                // NOTE: This assumes `ConfigManager` has been refactored to expose
+                // a method to add to the changelog.
+                cm.add_to_changelog(change_set);
+            }
+
+            Ok(())
         }
     };
 }
@@ -160,25 +172,32 @@ macro_rules! update_thing_by_name {
             #[derive(Deserialize, Serialize)]
             struct UpdateByName {
                 name: String,
-                thing: $typ
+                thing: $typ,
             }
 
             let t: UpdateByName = params.parse().map_err(ApiError::ParameterDeserialize)?;
             let mut cm = state.config_manager.clone();
             let mut tx = cm.start_transaction();
 
-            let index = tx.config.$($sub_system).+.iter().position(|e| *e.name == t.name);
+            let index = tx.data_mut().$($sub_system).+.iter().position(|e| *e.name == t.name);
 
             match index {
                 Some(i) => {
-                    tx.config.$($sub_system).+[i] = t.thing;
+                    tx.data_mut().$($sub_system).+[i] = t.thing;
 
-                    tx.commit(crate::config_manager::Change {
-                        action: crate::config_manager::ChangeAction::Update,
-                        path: stringify!($($sub_system).+),
-                        id: t.name,
-                    })
-                    .map_err(ApiError::ConfigError)
+                    let mut data_changes = Vec::new();
+                    tx.commit(&mut data_changes).map_err(ApiError::ConfigError)?;
+
+                    if !data_changes.is_empty() {
+                        let change_set = crate::config_manager::ChangeSet {
+                            user: "system".to_string(), // TODO: Get user from session/auth context
+                            timestamp: OffsetDateTime::now_utc(),
+                            changes: data_changes,
+                        };
+                        cm.add_to_changelog(change_set);
+                    }
+
+                    Ok(())
                 }
                 None => {
                     tx.revert();
@@ -198,22 +217,28 @@ macro_rules! update_thing_by_index {
             #[derive(Deserialize, Serialize)]
             struct UpdateByIndex {
                 index: i64,
-                thing: $typ
+                thing: $typ,
             }
 
             let t: UpdateByIndex = params.parse().map_err(ApiError::ParameterDeserialize)?;
             let mut cm = state.config_manager.clone();
             let mut tx = cm.start_transaction();
 
-            if tx.config.$($sub_system).+.len() > t.index as usize {
-                tx.config.$($sub_system).+[t.index as usize] = t.thing;
+            if tx.data_mut().$($sub_system).+.len() > t.index as usize {
+                tx.data_mut().$($sub_system).+[t.index as usize] = t.thing;
 
-                tx.commit(crate::config_manager::Change {
-                    action: crate::config_manager::ChangeAction::Update,
-                    path: stringify!($($sub_system).+),
-                    id: t.index.to_string(),
-                })
-                .map_err(ApiError::ConfigError)
+                let mut data_changes = Vec::new();
+                tx.commit(&mut data_changes).map_err(ApiError::ConfigError)?;
+
+                if !data_changes.is_empty() {
+                    let change_set = crate::config_manager::ChangeSet {
+                        user: "system".to_string(), // TODO: Get user from session/auth context
+                        timestamp: OffsetDateTime::now_utc(),
+                        changes: data_changes,
+                    };
+                    cm.add_to_changelog(change_set);
+                }
+                Ok(())
             } else {
                 tx.revert();
                 Err(ApiError::NotFound)
@@ -238,18 +263,25 @@ macro_rules! delete_thing_by_name {
             let mut cm = state.config_manager.clone();
             let mut tx = cm.start_transaction();
 
-            let index = tx.config.$($sub_system).+.iter().position(|e| *e.name == t.name);
+            let index = tx.data_mut().$($sub_system).+.iter().position(|e| *e.name == t.name);
 
             match index {
                 Some(i) => {
-                    tx.config.$($sub_system).+.remove(i);
+                    tx.data_mut().$($sub_system).+.remove(i);
 
-                    tx.commit(crate::config_manager::Change {
-                        action: crate::config_manager::ChangeAction::Delete,
-                        path: stringify!($($sub_system).+),
-                        id: t.name,
-                    })
-                    .map_err(ApiError::ConfigError)
+                    let mut data_changes = Vec::new();
+                    tx.commit(&mut data_changes).map_err(ApiError::ConfigError)?;
+
+                    if !data_changes.is_empty() {
+                        let change_set = crate::config_manager::ChangeSet {
+                            user: "system".to_string(), // TODO: Get user from session/auth context
+                            timestamp: OffsetDateTime::now_utc(),
+                            changes: data_changes,
+                        };
+                        cm.add_to_changelog(change_set);
+                    }
+
+                    Ok(())
                 }
                 None => {
                     tx.revert();
@@ -276,14 +308,22 @@ macro_rules! delete_thing_by_index {
             let mut cm = state.config_manager.clone();
             let mut tx = cm.start_transaction();
 
-            if tx.config.$($sub_system).+.len() > t.index as usize {
-                tx.config.$($sub_system).+.remove(t.index as usize);
-                tx.commit(crate::config_manager::Change {
-                    action: crate::config_manager::ChangeAction::Delete,
-                    path: stringify!($($sub_system).+),
-                    id: t.index.to_string(),
-                })
-                .map_err(ApiError::ConfigError)
+            if tx.data_mut().$($sub_system).+.len() > t.index as usize {
+                tx.data_mut().$($sub_system).+.remove(t.index as usize);
+
+                let mut data_changes = Vec::new();
+                tx.commit(&mut data_changes).map_err(ApiError::ConfigError)?;
+
+                if !data_changes.is_empty() {
+                    let change_set = crate::config_manager::ChangeSet {
+                        user: "system".to_string(), // TODO: Get user from session/auth context
+                        timestamp: OffsetDateTime::now_utc(),
+                        changes: data_changes,
+                    };
+                    cm.add_to_changelog(change_set);
+                }
+
+                Ok(())
             } else {
                 tx.revert();
                 Err(ApiError::NotFound)

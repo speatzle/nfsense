@@ -9,6 +9,7 @@ use jsonrpsee::{Extensions, RpcModule};
 use serde::{Deserialize, Serialize};
 use std::io::Write;
 use std::process::{Command, Stdio};
+use time::OffsetDateTime;
 use tracing::error;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -41,21 +42,21 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "vpn.wireguard.interfaces.create",
             create_thing!(vpn.wireguard.interfaces, WireguardInterface),
         )
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "vpn.wireguard.interfaces.update",
             update_thing_by_name!(vpn.wireguard.interfaces, WireguardInterface),
         )
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "vpn.wireguard.interfaces.delete",
             delete_thing_by_name!(vpn.wireguard.interfaces),
         )
@@ -76,21 +77,21 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "vpn.wireguard.peers.create",
             create_thing!(vpn.wireguard.peers, WireguardPeer),
         )
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "vpn.wireguard.peers.update",
             update_thing_by_name!(vpn.wireguard.peers, WireguardPeer),
         )
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "vpn.wireguard.peers.delete",
             delete_thing_by_name!(vpn.wireguard.peers),
         )

@@ -7,6 +7,7 @@ use crate::{
     update_thing_by_index,
 };
 use jsonrpsee::{Extensions, RpcModule};
+use time::OffsetDateTime;
 
 pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
@@ -24,21 +25,21 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "firewall.forward_rules.create",
             create_thing!(firewall.forward_rules, ForwardRule),
         )
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "firewall.forward_rules.update",
             update_thing_by_index!(firewall.forward_rules, ForwardRule),
         )
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "firewall.forward_rules.delete",
             delete_thing_by_index!(firewall.forward_rules),
         )
@@ -59,21 +60,21 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "firewall.destination_nat_rules.create",
             create_thing!(firewall.destination_nat_rules, DestinationNATRule),
         )
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "firewall.destination_nat_rules.update",
             update_thing_by_index!(firewall.destination_nat_rules, DestinationNATRule),
         )
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "firewall.destination_nat_rules.delete",
             delete_thing_by_index!(firewall.destination_nat_rules),
         )
@@ -94,21 +95,21 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "firewall.source_nat_rules.create",
             create_thing!(firewall.source_nat_rules, SourceNATRule),
         )
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "firewall.source_nat_rules.update",
             update_thing_by_index!(firewall.source_nat_rules, SourceNATRule),
         )
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "firewall.source_nat_rules.delete",
             delete_thing_by_index!(firewall.source_nat_rules),
         )
@@ -129,21 +130,21 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "firewall.inbound_rules.create",
             create_thing!(firewall.inbound_rules, InboundRule),
         )
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "firewall.inbound_rules.update",
             update_thing_by_index!(firewall.inbound_rules, InboundRule),
         )
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "firewall.inbound_rules.delete",
             delete_thing_by_index!(firewall.inbound_rules),
         )

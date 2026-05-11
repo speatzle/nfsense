@@ -1,7 +1,7 @@
 use jsonrpsee::types::Params;
 use jsonrpsee::{Extensions, RpcModule};
 
-use crate::config_manager::Change;
+use crate::config_manager::ChangeSet;
 use crate::state::RpcState;
 
 use super::ApiError;
@@ -25,7 +25,7 @@ pub fn get_pending_changelog(
     _: Params,
     state: &RpcState,
     _: &Extensions,
-) -> Result<Vec<Change>, ApiError> {
+) -> Result<Vec<ChangeSet>, ApiError> {
     Ok(state.config_manager.clone().get_pending_changelog())
 }
 

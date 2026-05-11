@@ -1,4 +1,3 @@
-use crate::config_manager::{Change, ChangeAction::Create, ChangeAction::Update};
 use crate::delete_thing_by_name;
 use crate::{definitions::system::User, state::RpcState};
 use jsonrpsee::types::Params;
@@ -6,13 +5,13 @@ use jsonrpsee::{Extensions, RpcModule};
 use pwhash::sha512_crypt;
 use serde::{Deserialize, Serialize};
 
+use time::OffsetDateTime;
+
 use crate::api::ApiError;
-use ApiError::ConfigError;
+
 use ApiError::HashError;
 use ApiError::NotFound;
 use ApiError::ParameterDeserialize;
-
-const USER_CHANGE_PATH: &str = "system.user";
 
 pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
@@ -117,12 +116,19 @@ pub fn create_user(p: Params, state: &RpcState, _: &Extensions) -> Result<(), Ap
         hash: hash,
     });
 
-    tx.commit(Change {
-        action: Create,
-        path: USER_CHANGE_PATH,
-        id: u.name,
-    })
-    .map_err(ConfigError)
+    let mut data_changes = Vec::new();
+    tx.commit(&mut data_changes)?;
+
+    if !data_changes.is_empty() {
+        let change_set = crate::config_manager::ChangeSet {
+            user: "admin@example.com".to_string(), // Placeholder
+            timestamp: OffsetDateTime::now_utc(),
+            changes: data_changes,
+        };
+        cm.add_to_changelog(change_set);
+    }
+
+    Ok(())
 }
 
 #[derive(Deserialize)]
@@ -163,12 +169,19 @@ pub fn update_user(p: Params, state: &RpcState, _: &Extensions) -> Result<(), Ap
                 hash,
             };
 
-            tx.commit(Change {
-                action: Update,
-                path: USER_CHANGE_PATH,
-                id: u.name,
-            })
-            .map_err(ConfigError)
+            let mut data_changes = Vec::new();
+            tx.commit(&mut data_changes)?;
+
+            if !data_changes.is_empty() {
+                let change_set = crate::config_manager::ChangeSet {
+                    user: "admin@example.com".to_string(), // Placeholder
+                    timestamp: OffsetDateTime::now_utc(),
+                    changes: data_changes,
+                };
+                cm.add_to_changelog(change_set);
+            }
+
+            Ok(())
         }
         None => Err(NotFound),
     }

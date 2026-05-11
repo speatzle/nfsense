@@ -8,6 +8,7 @@ use crate::{
     update_thing_by_name,
 };
 use jsonrpsee::{Extensions, RpcModule};
+use time::OffsetDateTime;
 
 pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
@@ -22,21 +23,21 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "object.services.create",
             create_thing!(object.services, Service),
         )
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "object.services.update",
             update_thing_by_name!(object.services, Service),
         )
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "object.services.delete",
             delete_thing_by_name!(object.services),
         )
@@ -64,21 +65,21 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "object.addresses.create",
             create_thing!(object.addresses, Address),
         )
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "object.addresses.update",
             update_thing_by_name!(object.addresses, Address),
         )
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "object.addresses.delete",
             delete_thing_by_name!(object.addresses),
         )

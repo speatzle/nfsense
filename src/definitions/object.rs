@@ -27,7 +27,7 @@ pub struct Address {
     pub comment: String,
 }
 
-#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default, PartialEq)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct AddressGroup {
@@ -35,7 +35,7 @@ pub struct AddressGroup {
     pub members: Vec<String>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub enum AddressType {
     Host { address: IpAddr },
@@ -54,7 +54,7 @@ pub struct Service {
     pub comment: String,
 }
 
-#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default, PartialEq)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct ServiceGroup {
@@ -62,7 +62,7 @@ pub struct ServiceGroup {
     pub members: Vec<String>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum ServiceType {
     TCP {
@@ -79,7 +79,7 @@ pub enum ServiceType {
     Group(ServiceGroup),
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub enum PortDefinition {
     Any,
@@ -87,7 +87,7 @@ pub enum PortDefinition {
     Range { start_port: u32, end_port: u32 },
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub enum ICMPPacketTypes {
     EchoReply,

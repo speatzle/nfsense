@@ -20,7 +20,7 @@ pub struct Service {
     pub ntp_servers: Vec<NTPServer>,
 }
 
-#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, PartialEq)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct DHCPServer {
@@ -57,7 +57,7 @@ pub struct NTPServer {
     pub comment: String,
 }
 
-#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default, PartialEq)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct GatewayModeSpecify {
@@ -65,7 +65,7 @@ pub struct GatewayModeSpecify {
     pub gateway: String,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub enum GatewayMode {
     None,
@@ -73,7 +73,7 @@ pub enum GatewayMode {
     Specify(GatewayModeSpecify),
 }
 
-#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default, PartialEq)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct DNSServerModeSpecify {
@@ -81,7 +81,7 @@ pub struct DNSServerModeSpecify {
     pub dns_servers: Vec<String>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub enum DNSServerMode {
     None,
@@ -89,7 +89,7 @@ pub enum DNSServerMode {
     Specify(DNSServerModeSpecify),
 }
 
-#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default, PartialEq)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct NTPServerModeSpecify {
@@ -97,7 +97,7 @@ pub struct NTPServerModeSpecify {
     pub ntp_servers: Vec<String>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub enum NTPServerMode {
     None,

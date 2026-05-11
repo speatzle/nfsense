@@ -23,7 +23,7 @@ pub struct Network {
     pub virtual_routers: Vec<VirtualRouter>,
 }
 
-#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, PartialEq)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct NetworkInterface {
@@ -37,7 +37,7 @@ pub struct NetworkInterface {
     pub virtual_router: Option<String>,
 }
 
-#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default, PartialEq)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct Vlan {
@@ -46,7 +46,7 @@ pub struct Vlan {
     pub parent: String,
 }
 
-#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default, PartialEq)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct Bond {
@@ -54,7 +54,7 @@ pub struct Bond {
     pub members: Vec<String>,
 }
 
-#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default, PartialEq)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct Bridge {
@@ -62,7 +62,7 @@ pub struct Bridge {
     pub members: Vec<String>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub enum NetworkInterfaceType {
     // TODO figure out how to validate the device since it needs to soft fail
@@ -72,7 +72,7 @@ pub enum NetworkInterfaceType {
     Bridge(Bridge),
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub enum AddressingMode {
     None,
@@ -83,7 +83,7 @@ pub enum AddressingMode {
     DHCP,
 }
 
-#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, PartialEq)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct StaticRoute {
@@ -99,7 +99,7 @@ pub struct StaticRoute {
     pub comment: String,
 }
 
-#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, PartialEq)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct PolicyRoute {
@@ -122,7 +122,7 @@ pub struct PolicyRoute {
     pub action: RouteAction,
 }
 
-#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default, PartialEq)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct RouteActionGateway {
@@ -130,7 +130,7 @@ pub struct RouteActionGateway {
     pub address: String,
 }
 
-#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default, PartialEq)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct RouteActionInterface {
@@ -140,7 +140,7 @@ pub struct RouteActionInterface {
     pub gateway: String,
 }
 
-#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default, PartialEq)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct RouteActionVirtualRouter {
@@ -148,7 +148,7 @@ pub struct RouteActionVirtualRouter {
     pub virtual_router: String,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub enum RouteAction {
     Gateway(RouteActionGateway),
@@ -158,14 +158,14 @@ pub enum RouteAction {
     StopPolicyRouting,
 }
 
-#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, PartialEq)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct Link {
     pub name: String,
 }
 
-#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, PartialEq)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct VirtualRouter {

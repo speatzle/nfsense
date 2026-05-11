@@ -102,7 +102,7 @@ pub struct InboundRule {
     pub verdict: Verdict,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub enum Verdict {
     Accept,
@@ -110,7 +110,7 @@ pub enum Verdict {
     Continue,
 }
 
-#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, Default, PartialEq)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct SNAT {
@@ -120,7 +120,7 @@ pub struct SNAT {
     pub service: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum SNATType {
     SNAT(SNAT),

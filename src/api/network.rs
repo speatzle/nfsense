@@ -9,6 +9,7 @@ use crate::{
 };
 use jsonrpsee::{types::Params, Extensions, RpcModule};
 use std::process::Command;
+use time::OffsetDateTime;
 
 pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
@@ -26,21 +27,21 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "network.static_routes.create",
             create_thing!(network.static_routes, StaticRoute),
         )
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "network.static_routes.update",
             update_thing_by_index!(network.static_routes, StaticRoute),
         )
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "network.static_routes.delete",
             delete_thing_by_index!(network.static_routes),
         )
@@ -61,21 +62,21 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "network.interfaces.create",
             create_thing!(network.interfaces, NetworkInterface),
         )
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "network.interfaces.update",
             update_thing_by_name!(network.interfaces, NetworkInterface),
         )
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "network.interfaces.delete",
             delete_thing_by_name!(network.interfaces),
         )
@@ -99,21 +100,21 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "network.virtual_routers.create",
             create_thing!(network.virtual_routers, VirtualRouter),
         )
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "network.virtual_routers.update",
             update_thing_by_index!(network.virtual_routers, VirtualRouter),
         )
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "network.virtual_routers.delete",
             delete_thing_by_index!(network.virtual_routers),
         )
@@ -134,21 +135,21 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "network.policy_routes.create",
             create_thing!(network.policy_routes, PolicyRoute),
         )
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "network.policy_routes.update",
             update_thing_by_index!(network.policy_routes, PolicyRoute),
         )
         .unwrap();
 
     module
-        .register_method(
+        .register_method::<Result<(), ApiError>, _>(
             "network.policy_routes.delete",
             delete_thing_by_index!(network.policy_routes),
         )

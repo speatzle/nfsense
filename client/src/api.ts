@@ -1,6 +1,5 @@
 // import WebSocketServer  from 'ws';
 import JsonRPC from "simple-jsonrpc-js";
-import axios from "axios";
 import { useToast } from "vue-toast-notification";
 
 const toast = useToast();
@@ -31,42 +30,49 @@ export async function apiCall(method: string, params: Record<string, any>): Prom
   }
 }
 
+const headers = { "Content-Type": "application/json" };
+
 export async function authenticate(username: string, password: string): Promise<any> {
-  const pResponse = axios.post("/login", { username, password }, { timeout: 10100 });
   try {
-    const response = await pResponse;
+    const body = JSON.stringify({ username, password });
+    const response = await fetch("/login", { method: "POST", headers, body });
+    if (!response.ok) throw new Error(response.statusText);
     // Dont log this as the user password is inside: console.debug(response);
-    return { data: response.data, error: null };
+    return { error: null };
   } catch (error) {
-    return { data: null, error: error };
+    console.log(error);
+    return { error }
   }
 }
 
 export async function logout(): Promise<any> {
-  const pResponse = axios.post("/logout", null, { timeout: 10100 });
   try {
-    const response = await pResponse;
-    return { data: response.data, error: null };
+    const response = await fetch("/logout", { method: "POST", headers });
+    if (!response.ok) throw new Error(response.statusText);
+    return { error: null };
   } catch (error) {
-    return { data: null, error: error };
+    return { error: error };
   }
 }
 
 export async function checkAuthentication() {
-  const pResponse = axios.post("/session", null, { timeout: 10100 });
   try {
-    const response = await pResponse;
+    const response = await fetch("/session", { method: "POST", headers });
+    if (!response.ok)
+      if (response.status === 401) return { auth: 0, error: null };
+      else throw new Error(response.statusText);
+    const data = await response.json();
+    console.log(data);
     const last_hash = window.localStorage.getItem("commit_hash");
     if (last_hash) {
-      if (last_hash !== response.data.commit_hash) {
-        console.log(`Detected New Backend Version ${response.data.commit_hash}, Reloading...`);
+      if (last_hash !== data.commit_hash) {
+        console.log(`Detected New Backend Version ${data.commit_hash}, Reloading...`);
         window.localStorage.removeItem("commit_hash");
         window.location.reload();
       }
-    } else window.localStorage.setItem("commit_hash", response.data.commit_hash);
+    } else window.localStorage.setItem("commit_hash", data.commit_hash);
     return { auth: 2, error: null };
-  } catch (error: any) {
-    if (error.response.status == 401) return { auth: 0, error: null };
+  } catch (error) {
     return { auth: 0, error: error };
   }
 }

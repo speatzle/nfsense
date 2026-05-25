@@ -23,8 +23,15 @@ import IRouter from "~icons/mdi/router";
 import ISettings from "~icons/material-symbols/settings";
 import IShield from "~icons/mdi/shield-outline";
 
+export type NavRoute = {
+  icon: Component;
+  caption: string;
+  children?: NavRoute[];
+  href?: string;
+};
+
 // oxfmt-ignore
-export const navRoutes = [
+export const navRoutes: NavRoute[] = [
   { caption: "Dashboard", icon: IDashboard, href: "/" },
   { caption: "Firewall", icon: IFirewall, children: [
     { caption: "Rules", icon: IRule, href: "/firewall/forward_rules" },

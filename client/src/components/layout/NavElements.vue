@@ -1,53 +1,31 @@
-<script lang="ts">
-export type NavRoute = {
-  icon?: Component;
-  caption?: string;
-  children?: NavRoute[];
-  href?: string;
-};
-</script>
 <script setup lang="ts">
-withDefaults(
-  defineProps<{
-    routes?: NavRoute[];
-    clickHandler?: () => void;
-  }>(),
-  {
-    routes: () => [],
-    clickHandler: () => {},
-  },
-);
+import { type NavRoute } from "./navRoutes";
 
-const emit = defineEmits<{
-  (e: "update:expandedDepth", value: number): void;
+const props = defineProps<{
+  routes: NavRoute[];
+  clickHandler?: () => void;
 }>();
-const $lowerDepths = {} as { [index: number]: number };
-watch(
-  $$($lowerDepths),
-  () =>
-    emit("update:expandedDepth", Math.max(...Object.entries($lowerDepths).map((x) => x[1])) ?? 0),
-  { deep: true },
-);
+
+const emit = defineEmits<{ (e: "update:depth", value: number): void }>();
+const $lowerDepths = [] as number[];
+watch($$($lowerDepths), () => emit("update:depth", Math.max(...$lowerDepths) ?? 0), { deep: true });
 </script>
 <template>
-  <template v-if="routes">
-    <template v-for="[index, route] of routes.entries()" :key="route.href">
-      <router-link
-        v-if="route.href"
-        :to="route.href"
-        class="button"
-        :title="route.caption"
-        @click="clickHandler"
-      >
-        <component :is="route.icon" />
-        {{ route.caption }}
-      </router-link>
-      <NavDropdown
-        v-else
-        v-bind="route"
-        :click-handler="clickHandler"
-        @update:expanded-depth="(val) => ($lowerDepths[index] = val)"
-      />
-    </template>
-  </template>
+  <div class="nav-elements">
+    <NavElement
+      v-for="[index, route] of props.routes.entries()"
+      :key="route.href"
+      :route
+      @update:depth="(val) => ($lowerDepths[index] = val)"
+      :click-handler="props.clickHandler ?? (() => {})"
+    />
+  </div>
 </template>
+<style scoped>
+.nav-elements {
+  display: grid;
+  grid-template-columns: calc(var(--reduced-width) - 0.25rem) 1fr auto; /* -0.25rem adjustment is for halved 0.5rem padding */
+  width: 100%;
+  transition: all 0.2s ease-out;
+}
+</style>

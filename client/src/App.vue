@@ -101,14 +101,12 @@ onMounted(async () => {
     <Portal from="page-header" class="page-header pad gap" />
 
     <div class="nav-body cl-secondary cl-force-dark">
-      <div>
-        <div>
-          <NavElements
-            :routes="navRoutes"
-            :click-handler="collapseNavIfMobile"
-            @update:expanded-depth="(val) => ($reducedDynamicWidth = 2.5 + 0.5 * val)"
-          />
-        </div>
+      <div class="nav-container">
+        <NavElements
+          :routes="navRoutes"
+          :click-handler="collapseNavIfMobile"
+          @update:depth="(val) => ($reducedDynamicWidth = 2.5 + 0.5 * val)"
+        />
       </div>
       <div class="flex-row">
         <router-link class="button" to="/help"><i-material-symbols-help-outline /></router-link>
@@ -156,7 +154,7 @@ onMounted(async () => {
   </Transition>
 </template>
 
-<style>
+<style scoped>
 /* Basic Layout */
 .layout,
 .login {
@@ -204,21 +202,13 @@ onMounted(async () => {
   grid-area: NB;
 
   display: grid;
-  grid-template: 1fr auto/ 1fr;
+  grid-template: 1fr auto / 1fr;
 
-  & .button {
-    justify-content: left;
-  }
   & .flex-row * {
     flex: 1;
   }
-  & > :first-child {
+  & .nav-container {
     scrollbar-width: none;
-  }
-  & .button:not(:hover) {
-    background: transparent;
-  }
-  & > :first-child {
     background: /* Top/Bottom Cover, Top/Bottom Shadow */
       linear-gradient(var(--cl-bg) 30%, rgba(0, 0, 0, 0)) center top,
       linear-gradient(rgba(0, 0, 0, 0), var(--cl-bg) 70%) center bottom,
@@ -233,19 +223,9 @@ onMounted(async () => {
     background-attachment: local, local, scroll, scroll;
     overflow-y: auto;
 
-    & > * {
-      display: grid;
-      grid-template-columns: calc(var(--reduced-width) - 0.25rem) 1fr; /* -0.25rem adjustment is for halved 0.5rem padding */
-      place-self: start;
-      transition: grid-template-columns 0.2s ease-out;
-      width: 100%;
-    }
     &::-webkit-scrollbar {
       display: none;
     }
-  }
-  & svg {
-    place-self: center;
   }
 }
 .page-header {
@@ -261,15 +241,6 @@ onMounted(async () => {
 .page-content {
   grid-area: PC;
   overflow-y: auto;
-}
-
-.nav-body > :first-child > * > *,
-.nav-dropdown > *,
-.nav-dropdown > :first-child,
-.nav-dropdown-body > * {
-  grid-column: 1 / 3;
-  display: grid;
-  grid-template-columns: subgrid;
 }
 
 /* Nav-Body-Collapsing */

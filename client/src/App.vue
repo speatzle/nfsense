@@ -2,14 +2,27 @@
 import { authenticate, logout, checkAuthentication, setup } from "./api";
 import { navRoutes } from "./components/layout/navRoutes";
 
+const p = usePlugins();
+const $mobileMedia = $(useMediaQuery("(max-width: 768px)"));
+
 enum NavState {
   Open,
   Reduced,
   Collapsed,
 }
 const NavStateCount = 3;
-let $navState = NavState.Open as NavState;
-const $reducedDynamicWidth = 2.5 as number;
+let $navState = ($mobileMedia ? NavState.Collapsed : NavState.Open) as NavState;
+watch($$($mobileMedia), (x) => ($navState = x ? NavState.Collapsed : NavState.Open));
+let $minReducedWidth = 2.5 as number;
+function collapseNavIfMobile() {
+  if ($mobileMedia && $navState === NavState.Open)
+    // Lets page find initial left to transition; nextTick will not work due to microtask behavior
+    setTimeout(() => ($navState = NavState.Collapsed), 0);
+}
+function cycleNavState() {
+  $navState = ($navState + 1) % NavStateCount;
+  if ($mobileMedia && $navState === NavState.Reduced) $navState++;
+}
 
 enum AuthState {
   Unauthenticated,
@@ -18,31 +31,18 @@ enum AuthState {
 }
 let $authState = AuthState.Unauthenticated as AuthState;
 let $loginDisabled = true;
-
 const $username = "";
 let $password = "";
-
-const $mobileMedia = $(useMediaQuery("only screen and (max-width: 768px)"));
-if ($mobileMedia) $navState = NavState.Collapsed;
-
-function collapseNavIfMobile() {
-  if ($mobileMedia && $navState === NavState.Open)
-    // Give new page time to find initial left before transitioning
-    setTimeout(() => ($navState = NavState.Collapsed), 0);
-}
-
-function toggleNavState() {
-  $navState = ($navState + 1) % NavStateCount;
-  if ($mobileMedia && $navState === NavState.Reduced) $navState++;
-}
 
 async function tryLogin() {
   $loginDisabled = true;
   const res = await authenticate($username, $password);
   $password = "";
   $loginDisabled = false;
-  if (res.error != null) console.info("authentication error");
-  else {
+  if (res.error != null) {
+    console.info("authentication error");
+    p.toast.error("Authentication failed");
+  } else {
     // TODO Check for MFA here
     //authState = AuthState.Authenticated;
     checkAuth();
@@ -55,7 +55,7 @@ async function tryLogout() {
   logout();
 }
 
-function UnauthorizedCallback() {
+function unauthorizedCallback() {
   console.info("Unauthenticated");
   $authState = AuthState.Unauthenticated;
 }
@@ -71,21 +71,17 @@ async function checkAuth() {
 }
 
 onMounted(async () => {
-  setup(UnauthorizedCallback);
+  setup(unauthorizedCallback);
   await checkAuth();
-  setInterval(
-    function () {
-      if ($authState === AuthState.Authenticated && !document.hidden) checkAuth();
-    }.bind(this),
-    120000,
-  );
+  setInterval(() => {
+    if ($authState === AuthState.Authenticated && !document.hidden) checkAuth();
+  }, 120000);
 });
 </script>
-
 <template>
   <div
     v-if="$authState === AuthState.Authenticated"
-    :style="`--reduced-dynamic-width: ${$reducedDynamicWidth}rem;`"
+    :style="`--reduced-width: ${$navState === NavState.Open ? 3.5 : $minReducedWidth}rem;`"
     :class="{
       layout: 1,
       'nav-state-open': $navState === NavState.Open,
@@ -93,19 +89,16 @@ onMounted(async () => {
       'nav-state-reduced': $navState === NavState.Reduced,
     }"
   >
-    <button class="nav-head cl-secondary cl-force-dark" @click="toggleNavState">
+    <button class="nav-head cl-secondary cl-force-dark" @click="cycleNavState">
       <i-mdi-hamburger-menu />
       <h1>nfSense</h1>
     </button>
-
-    <Portal from="page-header" class="page-header pad gap" />
-
     <div class="nav-body cl-secondary cl-force-dark">
       <div class="nav-container">
         <NavElements
           :routes="navRoutes"
           :click-handler="collapseNavIfMobile"
-          @update:depth="(val) => ($reducedDynamicWidth = 2.5 + 0.5 * val)"
+          @update:depth="(val) => ($minReducedWidth = 2.5 + 0.5 * val)"
         />
       </div>
       <div class="flex-row">
@@ -115,9 +108,10 @@ onMounted(async () => {
       </div>
     </div>
 
+    <Portal from="page-header" class="page-header pad gap" />
     <router-view v-if="$authState === AuthState.Authenticated" v-slot="{ Component, route }">
       <Transition name="fade">
-        <component :is="Component" :key="{ route }" class="page-content pad gap" />
+        <component :is="Component" :key="route.fullPath" class="page-content pad gap" />
       </Transition>
     </router-view>
   </div>
@@ -125,45 +119,24 @@ onMounted(async () => {
   <Transition name="fade">
     <div v-if="$authState === AuthState.Unauthenticated" class="login">
       <FocusTrap>
-        <form
-          :disabled="$loginDisabled"
-          class="cl-secondary"
-          @submit="($event) => $event.preventDefault()"
-        >
+        <form class="cl-secondary" @submit.prevent>
           <h1>nfSense Login</h1>
-          <h2 :hidden="!$loginDisabled">Logging in...</h2>
+          <h2 v-show="$loginDisabled">Logging in...</h2>
           <label for="username" :hidden="$loginDisabled" v-text="'Username'" />
-          <input
-            v-model="$username"
-            name="username"
-            :hidden="$loginDisabled"
-            :disabled="$loginDisabled"
-          />
+          <input v-model="$username" name="username" v-show="!$loginDisabled" />
           <label for="password" :hidden="$loginDisabled" v-text="'Password'" />
-          <input
-            v-model="$password"
-            name="password"
-            type="password"
-            :hidden="$loginDisabled"
-            :disabled="$loginDisabled"
-          />
+          <input v-model="$password" name="password" type="password" v-show="!$loginDisabled" />
           <button @click="tryLogin">Login</button>
         </form>
       </FocusTrap>
     </div>
   </Transition>
 </template>
-
 <style scoped>
 /* Basic Layout */
-.layout,
-.login {
+:is(.layout, .login) {
   position: absolute;
-  left: 0px;
-  right: 0px;
-  top: 0px;
-  bottom: 0px;
-
+  inset: 0px;
   display: grid;
 }
 .layout {
@@ -172,11 +145,6 @@ onMounted(async () => {
   grid-template-areas:
     "NH PH"
     "NB PC";
-  --reduced-width: 3.5rem;
-
-  &:not(.nav-state-open) {
-    --reduced-width: var(--reduced-dynamic-width);
-  }
 }
 .login {
   place-items: center;
@@ -184,8 +152,6 @@ onMounted(async () => {
 
 .nav-head {
   grid-area: NH;
-
-  font-weight: bold;
   text-align: center;
 
   &:focus {
@@ -200,7 +166,6 @@ onMounted(async () => {
 }
 .nav-body {
   grid-area: NB;
-
   display: grid;
   grid-template: 1fr auto / 1fr;
 
@@ -210,10 +175,10 @@ onMounted(async () => {
   & .nav-container {
     scrollbar-width: none;
     background: /* Top/Bottom Cover, Top/Bottom Shadow */
-      linear-gradient(var(--cl-bg) 30%, rgba(0, 0, 0, 0)) center top,
-      linear-gradient(rgba(0, 0, 0, 0), var(--cl-bg) 70%) center bottom,
-      linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0)) center top,
-      linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.5)) center bottom;
+      linear-gradient(var(--cl-bg) 30%, transparent) center top,
+      linear-gradient(transparent, var(--cl-bg) 70%) center bottom,
+      linear-gradient(#00000080, transparent) center top,
+      linear-gradient(transparent, #00000080) center bottom;
     background-repeat: no-repeat;
     background-size:
       100% 40px,
@@ -244,15 +209,11 @@ onMounted(async () => {
 }
 
 /* Nav-Body-Collapsing */
-.nav-body,
-.page-header,
-.page-content {
-  position: relative;
-  left: 0%;
-  width: 100%;
-  transition:
-    left 0.2s ease-out,
-    width 0.2s ease-out;
+:is(.nav-body, .page-header, .page-content) {
+  position: relative; /* Allows individual offsets */
+  left: 0%; /* Transition Baseline */
+  width: 100%; /* Transition Baseline */
+  transition: all 0.2s ease-out; /* all avoids interfering with page fade */
 }
 .nav-state-reduced .nav-body {
   width: calc(0% + var(--reduced-width));
@@ -277,14 +238,14 @@ onMounted(async () => {
   width: var(--reduced-width);
 }
 
-@media only screen and (min-width: 769px) {
+@media (min-width: 769px) {
   .nav-head > svg {
     display: none;
   }
 }
 
 /* Mobile Layout */
-@media only screen and (max-width: 768px) {
+@media (max-width: 768px) {
   .layout {
     grid-template-rows: auto auto 1fr;
     grid-template-areas:
@@ -292,7 +253,6 @@ onMounted(async () => {
       "NB PH"
       "NB PC";
   }
-
   .nav-head > h1 {
     text-align: left;
   }
@@ -308,8 +268,7 @@ onMounted(async () => {
   .nav-state-open .nav-body {
     width: calc(0% + 100vw);
   }
-  .nav-state-open .page-content,
-  .nav-state-open .page-header {
+  .nav-state-open :is(.page-content, .page-header) {
     left: 100%;
   }
 }

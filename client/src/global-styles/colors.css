@@ -38,7 +38,7 @@
   --cl-1-7: var(--cl-base-1-13);
   --cl-1-8: var(--cl-base-1-15);
 }
-@media only screen and (prefers-color-scheme: light) {
+@media (prefers-color-scheme: light) {
   :root {
     --cl-1-1: var(--cl-base-1-16);
     --cl-1-2: var(--cl-base-1-15);

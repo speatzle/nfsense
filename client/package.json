@@ -31,7 +31,7 @@
     "typescript": "~5.8.0",
     "unplugin-auto-import": "^20.1.0",
     "unplugin-icons": "^22.3.0",
-    "unplugin-reactive-vue": "^0.1.2",
+    "unplugin-reactive-vue": "^2.0.0",
     "unplugin-vue-components": "^29.1.0",
     "vite": "npm:rolldown-vite@latest",
     "vite-plugin-vue-devtools": "^8.0.0",

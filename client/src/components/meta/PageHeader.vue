@@ -13,7 +13,13 @@ watchEffect(() => useTitle(`${props.title} - nfSense`));
 </script>
 <template>
   <Portal to="page-header">
-    <h1 v-if="props.title !== ''" :class="{ 'flex-grow': !props.noSpacer }" v-text="props.title" />
-    <slot />
+    <TransitionGroup name="fade" appear>
+      <h1
+        v-if="props.title !== ''"
+        :class="{ 'flex-grow': !props.noSpacer }"
+        v-text="props.title"
+      />
+      <slot />
+    </TransitionGroup>
   </Portal>
 </template>

@@ -114,6 +114,8 @@ onMounted(async () => {
         <component :is="Component" :key="route.fullPath" class="page-content pad gap" />
       </Transition>
     </router-view>
+
+    <Popups />
   </div>
 
   <Transition name="fade">

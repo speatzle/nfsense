@@ -28,6 +28,7 @@ export default defineConfig({
           "~/util": ["equals", "isNullish", "variantOf", "atPath", "syncModel"],
           "~/plugins": ["usePlugins"],
           "~/api": ["apiCall"],
+          "~/composables/modals": ["useModals"],
         },
         { from: "./src/util", imports: ["Index", "MaybeIndex"], type: true },
       ],

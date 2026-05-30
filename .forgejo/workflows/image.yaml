@@ -24,7 +24,9 @@ jobs:
             curl \
             git \
             zstd \
-            qemu-utils
+            qemu-utils \
+            amd64-microcode \
+            intel-microcode
       - name: checkout code
         uses: https://data.forgejo.org/actions/checkout@v4
         with:

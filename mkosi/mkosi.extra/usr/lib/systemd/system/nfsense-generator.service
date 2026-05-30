@@ -10,9 +10,7 @@ Before=basic.target
 [Service]
 Type=oneshot
 ExecStart=/usr/sbin/nfsense generate-current-config
-# TODO Do this in a seperate service? Generate earlier? delay networkd?
-ExecStartPost=/usr/bin/networkctl reload
-RemainAfterExit=yes
+RemainAfterExit=no
 
 [Install]
 WantedBy=basic.target

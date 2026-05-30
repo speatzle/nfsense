@@ -15,6 +15,14 @@ jobs:
       image: debian:trixie
       options: --tmpfs /tmpfs:exec
     steps:
+      - name: setup non-free-firmware
+        run: |
+          echo 'deb http://deb.debian.org/debian/ trixie main non-free-firmware
+          deb-src http://deb.debian.org/debian/ trixie main non-free-firmware
+          deb http://security.debian.org/debian-security trixie-security main non-free-firmware
+          deb-src http://security.debian.org/debian-security trixie-security main non-free-firmware
+          deb http://deb.debian.org/debian/ trixie-updates main non-free-firmware
+          deb-src http://deb.debian.org/debian/ trixie-updates main non-free-firmware' > /etc/apt/sources.list
       - name: install dependencies
         run: |
           apt update

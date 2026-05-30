@@ -4,6 +4,7 @@ import { navRoutes } from "./components/layout/navRoutes";
 
 const p = usePlugins();
 const $mobileMedia = $(useMediaQuery("(max-width: 768px)"));
+const { modalStack } = useModals();
 
 enum NavState {
   Open,
@@ -81,7 +82,10 @@ onMounted(async () => {
 <template>
   <div
     v-if="$authState === AuthState.Authenticated"
-    :style="`--reduced-width: ${$navState === NavState.Open ? 3.5 : $minReducedWidth}rem;`"
+    :style="`
+      --reduced-width: ${$navState === NavState.Open ? 3.5 : $minReducedWidth}rem;
+      --sidepane-width: ${!$mobileMedia && modalStack.length ? 'min(40rem, 50vw)' : '0px'};
+    `"
     :class="{
       layout: 1,
       'nav-state-open': $navState === NavState.Open,
@@ -115,7 +119,8 @@ onMounted(async () => {
       </Transition>
     </router-view>
 
-    <Popups />
+    <Popups v-if="$mobileMedia" />
+    <Sidepane v-else />
   </div>
 
   <Transition name="fade">
@@ -143,10 +148,11 @@ onMounted(async () => {
 }
 .layout {
   grid-template-rows: auto 1fr;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto 1fr var(--sidepane-width);
+  transition: grid-template-columns 0.2s ease-out;
   grid-template-areas:
-    "NH PH"
-    "NB PC";
+    "NH PH SP"
+    "NB PC SP";
 }
 .login {
   place-items: center;
@@ -207,7 +213,10 @@ onMounted(async () => {
 }
 .page-content {
   grid-area: PC;
-  overflow-y: auto;
+  overflow: auto;
+}
+.sidepane {
+  grid-area: SP;
 }
 
 /* Nav-Body-Collapsing */
@@ -221,15 +230,15 @@ onMounted(async () => {
   width: calc(0% + var(--reduced-width));
 }
 .nav-state-reduced .page-content {
-  left: calc(calc(-100vw + 100%) + var(--reduced-width));
-  width: calc(calc(0% + 100vw) - var(--reduced-width));
+  left: calc(calc(-100vw + 100%) + var(--sidepane-width) + var(--reduced-width));
+  width: calc(calc(0% + 100vw) - var(--sidepane-width) - var(--reduced-width));
 }
 .nav-state-collapsed .nav-body {
   width: 0%;
 }
 .nav-state-collapsed .page-content {
-  left: calc(-100vw + 100%);
-  width: calc(0% + 100vw);
+  left: calc(-100vw + 100% + var(--sidepane-width));
+  width: calc(0% + 100vw - var(--sidepane-width));
 }
 .layout:not(.nav-state-open) > .nav-body > .flex-row {
   flex-direction: column;

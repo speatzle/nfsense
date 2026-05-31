@@ -515,7 +515,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7cd812cc2bc1d69d4764bd80df88b4317eaef9e773c75226407d9bc0876b211c"
 dependencies = [
  "powerfmt",
- "serde",
+ "serde_core",
 ]
 
 [[package]]
@@ -1534,6 +1534,7 @@ dependencies = [
  "structdb-macros",
  "tera",
  "thiserror",
+ "time",
  "tokio",
  "tower",
  "tower-cookies",
@@ -2510,21 +2511,23 @@ checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 [[package]]
 name = "structdb-core"
 version = "0.1.0"
+source = "git+https://git.soontm.de/speatzle/structdb.git#7610802c5e01fa11d346b78d21632ddbe78942f7"
 dependencies = [
  "garde",
  "serde",
  "serde_json",
- "thiserror 1.0.69",
+ "thiserror",
 ]
 
 [[package]]
 name = "structdb-macros"
 version = "0.1.0"
+source = "git+https://git.soontm.de/speatzle/structdb.git#7610802c5e01fa11d346b78d21632ddbe78942f7"
 dependencies = [
  "garde",
- "proc-macro2 1.0.101",
- "quote 1.0.40",
- "syn 2.0.106",
+ "proc-macro2 1.0.106",
+ "quote 1.0.45",
+ "syn 2.0.117",
 ]
 
 [[package]]

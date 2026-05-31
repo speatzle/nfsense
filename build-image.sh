@@ -38,7 +38,7 @@ echo "Converting to qcow2"
 qemu-img convert -p -f raw -O qcow2 -c "$RAW_FILE" "$QCOW2_FILE"
 qemu-img resize "$QCOW2_FILE" 32G
 
-echo "Calculate hash for qcow2"
-sha256sum "$QCOW2_FILE" >> "mkosi/mkosi.output/nfsense_${IMAGE_VERSION}.SHA256SUMS"
+#echo "Calculate hash for qcow2"
+#sha256sum "$QCOW2_FILE" >> "mkosi/mkosi.output/nfsense_${IMAGE_VERSION}.SHA256SUMS"
 
 echo "Done"

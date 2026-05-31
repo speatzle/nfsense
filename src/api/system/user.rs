@@ -99,7 +99,7 @@ struct CreateUser {
     comment: Option<String>,
 }
 
-pub fn create_user(p: Params, state: &RpcState, _: &Extensions) -> Result<(), ApiError> {
+pub fn create_user(p: Params, state: &RpcState, extensions: &Extensions) -> Result<(), ApiError> {
     let u: CreateUser = p.parse().map_err(ParameterDeserialize)?;
 
     let hash = sha512_crypt::hash(u.password).map_err(HashError)?;
@@ -120,8 +120,12 @@ pub fn create_user(p: Params, state: &RpcState, _: &Extensions) -> Result<(), Ap
     tx.commit(&mut data_changes)?;
 
     if !data_changes.is_empty() {
+        let user = extensions
+            .get::<crate::web::auth::Session>()
+            .map(|s| s.username.clone())
+            .unwrap_or_else(|| "unknown".to_string());
         let change_set = crate::config_manager::ChangeSet {
-            user: "admin@example.com".to_string(), // Placeholder
+            user,
             timestamp: OffsetDateTime::now_utc(),
             changes: data_changes,
         };
@@ -137,7 +141,7 @@ struct UpdateUser {
     thing: CreateUser,
 }
 
-pub fn update_user(p: Params, state: &RpcState, _: &Extensions) -> Result<(), ApiError> {
+pub fn update_user(p: Params, state: &RpcState, extensions: &Extensions) -> Result<(), ApiError> {
     let u: UpdateUser = p.parse().map_err(ParameterDeserialize)?;
 
     let mut cm = state.config_manager.clone();
@@ -173,8 +177,12 @@ pub fn update_user(p: Params, state: &RpcState, _: &Extensions) -> Result<(), Ap
             tx.commit(&mut data_changes)?;
 
             if !data_changes.is_empty() {
+                let user = extensions
+                    .get::<crate::web::auth::Session>()
+                    .map(|s| s.username.clone())
+                    .unwrap_or_else(|| "system".to_string());
                 let change_set = crate::config_manager::ChangeSet {
-                    user: "admin@example.com".to_string(), // Placeholder
+                    user,
                     timestamp: OffsetDateTime::now_utc(),
                     changes: data_changes,
                 };

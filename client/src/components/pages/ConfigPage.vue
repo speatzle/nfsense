@@ -1,10 +1,27 @@
 <script setup lang="ts">
+export type ChangeAction = "Create" | "Update" | "Delete";
+
+export interface Change {
+  path: string;
+  action: ChangeAction;
+  id: string;
+  old_value?: any;
+  new_value?: any;
+}
+
+export interface ChangeSet {
+  user: string;
+  timestamp: string;
+  changes: Change[];
+}
+
 const p = usePlugins();
 
-let $changelog = [] as any[];
+let $changelog = [] as ChangeSet[];
 let $loading = false;
 
 const columns = [
+  { heading: "User", path: "user" },
   { heading: "Path", path: "path" },
   { heading: "Action", path: "action" },
   { heading: "ID", path: "id" },
@@ -13,13 +30,18 @@ const columns = [
 const $displayData = $(
   computed(() => {
     const data = [];
-    // TODO: Add proper type
-    for (const change of $changelog as any)
-      data.push({
-        path: change.path,
-        action: change.action,
-        id: change.id,
-      });
+    for (const changeSet of $changelog) {
+      if (changeSet.changes) {
+        for (const change of changeSet.changes) {
+          data.push({
+            user: changeSet.user,
+            path: change.path,
+            action: change.action,
+            id: change.id,
+          });
+        }
+      }
+    }
     return data;
   }),
 );

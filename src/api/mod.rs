@@ -133,7 +133,7 @@ macro_rules! list_things {
 #[macro_export]
 macro_rules! create_thing {
     ($( $sub_system:ident ).+, $typ:ty) => {
-        |params, state, _: &Extensions| {
+        |params, state, extensions: &jsonrpsee::Extensions| {
             let t: $typ = params.parse().map_err(ApiError::ParameterDeserialize)?;
 
             let mut cm = state.config_manager.clone();
@@ -147,8 +147,12 @@ macro_rules! create_thing {
 
             // 2. If the transaction produced changes, wrap them in a ChangeSet
             if !data_changes.is_empty() {
+                let user = extensions
+                    .get::<crate::web::auth::Session>()
+                    .map(|s| s.username.clone())
+                    .unwrap_or_else(|| "unknown".to_string());
                 let change_set = crate::config_manager::ChangeSet {
-                    user: "system".to_string(), // TODO: Get user from session/auth context
+                    user,
                     timestamp: OffsetDateTime::now_utc(),
                     changes: data_changes,
                 };
@@ -166,7 +170,7 @@ macro_rules! create_thing {
 #[macro_export]
 macro_rules! update_thing_by_name {
     ($( $sub_system:ident ).+, $typ:ty) => {
-        |params, state, _: &Extensions| {
+        |params, state, extensions: &jsonrpsee::Extensions| {
             use serde::{Deserialize, Serialize};
 
             #[derive(Deserialize, Serialize)]
@@ -189,8 +193,12 @@ macro_rules! update_thing_by_name {
                     tx.commit(&mut data_changes).map_err(ApiError::ConfigError)?;
 
                     if !data_changes.is_empty() {
+                        let user = extensions
+                            .get::<crate::web::auth::Session>()
+                            .map(|s| s.username.clone())
+                            .unwrap_or_else(|| "unknown".to_string());
                         let change_set = crate::config_manager::ChangeSet {
-                            user: "system".to_string(), // TODO: Get user from session/auth context
+                            user,
                             timestamp: OffsetDateTime::now_utc(),
                             changes: data_changes,
                         };
@@ -211,7 +219,7 @@ macro_rules! update_thing_by_name {
 #[macro_export]
 macro_rules! update_thing_by_index {
     ($( $sub_system:ident ).+, $typ:ty) => {
-        |params, state, _: &Extensions| {
+        |params, state, extensions: &jsonrpsee::Extensions| {
             use serde::{Deserialize, Serialize};
 
             #[derive(Deserialize, Serialize)]
@@ -231,8 +239,12 @@ macro_rules! update_thing_by_index {
                 tx.commit(&mut data_changes).map_err(ApiError::ConfigError)?;
 
                 if !data_changes.is_empty() {
+                    let user = extensions
+                        .get::<crate::web::auth::Session>()
+                        .map(|s| s.username.clone())
+                        .unwrap_or_else(|| "unknown".to_string());
                     let change_set = crate::config_manager::ChangeSet {
-                        user: "system".to_string(), // TODO: Get user from session/auth context
+                        user,
                         timestamp: OffsetDateTime::now_utc(),
                         changes: data_changes,
                     };
@@ -250,7 +262,7 @@ macro_rules! update_thing_by_index {
 #[macro_export]
 macro_rules! delete_thing_by_name {
     ($( $sub_system:ident ).+) => {
-        |params, state, _: &Extensions| {
+        |params, state, extensions: &jsonrpsee::Extensions| {
             use serde::{Deserialize, Serialize};
 
             #[derive(Deserialize, Serialize)]
@@ -273,8 +285,12 @@ macro_rules! delete_thing_by_name {
                     tx.commit(&mut data_changes).map_err(ApiError::ConfigError)?;
 
                     if !data_changes.is_empty() {
+                        let user = extensions
+                            .get::<crate::web::auth::Session>()
+                            .map(|s| s.username.clone())
+                            .unwrap_or_else(|| "unknown".to_string());
                         let change_set = crate::config_manager::ChangeSet {
-                            user: "system".to_string(), // TODO: Get user from session/auth context
+                            user,
                             timestamp: OffsetDateTime::now_utc(),
                             changes: data_changes,
                         };
@@ -295,7 +311,7 @@ macro_rules! delete_thing_by_name {
 #[macro_export]
 macro_rules! delete_thing_by_index {
     ($( $sub_system:ident ).+) => {
-        |params, state, _: &Extensions| {
+        |params, state, extensions: &jsonrpsee::Extensions| {
             use serde::{Deserialize, Serialize};
 
             #[derive(Deserialize, Serialize)]
@@ -315,8 +331,12 @@ macro_rules! delete_thing_by_index {
                 tx.commit(&mut data_changes).map_err(ApiError::ConfigError)?;
 
                 if !data_changes.is_empty() {
+                    let user = extensions
+                        .get::<crate::web::auth::Session>()
+                        .map(|s| s.username.clone())
+                        .unwrap_or_else(|| "unknown".to_string());
                     let change_set = crate::config_manager::ChangeSet {
-                        user: "system".to_string(), // TODO: Get user from session/auth context
+                        user,
                         timestamp: OffsetDateTime::now_utc(),
                         changes: data_changes,
                     };

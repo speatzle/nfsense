@@ -150,7 +150,10 @@ async fn main() {
         .unwrap();
 }
 // TODO this does not actually handle the signal?
-async fn shutdown_signal(handle: axum_server::Handle, rpc_handle: jsonrpsee::server::ServerHandle) {
+async fn shutdown_signal(
+    handle: axum_server::Handle<SocketAddr>,
+    rpc_handle: jsonrpsee::server::ServerHandle,
+) {
     let ctrl_c = async {
         signal::ctrl_c()
             .await

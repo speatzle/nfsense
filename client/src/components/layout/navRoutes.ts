@@ -22,6 +22,8 @@ import IVPN from "~icons/mdi/vpn";
 import IRouter from "~icons/mdi/router";
 import ISettings from "~icons/material-symbols/settings";
 import IShield from "~icons/mdi/shield-outline";
+import IUpdate from "~icons/material-symbols/system-update-alt";
+import ILog from "~icons/icon-park-outline/log";
 
 export type NavRoute = {
   icon: Component;
@@ -63,8 +65,8 @@ export const navRoutes: NavRoute[] = [
   ] },
   { caption: "System", icon: ISettings, children: [
     { caption: "Users", icon: IUser, href: "/system/users" },
-    { caption: "Log", icon: IService, href: "/system/logs" },
-    { caption: "Updates", icon: IService, href: "/system/updates" },
+    { caption: "Log", icon: ILog, href: "/system/logs" },
+    { caption: "Updates", icon: IUpdate, href: "/system/updates" },
   ] },
   { caption: "Config", icon: IConfig, href: "/config/config" },
 ];

@@ -13,14 +13,6 @@ echo "Installing rust"
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 . "/root/.cargo/env"
 
-if [ -n "$BUILDDIR" ]; then
-    echo "Setup Build cache"
-    export CARGO_HOME="$BUILDDIR/cargo_home"
-    export CARGO_TARGET_DIR="$BUILDDIR/cargo_target"
-    export PNPM_HOME="$BUILDDIR/pnpm_home"
-fi
-
-
 echo "Build Backend"
 cd $SRCDIR
 cargo build --release

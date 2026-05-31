@@ -9,7 +9,7 @@ button, .button {
 
   display: flex;
   flex-flow: row nowrap;
-  overflow: hidden;
+  overflow: clip;
   vertical-align: center;
 
   padding: 0.5rem;

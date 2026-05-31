@@ -50,9 +50,6 @@ const tallyChildren = (routes: NavRoute[]): number =>
   grid-template-columns: subgrid;
   grid-column: 1 / -1;
 
-  &:not(.dropdown) {
-    overflow: visible; /* Fixes an obscure bug where Firefox on Windows 11 only brings subgrids out of alignment */
-  }
   & svg {
     place-self: center;
   }
@@ -65,8 +62,6 @@ const tallyChildren = (routes: NavRoute[]): number =>
 }
 
 .expand-icon {
-  min-width: 1.5rem;
-  min-height: 1.5rem;
   transition: transform 0.2s ease-out;
   &.expanded {
     transform: rotate(180deg);

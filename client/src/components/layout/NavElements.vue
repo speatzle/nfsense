@@ -24,8 +24,7 @@ watch($$($lowerDepths), () => emit("update:depth", Math.max(...$lowerDepths) ?? 
 <style scoped>
 .nav-elements {
   display: grid;
-  grid-template-columns: calc(var(--reduced-width) - 0.25rem) 1fr auto; /* -0.25rem adjustment is for halved 0.5rem padding */
-  width: 100%;
+  grid-template-columns: subgrid;
   transition: all 0.2s ease-out;
 }
 </style>

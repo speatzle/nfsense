@@ -14,7 +14,7 @@ enum NavState {
 const NavStateCount = 3;
 let $navState = ($mobileMedia ? NavState.Collapsed : NavState.Open) as NavState;
 watch($$($mobileMedia), (x) => ($navState = x ? NavState.Collapsed : NavState.Open));
-let $minReducedWidth = 2.5 as number;
+let $navDepth = 0 as number;
 function collapseNavIfMobile() {
   if ($mobileMedia && $navState === NavState.Open)
     // Lets page find initial left to transition; nextTick will not work due to microtask behavior
@@ -83,7 +83,7 @@ onMounted(async () => {
   <div
     v-if="$authState === AuthState.Authenticated"
     :style="`
-      --reduced-width: ${$navState === NavState.Open ? 3.5 : $minReducedWidth}rem;
+      --reduced-width: ${$navState === NavState.Open ? 3.5 : 2.5 + $navDepth * 0.5}rem;
       --sidepane-width: ${!$mobileMedia && modalStack.length ? 'min(40rem, 50vw)' : '0px'};
     `"
     :class="{
@@ -102,7 +102,7 @@ onMounted(async () => {
         <NavElements
           :routes="navRoutes"
           :click-handler="collapseNavIfMobile"
-          @update:depth="(val) => ($minReducedWidth = 2.5 + 0.5 * val)"
+          @update:depth="(val) => ($navDepth = val)"
         />
       </div>
       <div class="flex-row">
@@ -198,6 +198,9 @@ onMounted(async () => {
 
     &::-webkit-scrollbar {
       display: none;
+    }
+    & > .nav-elements {
+      grid-template-columns: calc(var(--reduced-width) - 0.25rem) 1fr auto; /* -0.25rem adjustment is for halved 0.5rem padding */
     }
   }
 }

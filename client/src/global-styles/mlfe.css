@@ -11,7 +11,7 @@
   margin: 0px;
   user-select: inherit;
   color: inherit;
-  overflow: hidden;
+  overflow: clip; /* Replaces overflow: hidden, which previously broke subgrid alignment */
   flex-shrink: 0;
 }
 

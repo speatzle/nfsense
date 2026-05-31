@@ -8,7 +8,7 @@ use std::{
 use crate::state::RpcState;
 use axum::{middleware, Router};
 use axum_reverse_proxy::ReverseProxy;
-use axum_server::tls_openssl::OpenSSLConfig;
+use axum_server::tls_rustls::RustlsConfig;
 use config_manager::ConfigManager;
 use state::AppState;
 use std::env;
@@ -130,10 +130,11 @@ async fn main() {
         .merge(webinterface_router)
         .layer(CookieManagerLayer::new());
 
-    let config = OpenSSLConfig::from_pem_file(
+    let config = RustlsConfig::from_pem_file(
         PathBuf::from(HTTPS_CERT_PATH),
         PathBuf::from(HTTPS_KEY_PATH),
     )
+    .await
     .unwrap();
 
     let handle = axum_server::Handle::new();
@@ -142,7 +143,7 @@ async fn main() {
 
     info!("Server started successfully");
     let addr = SocketAddr::new(IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 0)), 4444);
-    axum_server::bind_openssl(addr, config)
+    axum_server::bind_rustls(addr, config)
         .handle(handle)
         .serve(main_router.into_make_service())
         .await

@@ -28,7 +28,8 @@ garde = { version = "0.22.0", features = ["full"] }
 once_cell = "1.21.3"
 regex = "1.11.2"
 zbus = { version = "5.11.0", default-features = false, features = ["tokio"] }
-zbus_systemd = { version = "0.25701.0", features = [
+zbus_systemd = { version = "0.26000.0", features = [
+    "zbus-async-tokio",
     "systemd1",
     "network1",
     "resolve1",

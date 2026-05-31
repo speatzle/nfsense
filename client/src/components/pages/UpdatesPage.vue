@@ -2,8 +2,11 @@
 const p = usePlugins();
 
 type UpdateStatus = any;
+type UpdateJob = any;
+
 
 let $updateStatus: UpdateStatus = null;
+let $updateJobs: UpdateJob[] = null;
 const $selection = [] as number[];
 let $loading = false as boolean;
 
@@ -27,6 +30,15 @@ async function load() {
     console.debug("error", res);
     $updateStatus = null;
   }
+
+  const res2 = await apiCall("system.update.jobs.list", {});
+  if (res.Error === null) {
+    console.debug("update jobs", res2.Data);
+    $updateJobs = res2.Data;
+  } else {
+    console.debug("error", res2);
+    $updateJobs = null;
+  }
   $loading = false;
 }
 
@@ -35,6 +47,16 @@ async function vacuum() {
   if (res.Error === null) {
     console.debug("vacuum triggered");
     p.toast.success("Vacuum Triggered");
+  } else console.debug("error", res);
+}
+
+async function aquire() {
+  const res = await apiCall("system.update.acquire", {
+    version: $updateStatus.available_updates[$selection[0]].version,
+  });
+  if (res.Error === null) {
+    console.debug("acquire triggered");
+    p.toast.success("acquire Triggered");
   } else console.debug("error", res);
 }
 
@@ -70,11 +92,10 @@ onMounted(load);
 <template>
   <div>
     <template v-if="!$loading">
-      <div v-if="$updateStatus">
+      <div v-if="$updateJobs">
         Current Version: {{ $updateStatus.current_version }}
-        <div v-if="$updateStatus.job">
-          Job ID: {{ $updateStatus.job.id }} Type: {{ $updateStatus.job.type }} Progress:
-          {{ $updateStatus.job.progress }}
+        <div v-for="job in $updateJobs">
+          Job ID: {{ job.id }} Type: {{ job.type }} Progress: {{ job.progress }}
         </div>
       </div>
     </template>
@@ -87,6 +108,14 @@ onMounted(load);
     >
       <button @click="load">Refresh</button>
       <button @click="vacuum">Vacuum</button>
+      <button
+        :disabled="
+          !($selection.length == 1 && !$updateStatus.available_updates[$selection[0]].installed)
+        "
+        @click="acquire"
+      >
+          Acquire
+      </button>
       <button
         :disabled="
           !($selection.length == 1 && !$updateStatus.available_updates[$selection[0]].installed)

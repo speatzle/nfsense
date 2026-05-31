@@ -17,7 +17,6 @@ pub enum UpdateError {
 pub struct UpdateStatus {
     pub current_version: String,
     pub available_updates: Vec<Update>,
-    pub job: Option<UpdateJob>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -62,7 +61,15 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
+        .register_async_method("system.update.jobs.list", list_jobs)
+        .unwrap();
+
+    module
         .register_async_method("system.update.vacuum", vacuum_updates)
+        .unwrap();
+
+    module
+        .register_async_method("system.update.acquire", acquire_update)
         .unwrap();
 
     module
@@ -88,7 +95,6 @@ pub async fn get_update_status<'a>(
             let mut update_status = UpdateStatus {
                 current_version: sysupdate_target.get_version().await?,
                 available_updates: vec![],
-                job: None,
             };
 
             let available_updates = sysupdate_target.list(0).await?;
@@ -98,21 +104,31 @@ pub async fn get_update_status<'a>(
                 )?);
             }
 
-            let jobs = sysupdate_manager.list_jobs().await?;
-            // We assume there can only be one Job
-            for (id, _type, progress, _path) in jobs {
-                update_status.job = Some(UpdateJob {
-                    id,
-                    _type,
-                    progress,
-                });
-            }
             return Ok(update_status);
         }
     }
 
     error!("Did not find Update Target host!");
     Err(UpdateError::TargetNotFound.into())
+}
+
+pub async fn list_jobs<'a>(
+    _: Params<'a>,
+    _state: Arc<RpcState>,
+    _: Extensions,
+) -> Result<Vec<UpdateJob>, ApiError> {
+    let sysupdate_manager = zbus_systemd::sysupdate1::ManagerProxy::new(&_state.dbus_conn).await?;
+    let jobs = sysupdate_manager.list_jobs().await?;
+    let mut j = vec![];
+    for (id, _type, progress, _path) in jobs {
+        j.push(UpdateJob {
+            id,
+            _type,
+            progress,
+        });
+    }
+
+    Ok(j)
 }
 
 pub async fn vacuum_updates<'a>(
@@ -135,6 +151,28 @@ pub async fn vacuum_updates<'a>(
     Err(UpdateError::TargetNotFound.into())
 }
 
+pub async fn acquire_update<'a>(
+    params: Params<'a>,
+    _state: Arc<RpcState>,
+    _: Extensions,
+) -> Result<(), ApiError> {
+    let param: UpdateParam = params.parse().map_err(ApiError::ParameterDeserialize)?;
+    let sysupdate_manager = zbus_systemd::sysupdate1::ManagerProxy::new(&_state.dbus_conn).await?;
+    let targets = sysupdate_manager.list_targets().await?;
+    for (_class, name, path) in targets {
+        if name == "host" {
+            let sysupdate_target =
+                zbus_systemd::sysupdate1::TargetProxy::new(&_state.dbus_conn, path).await?;
+
+            sysupdate_target.install(param.version, 0).await?;
+            return Ok(());
+        }
+    }
+
+    error!("Did not find Update Target host!");
+    Err(UpdateError::TargetNotFound.into())
+}
+
 pub async fn install_update<'a>(
     params: Params<'a>,
     _state: Arc<RpcState>,
@@ -148,7 +186,7 @@ pub async fn install_update<'a>(
             let sysupdate_target =
                 zbus_systemd::sysupdate1::TargetProxy::new(&_state.dbus_conn, path).await?;
 
-            sysupdate_target.update(param.version, 0).await?;
+            sysupdate_target.install(param.version, 0).await?;
             return Ok(());
         }
     }

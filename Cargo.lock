@@ -3669,11 +3669,10 @@ dependencies = [
 
 [[package]]
 name = "zbus_systemd"
-version = "0.25701.0"
+version = "0.26000.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9b772577120750e5a5ab5a5530f38fd462a35fafd9ed475098714afd1b1855ec"
+checksum = "40c8310483ff4a77492d04a90bef30f40938059b4a4b4f7e456dda335d816cb6"
 dependencies = [
- "futures",
  "serde",
  "zbus",
 ]

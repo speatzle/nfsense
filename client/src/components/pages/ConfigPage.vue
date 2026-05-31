@@ -56,15 +56,17 @@ onMounted(load);
 </script>
 
 <template>
-  <TableView
-    v-model:data="$displayData"
-    title="Pending Changes"
-    :columns="columns"
-    :loading="$loading"
-    :table-props="{ sort: true, sortSelf: true }"
-  >
-    <button @click="load">Refresh</button>
-    <button @click="apply">Apply</button>
-    <button @click="discard">Discard</button>
-  </TableView>
+  <div>
+    <PageHeader title="Pending Changes">
+      <button @click="load">Refresh</button>
+      <button @click="apply">Apply</button>
+      <button @click="discard">Discard</button>
+    </PageHeader>
+    <TableView
+      v-model:data="$displayData"
+      :columns="columns"
+      :loading="$loading"
+      :table-props="{ sort: true, sortSelf: true }"
+    />
+  </div>
 </template>

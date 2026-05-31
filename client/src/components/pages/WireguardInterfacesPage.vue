@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import ArrayDisplay from "~/components/display/ArrayDisplay.vue";
+import UpsertModal from "../modals/UpsertModal.vue";
 const p = usePlugins();
+const { pushModal } = useModals();
 
 let $interfaces = {} as any; // TODO: Add proper type
 let $loading = false;
-const $selection = [] as number[];
+let $selection = [] as number[];
 
 const columns = [
   { heading: "Name", path: "name" },
@@ -33,6 +35,7 @@ async function load() {
   if (res.Error === null) {
     console.debug("interfaces", res.Data);
     $interfaces = res.Data;
+    $selection = [];
   } else console.debug("error", res);
   $loading = false;
 }
@@ -55,25 +58,33 @@ async function deleteInterface() {
 }
 
 async function editInterface() {
-  p.router.push(`/vpn/wireguard.interfaces/edit/${$displayData[$selection[0]].name}`);
+  const id = $displayData[$selection[0]].name;
+  if (await pushModal(UpsertModal, { subsystem: "vpn", entity: "wireguard.interfaces", id }))
+    load();
+}
+async function createInterface() {
+  if (await pushModal(UpsertModal, { subsystem: "vpn", entity: "wireguard.interfaces" })) load();
 }
 
 onMounted(load);
 </script>
 
 <template>
-  <TableView
-    v-model:selection="$selection"
-    v-model:data="$displayData"
-    title="Wireguard Interfaces"
-    :columns="columns"
-    :loading="$loading"
-    :table-props="{ sort: true, sortSelf: true }"
-  >
-    <button @click="load">Refresh</button>
-    <button @click="generateKeys">Generate Keys</button>
-    <router-link class="button" to="/vpn/wireguard.interfaces/edit">Create</router-link>
-    <button :disabled="$selection.length != 1" @click="editInterface">Edit</button>
-    <button :disabled="$selection.length != 1" @click="deleteInterface">Delete</button>
-  </TableView>
+  <div>
+    <PageHeader title="Wireguard Interfaces">
+      <button @click="load">Refresh</button>
+      <button @click="generateKeys">Generate Keys</button>
+      <button @click="createInterface">Create</button>
+      <button :disabled="$selection.length != 1" @click="editInterface">Edit</button>
+      <button :disabled="$selection.length != 1" @click="deleteInterface">Delete</button>
+    </PageHeader>
+    <TableView
+      v-model:selection="$selection"
+      v-model:data="$displayData"
+      :columns="columns"
+      :loading="$loading"
+      :table-props="{ sort: true, sortSelf: true }"
+    >
+    </TableView>
+  </div>
 </template>

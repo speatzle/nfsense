@@ -4,12 +4,9 @@ import type { Component } from "vue";
 const props = withDefaults(
   defineProps<{
     data: object | string;
-    definition: { [key: string]: { path: string; component: Component | undefined } } | undefined;
+    definition?: { [key: string]: { path: string; component: Component | undefined } };
   }>(),
-  {
-    data: "",
-    definition: undefined,
-  },
+  { data: "" },
 );
 
 const value = computed(() => {

@@ -22,10 +22,11 @@ const { modalStack, popModal } = useModals();
 }
 
 .popup {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
   background: var(--cl-bg);
   width: calc(min(100vw, 50rem) - 5vw);
   height: calc(min(100vh, 50rem) - 5vh);
-  overflow-y: auto;
   grid-column: 1;
   grid-row: 1;
 }

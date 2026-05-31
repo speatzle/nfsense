@@ -2,10 +2,9 @@
 const props = withDefaults(
   defineProps<{
     data: object | string;
+    definition?: { [key: string]: { path: string; component: Component | undefined } };
   }>(),
-  {
-    data: "",
-  },
+  { data: "" },
 );
 </script>
 <template>

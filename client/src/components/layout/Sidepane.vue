@@ -17,8 +17,11 @@ const { modalStack, popModal } = useModals();
 }
 
 .pane {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  width: min(40rem, 50vw);
   background: var(--cl-bg);
-  overflow-y: auto;
+  overflow: auto;
   grid-column: 1;
   grid-row: 1;
 }

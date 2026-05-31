@@ -34,7 +34,6 @@ input {
 :is(form, .form) {
   display: grid;
   grid-template-columns: auto 1fr;
-  padding: 0.5rem;
   gap: 0.5rem;
 }
 :is(form, .form) :is(form, .form) { /* Subform and EnumInput */

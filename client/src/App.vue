@@ -126,7 +126,7 @@ onMounted(async () => {
   <Transition name="fade">
     <div v-if="$authState === AuthState.Unauthenticated" class="login">
       <FocusTrap>
-        <form class="cl-secondary" @submit.prevent>
+        <form class="cl-secondary pad" @submit.prevent>
           <h1>nfSense Login</h1>
           <h2 v-show="$loginDisabled">Logging in...</h2>
           <label for="username" :hidden="$loginDisabled" v-text="'Username'" />
@@ -176,6 +176,7 @@ onMounted(async () => {
   grid-area: NB;
   display: grid;
   grid-template: 1fr auto / 1fr;
+  overflow: auto;
 
   & .flex-row * {
     flex: 1;
@@ -209,6 +210,7 @@ onMounted(async () => {
 
   flex-flow: row nowrap;
   align-items: center;
+  overflow-x: auto;
 
   & button svg {
     margin: -0.25rem;

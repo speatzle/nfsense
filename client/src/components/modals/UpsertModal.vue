@@ -11,6 +11,8 @@ const $subsystem = $(computed(() => subsystems[props.subsystem]));
 const $entity = $(computed(() => ($subsystem.entities as Record<string, Entity>)[props.entity]));
 const $isEdit = $(computed(() => !isNullish(props.id)));
 
+const { popModal } = useModals();
+
 let $vm = {} as any; // TODO: Add proper type
 let $loading = true;
 
@@ -51,7 +53,7 @@ async function upsert() {
 
   if (res.Error === null) {
     p.toast.success(`Updated ${$entity.name}`);
-    p.router.go(-1);
+    popModal(true);
   } else console.debug("error", res);
 }
 
@@ -60,21 +62,16 @@ onMounted(async () => {
 });
 </script>
 <template>
-  <p v-if="$loading">Loading...</p>
-  <div v-else-if="$entity">
-    <PageHeader :title="`${$isEdit ? 'Update' : 'Create'} ${$entity.name}`"> </PageHeader>
-    <NicerForm v-model="$vm" class="scroll cl-secondary" :fields="$entity.fields" />
-    <div class="actions">
-      <div class="flex-grow" />
+  <Modal :title="`${$isEdit ? 'Update' : 'Create'} ${$entity.name}`">
+    <template v-if="$loading">Loading...</template>
+    <template v-else-if="!$entity">No editType for this Entity</template>
+    <template v-else>
+      <NicerForm v-model="$vm" class="scroll" :fields="$entity.fields" />
+      <pre v-text="JSON.stringify($vm, null, 2)" />
+    </template>
+    <template #footer>
       <button @click="upsert">Submit</button>
-      <div class="space" />
-      <button @click="$router.go(-1)">Discard</button>
-      <div class="flex-grow" />
-    </div>
-    <pre v-text="JSON.stringify($vm, null, 2)" />
-  </div>
-  <div v-else>
-    <PageHeader title="Error" />
-    No editType for this Entity
-  </div>
+      <button @click="popModal">Discard</button>
+    </template>
+  </Modal>
 </template>

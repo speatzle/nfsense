@@ -1,5 +1,4 @@
 import { createWebHistory, createRouter } from "vue-router";
-import UpsertPage from "./components/pages/UpsertPage.vue";
 import TablePage from "./components/pages/TablePage.vue";
 import { subsystems } from "./definitions";
 import ConfigPage from "./components/pages/ConfigPage.vue";
@@ -24,15 +23,6 @@ const tableViewRoutes = Object.entries(subsystems).map(([subsystem, sub]) => ({
 export const router = createRouter({
   history: createWebHistory(),
   routes: [
-    {
-      path: "/:subsystem/:entity/:edit/:id?",
-      component: UpsertPage,
-      props: (p) => ({
-        subsystem: p.params.subsystem,
-        entity: p.params.entity,
-        id: p.params.id === "" ? undefined : isNaN(+p.params.id) ? p.params.id : +p.params.id,
-      }),
-    },
     ...tableViewRoutes,
     { path: "/config/config", component: ConfigPage },
     { path: "/system/logs", component: LogsPage },

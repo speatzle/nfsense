@@ -64,12 +64,13 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <TableView
-    v-model:data="$logs"
-    title="Logs"
-    :columns="columns"
-    :loading="$loading"
-    :table-props="{ sort: true, sortSelf: true }"
-  >
-  </TableView>
+  <div>
+    <PageHeader title="Logs" />
+    <TableView
+      v-model:data="$logs"
+      :columns="columns"
+      :loading="$loading"
+      :table-props="{ sort: true, sortSelf: true }"
+    />
+  </div>
 </template>

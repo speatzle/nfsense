@@ -23,6 +23,8 @@ const { popModal } = useModals();
 }
 .modal-body {
   border-bottom: none;
+  width: 100%;
+  overflow: auto;
 }
 .modal-header {
   place-items: center;

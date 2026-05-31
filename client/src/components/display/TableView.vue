@@ -1,7 +1,6 @@
 <script setup lang="ts">
 const props = defineProps<{
-  title: string;
-  loading: boolean;
+  loading?: boolean;
   columns?: {
     heading: string;
     path: string;
@@ -31,18 +30,13 @@ async function draggedRow(draggedRow: number, draggedOverRow: number) {
 </script>
 
 <template>
-  <div>
-    <PageHeader :title="props.title">
-      <slot />
-    </PageHeader>
-    <div v-if="props.loading">Loading...</div>
-    <NiceTable
-      v-else
-      v-model:selection="$selection"
-      :columns="props.columns"
-      v-bind="props.tableProps"
-      v-model:data="$data"
-      @dragged-row="draggedRow"
-    />
-  </div>
+  <div v-if="props.loading">Loading...</div>
+  <NiceTable
+    v-else
+    v-model:selection="$selection"
+    :columns="props.columns"
+    v-bind="props.tableProps"
+    v-model:data="$data"
+    @dragged-row="draggedRow"
+  />
 </template>

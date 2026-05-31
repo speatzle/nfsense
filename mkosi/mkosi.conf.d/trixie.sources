@@ -1,5 +1,5 @@
 Types: deb
-URIs: http://download.opensuse.org/repositories/system:/systemd/Debian_13/
+URIs: http://download.opensuse.org/repositories/system:/systemd:/stable/Debian_13/
 Suites: /
 Signed-By:
  -----BEGIN PGP PUBLIC KEY BLOCK-----

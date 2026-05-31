@@ -2511,7 +2511,7 @@ checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 [[package]]
 name = "structdb-core"
 version = "0.1.0"
-source = "git+https://git.soontm.de/speatzle/structdb.git#7610802c5e01fa11d346b78d21632ddbe78942f7"
+source = "git+https://git.soontm.de/speatzle/structdb.git#382c782f38c72e5d1db92d53256ecf808a930364"
 dependencies = [
  "garde",
  "serde",
@@ -2522,7 +2522,7 @@ dependencies = [
 [[package]]
 name = "structdb-macros"
 version = "0.1.0"
-source = "git+https://git.soontm.de/speatzle/structdb.git#7610802c5e01fa11d346b78d21632ddbe78942f7"
+source = "git+https://git.soontm.de/speatzle/structdb.git#382c782f38c72e5d1db92d53256ecf808a930364"
 dependencies = [
  "garde",
  "proc-macro2 1.0.106",

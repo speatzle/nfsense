@@ -16,10 +16,10 @@ pub struct VPN {
 #[derive(StructDb, Serialize, Deserialize, Clone, Validate, Default, Debug)]
 #[garde(context(Config))]
 pub struct Wireguard {
-    #[collection(key = "name")]
+    #[collection]
     #[garde(dive)]
     pub interfaces: Vec<WireguardInterface>,
-    #[collection(key = "name")]
+    #[collection]
     #[garde(dive)]
     pub peers: Vec<WireguardPeer>,
 }

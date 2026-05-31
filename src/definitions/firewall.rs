@@ -7,16 +7,16 @@ use structdb_macros::StructDb;
 #[derive(StructDb, Serialize, Deserialize, Clone, Validate, Default, Debug)]
 #[garde(context(Config))]
 pub struct Firewall {
-    #[collection(key = "name")]
+    #[collection]
     #[garde(dive)]
     pub forward_rules: Vec<ForwardRule>,
-    #[collection(key = "name")]
+    #[collection]
     #[garde(dive)]
     pub destination_nat_rules: Vec<DestinationNATRule>,
-    #[collection(key = "name")]
+    #[collection]
     #[garde(dive)]
     pub source_nat_rules: Vec<SourceNATRule>,
-    #[collection(key = "name")]
+    #[collection]
     #[garde(dive)]
     pub inbound_rules: Vec<InboundRule>,
 }

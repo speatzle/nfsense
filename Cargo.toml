@@ -42,7 +42,7 @@ nftables = "0.6.3"
 axum-server = { version = "0.8.0", features = ["tls-rustls"] }
 axum-reverse-proxy = "1.0.3"
 tower = "0.5.2"
-# structdb-core = { path = "../structdb/structdb-core" }
-# structdb-macros = { path = "../structdb/structdb-macros" }
-structdb-core = { git = "https://git.soontm.de/speatzle/structdb.git" }
-structdb-macros = { git = "https://git.soontm.de/speatzle/structdb.git" }
+#structdb-core = { path = "../structdb/structdb-core" }
+#structdb-macros = { path = "../structdb/structdb-macros" }
+ structdb-core = { git = "https://git.soontm.de/speatzle/structdb.git" }
+ structdb-macros = { git = "https://git.soontm.de/speatzle/structdb.git" }

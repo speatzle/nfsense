@@ -9,13 +9,13 @@ use structdb_macros::StructDb;
 #[derive(StructDb, Serialize, Deserialize, Clone, Validate, Default, Debug)]
 #[garde(context(Config))]
 pub struct Service {
-    #[collection(key = "name")]
+    #[collection]
     #[garde(dive)]
     pub dhcp_servers: Vec<DHCPServer>,
-    #[collection(key = "name")]
+    #[collection]
     #[garde(dive)]
     pub dns_servers: Vec<DNSServer>,
-    #[collection(key = "name")]
+    #[collection]
     #[garde(dive)]
     pub ntp_servers: Vec<NTPServer>,
 }

@@ -7,7 +7,7 @@ use structdb_macros::StructDb;
 #[derive(StructDb, Serialize, Deserialize, Clone, Validate, Default, Debug)]
 #[garde(context(Config))]
 pub struct System {
-    #[collection(key = "name")]
+    #[collection]
     #[garde(dive)]
     pub users: Vec<User>,
 }

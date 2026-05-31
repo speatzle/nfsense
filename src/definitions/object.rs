@@ -9,10 +9,10 @@ use structdb_macros::StructDb;
 #[derive(StructDb, Serialize, Deserialize, Clone, Validate, Default, Debug)]
 #[garde(context(Config))]
 pub struct Object {
-    #[collection(key = "name")]
+    #[collection]
     #[garde(dive)]
     pub addresses: Vec<Address>,
-    #[collection(key = "name")]
+    #[collection]
     #[garde(dive)]
     pub services: Vec<Service>,
 }

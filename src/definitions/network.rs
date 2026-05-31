@@ -9,16 +9,16 @@ use structdb_macros::StructDb;
 #[derive(StructDb, Serialize, Deserialize, Clone, Validate, Default, Debug)]
 #[garde(context(Config))]
 pub struct Network {
-    #[collection(key = "name")]
+    #[collection]
     #[garde(dive)]
     pub interfaces: Vec<NetworkInterface>,
-    #[collection(key = "name")]
+    #[collection]
     #[garde(dive)]
     pub static_routes: Vec<StaticRoute>,
-    #[collection(key = "name")]
+    #[collection]
     #[garde(dive)]
     pub policy_routes: Vec<PolicyRoute>,
-    #[collection(key = "name")]
+    #[collection]
     #[garde(dive)]
     pub virtual_routers: Vec<VirtualRouter>,
 }

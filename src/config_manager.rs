@@ -104,6 +104,31 @@ impl ConfigManager {
         self.shared_data.lock().unwrap().changelog.push(change_set);
     }
 
+    pub fn set_pending_config(&mut self, config: Config, user: String) -> Result<(), ConfigError> {
+        config.validate()?;
+        let mut data = self.shared_data.lock().unwrap();
+
+        let changes = config.diff(&data.current_config, &mut vec![]);
+
+        data.pending_config = config.clone();
+
+        if !data.in_memory {
+            write_config_to_file(PENDING_CONFIG_PATH, config)?;
+        }
+
+        if !changes.is_empty() {
+            data.changelog = vec![ChangeSet {
+                user,
+                timestamp: OffsetDateTime::now_utc(),
+                changes,
+            }];
+        } else {
+            data.changelog = Vec::new();
+        }
+
+        Ok(())
+    }
+
     pub fn apply_pending_changes(&mut self) -> Result<(), ConfigError> {
         let mut data = self.shared_data.lock().unwrap();
 

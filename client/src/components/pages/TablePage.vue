@@ -61,8 +61,9 @@ async function createRow() {
   if (await pushModal(UpsertModal, props)) load();
 }
 
-async function editRow() {
-  const id = $entity.ordered ? $selection[0] : ($displayData[$selection[0]] ?? {}).name;
+async function editRow(index?: number) {
+  index ??= $selection[0];
+  const id = $entity.ordered ? index : ($displayData[index] ?? {}).name;
   if (await pushModal(UpsertModal, { ...props, id })) load();
 }
 
@@ -74,7 +75,7 @@ onMounted(load);
     <template #header>
       <button @click="load">Refresh</button>
       <button @click="createRow">Create</button>
-      <button :disabled="$selection.length != 1" @click="editRow">Edit</button>
+      <button :disabled="$selection.length != 1" @click="() => editRow()">Edit</button>
       <button :disabled="$selection.length != 1" @click="deleteRow">Delete</button>
     </template>
     <NiceTable
@@ -83,6 +84,7 @@ onMounted(load);
       :columns="$columns"
       :table-props="$entity.ordered ? { draggable: true } : { sort: true, sortSelf: true }"
       @dragged-row="moveRow"
+      @row-action="(index) => editRow(index)"
     />
   </Page>
 </template>

@@ -1,7 +1,4 @@
 <script setup lang="ts">
-//import { apiCall } from '~/api';
-//const p = usePlugins();
-
 const $logs = [] as any[]; // TODO: Add proper type
 let $loading = false;
 let websocket: WebSocket | undefined = undefined;
@@ -64,13 +61,12 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div>
-    <PageHeader title="Logs" />
+  <Page title="Logs">
     <TableView
       v-model:data="$logs"
       :columns="columns"
       :loading="$loading"
       :table-props="{ sort: true, sortSelf: true }"
     />
-  </div>
+  </Page>
 </template>

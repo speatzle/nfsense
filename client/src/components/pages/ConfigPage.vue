@@ -15,7 +15,7 @@ export interface ChangeSet {
   changes: Change[];
 }
 
-const p = usePlugins();
+const toast = useToast();
 
 let $changelog = [] as ChangeSet[];
 let $loading = false;
@@ -62,7 +62,7 @@ async function apply() {
   const res = await apiCall("config.pending.apply", {});
   if (res.Error === null) {
     console.debug("apply");
-    p.toast.success("Applied Pending Config");
+    toast.success("Applied Pending Config");
   } else console.debug("error", res);
   load();
 }
@@ -71,22 +71,21 @@ async function discard() {
   const res = await apiCall("config.pending.discard", {});
   if (res.Error === null) {
     console.debug("discard");
-    p.toast.success("Discarded Pending Config");
+    toast.success("Discarded Pending Config");
   } else console.debug("error", res);
   load();
 }
 
-async function exportConfig() {
+async function exportCfg() {
   const res = await apiCall("config.pending.get", {});
   if (res.Error === null) {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(res.Data, null, 2));
+    const dataStr =
+      "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(res.Data, null, 2));
     const downloadAnchor = document.createElement("a");
     downloadAnchor.setAttribute("href", dataStr);
     downloadAnchor.setAttribute("download", "config.json");
-    document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
-    downloadAnchor.remove();
-    p.toast.success("Config exported successfully");
+    toast.success("Config exported successfully");
   } else console.debug("error", res);
 }
 
@@ -94,7 +93,7 @@ function triggerImport() {
   fileInput.value?.click();
 }
 
-async function importConfig(event: Event) {
+async function importCfg(event: Event) {
   const target = event.target as HTMLInputElement;
   const file = target.files?.[0];
   if (!file) return;
@@ -105,11 +104,11 @@ async function importConfig(event: Event) {
       const config = JSON.parse(e.target?.result as string);
       const res = await apiCall("config.pending.set", { config });
       if (res.Error === null) {
-        p.toast.success("Config imported successfully");
+        toast.success("Config imported successfully");
         load();
       } else console.debug("error", res);
     } catch (err: any) {
-      p.toast.error("Failed to parse JSON file: " + err.message);
+      toast.error("Failed to parse JSON file: " + err.message);
     }
   };
   reader.readAsText(file);
@@ -120,20 +119,20 @@ onMounted(load);
 </script>
 
 <template>
-  <div>
-    <PageHeader title="Pending Changes">
+  <Page title="Pending Changes">
+    <template #header>
       <button @click="load">Refresh</button>
       <button @click="triggerImport">Import</button>
-      <button @click="exportConfig">Export</button>
-      <input ref="fileInput" type="file" accept=".json" style="display: none" @change="importConfig" />
+      <button @click="exportCfg">Export</button>
+      <input ref="fileInput" type="file" accept=".json" style="display: none" @change="importCfg" />
       <button @click="apply">Apply</button>
       <button @click="discard">Discard</button>
-    </PageHeader>
+    </template>
     <TableView
       v-model:data="$displayData"
       :columns="columns"
       :loading="$loading"
       :table-props="{ sort: true, sortSelf: true }"
     />
-  </div>
+  </Page>
 </template>

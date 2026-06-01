@@ -1,12 +1,14 @@
 <script setup lang="ts">
-const p = usePlugins();
+const toast = useToast();
 
-type UpdateStatus = any;
+type UpdateStatus = {
+  available_updates: any[];
+  current_version: string;
+};
 type UpdateJob = any;
 
-
-let $updateStatus: UpdateStatus = null;
-let $updateJobs: UpdateJob[] = null;
+let $updateStatus: UpdateStatus = { available_updates: [], current_version: "" };
+let $updateJobs: UpdateJob[] = [];
 const $selection = [] as number[];
 let $loading = false as boolean;
 
@@ -20,6 +22,10 @@ const columns = [
   { heading: "Incomplete", path: "incomplete" },
 ];
 
+const $selected = $(computed(() => $updateStatus.available_updates[$selection[0]]));
+const $selectedInstalled = $(computed(() => $selected && $selected?.installed));
+const $selectedNonInstalled = $(computed(() => $selected && !$selected?.installed));
+
 async function load() {
   $loading = true;
   const res = await apiCall("system.update.status", {});
@@ -28,7 +34,7 @@ async function load() {
     $updateStatus = res.Data;
   } else {
     console.debug("error", res);
-    $updateStatus = null;
+    $updateStatus = { available_updates: [], current_version: "" };
   }
 
   const res2 = await apiCall("system.update.jobs.list", {});
@@ -37,7 +43,7 @@ async function load() {
     $updateJobs = res2.Data;
   } else {
     console.debug("error", res2);
-    $updateJobs = null;
+    $updateJobs = [];
   }
   $loading = false;
 }
@@ -46,17 +52,17 @@ async function vacuum() {
   const res = await apiCall("system.update.vacuum", {});
   if (res.Error === null) {
     console.debug("vacuum triggered");
-    p.toast.success("Vacuum Triggered");
+    toast.success("Vacuum Triggered");
   } else console.debug("error", res);
 }
 
-async function aquire() {
+async function acquire() {
   const res = await apiCall("system.update.acquire", {
     version: $updateStatus.available_updates[$selection[0]].version,
   });
   if (res.Error === null) {
     console.debug("acquire triggered");
-    p.toast.success("acquire Triggered");
+    toast.success("acquire Triggered");
   } else console.debug("error", res);
 }
 
@@ -66,7 +72,7 @@ async function install() {
   });
   if (res.Error === null) {
     console.debug("install triggered");
-    p.toast.success("Installation Triggered");
+    toast.success("Installation Triggered");
     // TODO Add progress bar
   } else console.debug("error", res);
 }
@@ -77,7 +83,7 @@ async function setDefaultBoot() {
   });
   if (res.Error === null) {
     console.debug("setting default boot");
-    p.toast.success("Default Version Set");
+    toast.success("Default Version Set");
   } else console.debug("error", res);
 }
 
@@ -90,49 +96,29 @@ onMounted(load);
 </script>
 
 <template>
-  <div>
+  <Page title="Updates">
+    <template #header>
+      <button @click="load">Refresh</button>
+      <button @click="vacuum">Vacuum</button>
+      <button :disabled="!$selectedNonInstalled" @click="acquire">Acquire</button>
+      <button :disabled="!$selectedNonInstalled" @click="install">Install</button>
+      <button :disabled="!$selectedInstalled" @click="setDefaultBoot">Set as Default Boot</button>
+      <button :disabled="$selection.length != 1" @click="details">Details</button>
+    </template>
     <template v-if="!$loading">
-      <div v-if="$updateJobs">
-        Current Version: {{ $updateStatus.current_version }}
+      Current Version: {{ $updateStatus.current_version }}
+      <div v-if="$updateJobs.length">
         <div v-for="job in $updateJobs">
           Job ID: {{ job.id }} Type: {{ job.type }} Progress: {{ job.progress }}
         </div>
       </div>
+      <TableView
+        v-model:selection="$selection"
+        v-model:data="$updateStatus.available_updates"
+        title="Updates"
+        :columns="columns"
+        :loading="$loading"
+      />
     </template>
-    <TableView
-      v-model:selection="$selection"
-      v-model:data="$updateStatus.available_updates"
-      title="Updates"
-      :columns="columns"
-      :loading="$loading"
-    >
-      <button @click="load">Refresh</button>
-      <button @click="vacuum">Vacuum</button>
-      <button
-        :disabled="
-          !($selection.length == 1 && !$updateStatus.available_updates[$selection[0]].installed)
-        "
-        @click="acquire"
-      >
-          Acquire
-      </button>
-      <button
-        :disabled="
-          !($selection.length == 1 && !$updateStatus.available_updates[$selection[0]].installed)
-        "
-        @click="install"
-      >
-        Install
-      </button>
-      <button
-        :disabled="
-          !($selection.length == 1 && $updateStatus.available_updates[$selection[0]].installed)
-        "
-        @click="setDefaultBoot"
-      >
-        Set as Default Boot
-      </button>
-      <button :disabled="$selection.length != 1" @click="details">Details</button>
-    </TableView>
-  </div>
+  </Page>
 </template>

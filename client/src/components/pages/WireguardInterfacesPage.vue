@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import ArrayDisplay from "~/components/display/ArrayDisplay.vue";
 import UpsertModal from "../modals/UpsertModal.vue";
-const p = usePlugins();
 const { pushModal } = useModals();
 
 let $interfaces = {} as any; // TODO: Add proper type

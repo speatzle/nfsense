@@ -16,15 +16,14 @@ onMounted(load);
 </script>
 
 <template>
-  <div style="overflow-y: auto">
-    <PageHeader title="Wireguard Status"> </PageHeader>
+  <Page title="Wireguard Status">
     <template v-if="!$loading">
       <div v-for="(line, index) in $status.split('\n')" :key="index">
         <p>{{ line }}</p>
       </div>
     </template>
     <div v-else>Loading...</div>
-  </div>
+  </Page>
 </template>
 
 <style scoped></style>

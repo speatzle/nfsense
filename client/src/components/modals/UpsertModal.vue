@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { subsystems, type Entity } from "~/definitions";
-const p = usePlugins();
+const toast = useToast();
 
 const props = defineProps<{
   subsystem: keyof typeof subsystems;
@@ -52,7 +52,7 @@ async function upsert() {
   else return;
 
   if (res.Error === null) {
-    p.toast.success(`Updated ${$entity.name}`);
+    toast.success(`Updated ${$entity.name}`);
     popModal(true);
   } else console.debug("error", res);
 }

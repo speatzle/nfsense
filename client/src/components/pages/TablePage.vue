@@ -11,7 +11,7 @@ const $entity = $(computed(() => ($subsystem.entities as Record<string, Entity>)
 const $columns = $(computed(() => $entity.columns ?? []));
 const $apiPath = $(computed(() => `${props.subsystem}.${props.entity}`));
 
-const p = usePlugins();
+const toast = useToast();
 const { pushModal } = useModals();
 
 let $data = [] as any;
@@ -37,7 +37,7 @@ async function deleteRow() {
   );
   if (res.Error === null) {
     console.debug(`Deleted ${$entity.name}`);
-    p.toast.success(`Deleted ${$entity.name}`);
+    toast.success(`Deleted ${$entity.name}`);
   } else console.debug("error", res);
   load();
 }
@@ -51,7 +51,7 @@ async function moveRow(from: number, to: number) {
   });
   if (res.Error === null) {
     console.debug("moved rule");
-    p.toast.success("Moved Rule");
+    toast.success("Moved Rule");
   } else console.debug("error", res);
 
   load();
@@ -70,20 +70,19 @@ onMounted(load);
 </script>
 
 <template>
-  <div>
-    <PageHeader :title="`${$entity.name}s`">
+  <Page :title="`${$entity.name}s`">
+    <template #header>
       <button @click="load">Refresh</button>
       <button @click="createRow">Create</button>
       <button :disabled="$selection.length != 1" @click="editRow">Edit</button>
       <button :disabled="$selection.length != 1" @click="deleteRow">Delete</button>
-    </PageHeader>
+    </template>
     <TableView
       v-model:selection="$selection"
       v-model:data="$displayData"
       :columns="$columns"
       :table-props="$entity.ordered ? { draggable: true } : { sort: true, sortSelf: true }"
       @dragged-row="moveRow"
-    >
-    </TableView>
-  </div>
+    />
+  </Page>
 </template>

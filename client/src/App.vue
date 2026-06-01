@@ -2,7 +2,7 @@
 import { authenticate, logout, checkAuthentication, setup } from "./api";
 import { navRoutes } from "./components/layout/navRoutes";
 
-const p = usePlugins();
+const toast = useToast();
 const $mobileMedia = $(useMediaQuery("(max-width: 768px)"));
 const { modalStack } = useModals();
 
@@ -32,7 +32,7 @@ async function tryLogin() {
   $loginDisabled = false;
   if (res.error != null) {
     console.info("authentication error");
-    p.toast.error("Authentication failed");
+    toast.error("Authentication failed");
   } else {
     // TODO Check for MFA here
     //authState = AuthState.Authenticated;
@@ -79,7 +79,7 @@ onMounted(async () => {
     :class="{ layout: 1, 'nav-open': $navOpen }"
   >
     <button class="nav-head cl-secondary cl-force-dark" @click="$navOpen = !$navOpen">
-      <i-mdi-hamburger-menu />
+      <i-mdi-letter-n-box-outline />
       <h1>nfSense</h1>
     </button>
     <div class="nav-body cl-secondary cl-force-dark">
@@ -97,7 +97,6 @@ onMounted(async () => {
       </div>
     </div>
 
-    <Portal from="page-header" class="page-header pad gap" />
     <router-view v-if="$authState === AuthState.Authenticated" v-slot="{ Component, route }">
       <Transition name="fade">
         <component :is="Component" :key="route.fullPath" class="page-content pad gap" />
@@ -136,7 +135,7 @@ onMounted(async () => {
   grid-template-columns: auto 1fr var(--sidepane-width);
   transition: grid-template-columns 0.2s ease-out;
   grid-template-areas:
-    "NH PH SP"
+    "NH PC SP"
     "NB PC SP";
 }
 .login {
@@ -145,7 +144,9 @@ onMounted(async () => {
 
 .nav-head {
   grid-area: NH;
-  text-align: center;
+  justify-content: left;
+  padding-left: 0px;
+  gap: 0px;
 
   &:focus {
     background: var(--cl-bg);
@@ -153,8 +154,10 @@ onMounted(async () => {
   &:hover {
     background: var(--cl-bg-el);
   }
-  & > h1 {
-    flex-grow: 1;
+  & > svg {
+    width: var(--reduced-width);
+    transition: width 0.2s ease-out;
+    transform: scale(2);
   }
 }
 .nav-body {
@@ -190,27 +193,12 @@ onMounted(async () => {
     }
   }
 }
-.page-header {
-  grid-area: PH;
-
-  flex-flow: row nowrap;
-  align-items: center;
-  overflow-x: auto;
-
-  & button svg {
-    margin: -0.25rem;
-  }
-}
-.page-content {
-  grid-area: PC;
-  overflow: auto;
-}
 .sidepane {
   grid-area: SP;
 }
 
 /* Nav-Body-Collapsing */
-:is(.nav-head, .nav-body, .page-header, .page-content) {
+:is(.nav-head, .nav-body, .page) {
   position: relative; /* Allows individual offsets */
   left: 0%; /* Transition Baseline */
   width: 100%; /* Transition Baseline */
@@ -219,13 +207,10 @@ onMounted(async () => {
 
 /* Desktop */
 @media (min-width: 769px) {
-  .nav-head > svg {
-    display: none;
-  }
-  .layout:not(.nav-open) .nav-body {
+  .layout:not(.nav-open) :is(.nav-head, .nav-body) {
     width: calc(0% + var(--reduced-width));
   }
-  .layout:not(.nav-open) .page-content {
+  .layout:not(.nav-open) .page {
     left: calc(calc(-100vw + 100%) + var(--sidepane-width) + var(--reduced-width));
     width: calc(calc(0% + 100vw) - var(--sidepane-width) - var(--reduced-width));
   }
@@ -235,6 +220,7 @@ onMounted(async () => {
 
     & > * {
       width: var(--reduced-width);
+      transition: all 0.2s ease-out;
     }
   }
 }
@@ -255,14 +241,14 @@ onMounted(async () => {
     width: 0px;
   }
 
-  .layout:not(.nav-open) :is(.page-header, .page-content) {
+  .layout:not(.nav-open) .page {
     left: calc(-100vw + 100%);
     width: calc(0% + 100vw);
   }
   .layout.nav-open .nav-body {
     width: calc(0% + 100vw);
   }
-  .layout.nav-open :is(.page-content, .page-header) {
+  .layout.nav-open .page {
     left: 100%;
   }
 }

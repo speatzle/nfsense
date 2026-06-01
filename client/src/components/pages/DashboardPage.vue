@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const p = usePlugins();
+const toast = useToast();
 
 type ServiceStatus = {
   name: string;
@@ -21,13 +21,13 @@ async function load() {
 
 async function restart() {
   const res = await apiCall("system.power.restart", {});
-  if (res.Error === null) p.toast.success("Restart Triggered");
+  if (res.Error === null) toast.success("Restart Triggered");
   else console.debug("error", res);
 }
 
 async function shutdown() {
   const res = await apiCall("system.power.shutdown", {});
-  if (res.Error === null) p.toast.success("Shutdown Triggered");
+  if (res.Error === null) toast.success("Shutdown Triggered");
   else console.debug("error", res);
 }
 
@@ -35,8 +35,7 @@ onMounted(load);
 </script>
 
 <template>
-  <div style="overflow-y: auto">
-    <PageHeader title="Dashboard"> </PageHeader>
+  <Page title="Dashboard">
     <template v-if="!$loading">
       <button @click="shutdown">Shutdown</button>
       <button @click="restart">Restart</button>
@@ -45,7 +44,5 @@ onMounted(load);
       </div>
     </template>
     <div v-else>Loading...</div>
-  </div>
+  </Page>
 </template>
-
-<style scoped></style>

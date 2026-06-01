@@ -24,7 +24,6 @@ export default defineConfig({
         {
           "vue-toast-notification": ["useToast"],
           "~/util": ["equals", "isNullish", "variantOf", "atPath", "syncModel"],
-          "~/plugins": ["usePlugins"],
           "~/api": ["apiCall"],
         },
         { from: "./src/util", imports: ["Index", "MaybeIndex"], type: true },

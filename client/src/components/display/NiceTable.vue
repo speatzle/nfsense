@@ -9,16 +9,16 @@ const props = withDefaults(
     sort?: boolean;
     sortBy?: string;
     sortDesc?: boolean;
+    loading?: boolean;
 
     // One-Way Bindings
     sortSelf?: boolean;
     draggable?: boolean;
     columns?: {
-      // TODO: Merge into a SST
       heading: string;
       path: string;
-      component: Component;
-      props: any;
+      component?: Component;
+      props?: any;
     }[];
   }>(),
   {
@@ -114,7 +114,8 @@ function dragDropRow() {
 </script>
 
 <template>
-  <table>
+  <template v-if="props.loading">Loading...</template>
+  <table v-else>
     <thead>
       <tr>
         <th

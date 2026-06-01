@@ -128,7 +128,7 @@ onMounted(load);
       <button @click="apply">Apply</button>
       <button @click="discard">Discard</button>
     </template>
-    <TableView
+    <NiceTable
       v-model:data="$displayData"
       :columns="columns"
       :loading="$loading"

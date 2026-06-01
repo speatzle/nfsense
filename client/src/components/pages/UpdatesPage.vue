@@ -112,7 +112,7 @@ onMounted(load);
           Job ID: {{ job.id }} Type: {{ job.type }} Progress: {{ job.progress }}
         </div>
       </div>
-      <TableView
+      <NiceTable
         v-model:selection="$selection"
         v-model:data="$updateStatus.available_updates"
         title="Updates"

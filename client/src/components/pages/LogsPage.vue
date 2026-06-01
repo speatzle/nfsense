@@ -62,7 +62,7 @@ onBeforeUnmount(() => {
 
 <template>
   <Page title="Logs">
-    <TableView
+    <NiceTable
       v-model:data="$logs"
       :columns="columns"
       :loading="$loading"

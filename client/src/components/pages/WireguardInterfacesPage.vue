@@ -77,13 +77,12 @@ onMounted(load);
       <button :disabled="$selection.length != 1" @click="editInterface">Edit</button>
       <button :disabled="$selection.length != 1" @click="deleteInterface">Delete</button>
     </PageHeader>
-    <TableView
+    <NiceTable
       v-model:selection="$selection"
       v-model:data="$displayData"
       :columns="columns"
       :loading="$loading"
       :table-props="{ sort: true, sortSelf: true }"
-    >
-    </TableView>
+    />
   </div>
 </template>

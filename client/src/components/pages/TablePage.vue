@@ -77,7 +77,7 @@ onMounted(load);
       <button :disabled="$selection.length != 1" @click="editRow">Edit</button>
       <button :disabled="$selection.length != 1" @click="deleteRow">Delete</button>
     </template>
-    <TableView
+    <NiceTable
       v-model:selection="$selection"
       v-model:data="$displayData"
       :columns="$columns"

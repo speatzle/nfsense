@@ -6,23 +6,13 @@ const p = usePlugins();
 const $mobileMedia = $(useMediaQuery("(max-width: 768px)"));
 const { modalStack } = useModals();
 
-enum NavState {
-  Open,
-  Reduced,
-  Collapsed,
-}
-const NavStateCount = 3;
-let $navState = ($mobileMedia ? NavState.Collapsed : NavState.Open) as NavState;
-watch($$($mobileMedia), (x) => ($navState = x ? NavState.Collapsed : NavState.Open));
+let $navOpen = !$mobileMedia;
+watch($$($mobileMedia), (x) => ($navOpen = !x));
 let $navDepth = 0 as number;
 function collapseNavIfMobile() {
-  if ($mobileMedia && $navState === NavState.Open)
+  if ($mobileMedia && $navOpen)
     // Lets page find initial left to transition; nextTick will not work due to microtask behavior
-    setTimeout(() => ($navState = NavState.Collapsed), 0);
-}
-function cycleNavState() {
-  $navState = ($navState + 1) % NavStateCount;
-  if ($mobileMedia && $navState === NavState.Reduced) $navState++;
+    setTimeout(() => ($navOpen = false), 0);
 }
 
 enum AuthState {
@@ -83,17 +73,12 @@ onMounted(async () => {
   <div
     v-if="$authState === AuthState.Authenticated"
     :style="`
-      --reduced-width: ${$navState === NavState.Open ? 3.5 : 2.5 + $navDepth * 0.5}rem;
+      --reduced-width: ${$navOpen ? 3.5 : 2.5 + $navDepth * 0.5}rem;
       --sidepane-width: ${!$mobileMedia && modalStack.length ? 'min(40rem, 50vw)' : '0px'};
     `"
-    :class="{
-      layout: 1,
-      'nav-state-open': $navState === NavState.Open,
-      'nav-state-collapsed': $navState === NavState.Collapsed,
-      'nav-state-reduced': $navState === NavState.Reduced,
-    }"
+    :class="{ layout: 1, 'nav-open': $navOpen }"
   >
-    <button class="nav-head cl-secondary cl-force-dark" @click="cycleNavState">
+    <button class="nav-head cl-secondary cl-force-dark" @click="$navOpen = !$navOpen">
       <i-mdi-hamburger-menu />
       <h1>nfSense</h1>
     </button>
@@ -225,42 +210,36 @@ onMounted(async () => {
 }
 
 /* Nav-Body-Collapsing */
-:is(.nav-body, .page-header, .page-content) {
+:is(.nav-head, .nav-body, .page-header, .page-content) {
   position: relative; /* Allows individual offsets */
   left: 0%; /* Transition Baseline */
   width: 100%; /* Transition Baseline */
   transition: all 0.2s ease-out; /* all avoids interfering with page fade */
 }
-.nav-state-reduced .nav-body {
-  width: calc(0% + var(--reduced-width));
-}
-.nav-state-reduced .page-content {
-  left: calc(calc(-100vw + 100%) + var(--sidepane-width) + var(--reduced-width));
-  width: calc(calc(0% + 100vw) - var(--sidepane-width) - var(--reduced-width));
-}
-.nav-state-collapsed .nav-body {
-  width: 0%;
-}
-.nav-state-collapsed .page-content {
-  left: calc(-100vw + 100% + var(--sidepane-width));
-  width: calc(0% + 100vw - var(--sidepane-width));
-}
-.layout:not(.nav-state-open) > .nav-body > .flex-row {
-  flex-direction: column;
-  align-items: start;
-}
 
-.nav-state-reduced > .nav-body > .flex-row > * {
-  width: var(--reduced-width);
-}
-
+/* Desktop */
 @media (min-width: 769px) {
   .nav-head > svg {
     display: none;
   }
+  .layout:not(.nav-open) .nav-body {
+    width: calc(0% + var(--reduced-width));
+  }
+  .layout:not(.nav-open) .page-content {
+    left: calc(calc(-100vw + 100%) + var(--sidepane-width) + var(--reduced-width));
+    width: calc(calc(0% + 100vw) - var(--sidepane-width) - var(--reduced-width));
+  }
+  .layout:not(.nav-open) > .nav-body > .flex-row {
+    flex-direction: column;
+    align-items: start;
+
+    & > * {
+      width: var(--reduced-width);
+    }
+  }
 }
 
-/* Mobile Layout */
+/* Mobile */
 @media (max-width: 768px) {
   .layout {
     grid-template-rows: auto auto 1fr;
@@ -272,19 +251,18 @@ onMounted(async () => {
   .nav-head > h1 {
     text-align: left;
   }
+  .nav-body {
+    width: 0px;
+  }
 
-  .nav-state-collapsed .page-header {
+  .layout:not(.nav-open) :is(.page-header, .page-content) {
     left: calc(-100vw + 100%);
     width: calc(0% + 100vw);
   }
-  .nav-state-reduced .page-header {
-    left: calc(calc(-100vw + 100%) + var(--reduced-width));
-    width: calc(calc(0% + 100vw) - var(--reduced-width));
-  }
-  .nav-state-open .nav-body {
+  .layout.nav-open .nav-body {
     width: calc(0% + 100vw);
   }
-  .nav-state-open :is(.page-content, .page-header) {
+  .layout.nav-open :is(.page-content, .page-header) {
     left: 100%;
   }
 }

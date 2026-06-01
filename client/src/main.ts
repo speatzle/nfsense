@@ -17,15 +17,12 @@ import MultiSelect from "./components/input/MultiSelect.vue";
 import Heading from "./components/display/Heading.vue";
 
 import App from "./App.vue";
-import { createHead } from "@vueuse/head";
 import ToastPlugin from "vue-toast-notification";
 
 const app = createApp(App);
-const head = createHead();
 import { router } from "~/router";
 
 app.use(router);
-app.use(head);
 app.use(ToastPlugin);
 
 // Global Components

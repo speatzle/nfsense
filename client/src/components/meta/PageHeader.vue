@@ -9,7 +9,8 @@ const props = withDefaults(
     noSpacer: false,
   },
 );
-watchEffect(() => useTitle(`${props.title} - nfSense`));
+watchEffect(() => (document.title = `${props.title} - nfSense`));
+onBeforeUnmount(() => (document.title = "nfSense"));
 </script>
 <template>
   <Portal to="page-header">

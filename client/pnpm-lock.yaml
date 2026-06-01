@@ -8,12 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@vueuse/core':
-        specifier: ^13.9.0
-        version: 13.9.0(vue@3.5.33(typescript@5.8.3))
-      '@vueuse/head':
-        specifier: ^2.0.0
-        version: 2.0.0(vue@3.5.33(typescript@5.8.3))
       focus-trap-vue:
         specifier: ^4.1.0
         version: 4.1.0(focus-trap@7.8.0)(vue@3.5.33(typescript@5.8.3))
@@ -551,23 +545,6 @@ packages:
   '@types/web-bluetooth@0.0.21':
     resolution: {integrity: sha512-oIQLCGWtcFZy2JW77j9k8nHzAOpqMHLQejDA48XXMWH6tjCQHz5RCFz1bzsmROyL6PUm+LLnUiI4BCn221inxA==}
 
-  '@unhead/dom@1.11.20':
-    resolution: {integrity: sha512-jgfGYdOH+xHJF/j8gudjsYu3oIjFyXhCWcgKaw3vQnT616gSqyqnGQGOItL+BQtQZACKNISwIfx5PuOtztMKLA==}
-
-  '@unhead/schema@1.11.20':
-    resolution: {integrity: sha512-0zWykKAaJdm+/Y7yi/Yds20PrUK7XabLe9c3IRcjnwYmSWY6z0Cr19VIs3ozCj8P+GhR+/TI2mwtGlueCEYouA==}
-
-  '@unhead/shared@1.11.20':
-    resolution: {integrity: sha512-1MOrBkGgkUXS+sOKz/DBh4U20DNoITlJwpmvSInxEUNhghSNb56S0RnaHRq0iHkhrO/cDgz2zvfdlRpoPLGI3w==}
-
-  '@unhead/ssr@1.11.20':
-    resolution: {integrity: sha512-j6ehzmdWGAvv0TEZyLE3WBnG1ULnsbKQcLqBDh3fvKS6b3xutcVZB7mjvrVE7ckSZt6WwOtG0ED3NJDS7IjzBA==}
-
-  '@unhead/vue@1.11.20':
-    resolution: {integrity: sha512-sqQaLbwqY9TvLEGeq8Fd7+F2TIuV3nZ5ihVISHjWpAM3y7DwNWRU7NmT9+yYT+2/jw1Vjwdkv5/HvDnvCLrgmg==}
-    peerDependencies:
-      vue: '>=2.7 || >=3'
-
   '@vitejs/plugin-vue@6.0.6':
     resolution: {integrity: sha512-u9HHgfrq3AjXlysn0eINFnWQOJQLO9WN6VprZ8FXl7A2bYisv3Hui9Ij+7QZ41F/WYWarHjwBbXtD7dKg3uxbg==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -665,11 +642,6 @@ packages:
     resolution: {integrity: sha512-ts3regBQyURfCE2BcytLqzm8+MmLlo5Ln/KLoxDVcsZ2gzIwVNnQpQOL/UKV8alUqjSZOlpFZcRNsLRqj+OzyA==}
     peerDependencies:
       vue: ^3.5.0
-
-  '@vueuse/head@2.0.0':
-    resolution: {integrity: sha512-ykdOxTGs95xjD4WXE4na/umxZea2Itl0GWBILas+O4oqS7eXIods38INvk3XkJKjqMdWPcpCyLX/DioLQxU1KA==}
-    peerDependencies:
-      vue: '>=2.7 || >=3'
 
   '@vueuse/metadata@13.9.0':
     resolution: {integrity: sha512-1AFRvuiGphfF7yWixZa0KwjYH8ulyjDCC0aFgrGRz8+P4kvDFSdXLVfTk5xAN9wEuD1J6z4/myMoYbnHoX07zg==}
@@ -1008,9 +980,6 @@ packages:
   package-manager-detector@1.6.0:
     resolution: {integrity: sha512-61A5ThoTiDG/C8s8UMZwSorAGwMJ0ERVGj2OjoW5pAalsNOg15+iQiPzrLJ4jhZ1HJzmC2PIHT2oEiH3R5fzNA==}
 
-  packrup@0.1.2:
-    resolution: {integrity: sha512-ZcKU7zrr5GlonoS9cxxrb5HVswGnyj6jQvwFBa6p5VFw7G71VAHcUKL5wyZSU/ECtPM/9gacWxy2KFQKt1gMNA==}
-
   path-browserify@1.0.1:
     resolution: {integrity: sha512-b7uo2UCUOYZcnF/3ID0lulOJi/bafxa1xPe7ZPsammBSpjSWQkjNxlt635YGS2MiR9GjvuXCtz2emr3jbsz98g==}
 
@@ -1159,9 +1128,6 @@ packages:
 
   undici-types@6.21.0:
     resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
-
-  unhead@1.11.20:
-    resolution: {integrity: sha512-3AsNQC0pjwlLqEYHLjtichGWankK8yqmocReITecmpB1H0aOabeESueyy+8X1gyJx4ftZVwo9hqQ4O3fPWffCA==}
 
   unimport@5.7.0:
     resolution: {integrity: sha512-njnL6sp8lEA8QQbZrt+52p/g4X0rw3bnGGmUcJnt1jeG8+iiqO779aGz0PirCtydAIVcuTBRlJ52F0u46z309Q==}
@@ -1312,9 +1278,6 @@ packages:
     resolution: {integrity: sha512-AvbaCLOO2Otw/lW5bmh9d/WEdcDFdQp2Z2ZUH3pX9U2ihyUY0nvLv7J6TrWowklRGPYbB/IuIMfYgxaCPg5Bpg==}
     engines: {node: '>= 14.6'}
     hasBin: true
-
-  zhead@2.2.4:
-    resolution: {integrity: sha512-8F0OI5dpWIA5IGG5NHUg9staDwz/ZPxZtvGVf01j7vHqSyZ0raHY+78atOVxRqb73AotX22uV1pXt3gYSstGag==}
 
 snapshots:
 
@@ -1762,35 +1725,8 @@ snapshots:
     dependencies:
       undici-types: 6.21.0
 
-  '@types/web-bluetooth@0.0.21': {}
-
-  '@unhead/dom@1.11.20':
-    dependencies:
-      '@unhead/schema': 1.11.20
-      '@unhead/shared': 1.11.20
-
-  '@unhead/schema@1.11.20':
-    dependencies:
-      hookable: 5.5.3
-      zhead: 2.2.4
-
-  '@unhead/shared@1.11.20':
-    dependencies:
-      '@unhead/schema': 1.11.20
-      packrup: 0.1.2
-
-  '@unhead/ssr@1.11.20':
-    dependencies:
-      '@unhead/schema': 1.11.20
-      '@unhead/shared': 1.11.20
-
-  '@unhead/vue@1.11.20(vue@3.5.33(typescript@5.8.3))':
-    dependencies:
-      '@unhead/schema': 1.11.20
-      '@unhead/shared': 1.11.20
-      hookable: 5.5.3
-      unhead: 1.11.20
-      vue: 3.5.33(typescript@5.8.3)
+  '@types/web-bluetooth@0.0.21':
+    optional: true
 
   '@vitejs/plugin-vue@6.0.6(rolldown-vite@7.3.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@types/node@22.19.17)(yaml@2.8.3))(vue@3.5.33(typescript@5.8.3))':
     dependencies:
@@ -1958,20 +1894,15 @@ snapshots:
       '@vueuse/metadata': 13.9.0
       '@vueuse/shared': 13.9.0(vue@3.5.33(typescript@5.8.3))
       vue: 3.5.33(typescript@5.8.3)
+    optional: true
 
-  '@vueuse/head@2.0.0(vue@3.5.33(typescript@5.8.3))':
-    dependencies:
-      '@unhead/dom': 1.11.20
-      '@unhead/schema': 1.11.20
-      '@unhead/ssr': 1.11.20
-      '@unhead/vue': 1.11.20(vue@3.5.33(typescript@5.8.3))
-      vue: 3.5.33(typescript@5.8.3)
-
-  '@vueuse/metadata@13.9.0': {}
+  '@vueuse/metadata@13.9.0':
+    optional: true
 
   '@vueuse/shared@13.9.0(vue@3.5.33(typescript@5.8.3))':
     dependencies:
       vue: 3.5.33(typescript@5.8.3)
+    optional: true
 
   acorn@8.16.0: {}
 
@@ -2251,8 +2182,6 @@ snapshots:
 
   package-manager-detector@1.6.0: {}
 
-  packrup@0.1.2: {}
-
   path-browserify@1.0.1: {}
 
   pathe@2.0.3: {}
@@ -2379,13 +2308,6 @@ snapshots:
   ufo@1.6.3: {}
 
   undici-types@6.21.0: {}
-
-  unhead@1.11.20:
-    dependencies:
-      '@unhead/dom': 1.11.20
-      '@unhead/schema': 1.11.20
-      '@unhead/shared': 1.11.20
-      hookable: 5.5.3
 
   unimport@5.7.0:
     dependencies:
@@ -2570,5 +2492,3 @@ snapshots:
 
   yaml@2.8.3:
     optional: true
-
-  zhead@2.2.4: {}

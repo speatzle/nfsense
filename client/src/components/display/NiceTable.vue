@@ -1,9 +1,5 @@
 <script setup lang="ts">
-import { useKeyModifier } from "@vueuse/core";
-import type { Component, WatchOptions } from "vue";
-
-const $shiftState = $(useKeyModifier("Shift"));
-const $ctrlState = $(useKeyModifier("Control"));
+import type { Component } from "vue";
 
 const props = withDefaults(
   defineProps<{
@@ -83,14 +79,14 @@ function toggleSorting(columnName: string) {
   else [$sortDesc, $sortBy] = [false, columnName];
 }
 
-function toggleRowSelection(index: number) {
+function toggleRowSelection(index: number, event: PointerEvent) {
   if (!$selection || !$selection.length) $selection = [index];
-  else if ($shiftState) {
+  else if (event.shiftKey) {
     // Selection becomes a range including the highest, lowest and clicked row
     const points = [Math.max(...$selection), Math.min(...$selection), index];
     const [max, min] = [Math.max(...points), Math.min(...points)];
     $selection = Array.from({ length: max - min + 1 }, (_, i) => i + min);
-  } else if ($ctrlState)
+  } else if (event.ctrlKey)
     // Toggle the presence of the row in the selection
     $selection = $selection.includes(index)
       ? $selection.filter((i) => i !== index)
@@ -146,7 +142,7 @@ function dragDropRow() {
           'dragged-over-before': index === $draggedOverRow && $draggedOverRow < $draggedRow,
           'dragged-over-after': index === $draggedOverRow && $draggedOverRow > $draggedRow,
         }"
-        @click="() => toggleRowSelection(index)"
+        @click="(event) => toggleRowSelection(index, event)"
         @dblclick="() => emit('rowAction', index)"
         @dragstart="() => ($draggedRow = index)"
         @dragenter="() => ($draggedOverRow = index)"

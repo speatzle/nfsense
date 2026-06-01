@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import TableDisplayModal from "../modals/TableDisplayModal.vue";
 const toast = useToast();
-
+const { pushModal } = useModals();
 type ServiceStatus = {
   name: string;
   status: string;
@@ -36,13 +37,32 @@ onMounted(load);
 
 <template>
   <Page title="Dashboard">
-    <template v-if="!$loading">
+    <template #header>
       <button @click="shutdown">Shutdown</button>
       <button @click="restart">Restart</button>
-      <div v-for="(status, index) in $serviceStatus" :key="index">
-        <p>{{ status.name }}: {{ status.status }}</p>
-      </div>
+    </template>
+    <template v-if="!$loading">
+      <h2>Services</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Service</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(service, index) in $serviceStatus" :key="index">
+            <td v-text="service.name" />
+            <td v-text="service.status" />
+          </tr>
+        </tbody>
+      </table>
     </template>
     <div v-else>Loading...</div>
   </Page>
 </template>
+<style scoped>
+table {
+  max-width: max-content;
+}
+</style>

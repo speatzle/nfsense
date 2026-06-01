@@ -69,14 +69,14 @@ onMounted(load);
 </script>
 
 <template>
-  <div>
-    <PageHeader title="Wireguard Interfaces">
+  <Page title="Wireguard Interfaces">
+    <template #header>
       <button @click="load">Refresh</button>
       <button @click="generateKeys">Generate Keys</button>
       <button @click="createInterface">Create</button>
       <button :disabled="$selection.length != 1" @click="editInterface">Edit</button>
       <button :disabled="$selection.length != 1" @click="deleteInterface">Delete</button>
-    </PageHeader>
+    </template>
     <NiceTable
       v-model:selection="$selection"
       v-model:data="$displayData"
@@ -84,5 +84,5 @@ onMounted(load);
       :loading="$loading"
       :table-props="{ sort: true, sortSelf: true }"
     />
-  </div>
+  </Page>
 </template>

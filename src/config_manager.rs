@@ -5,7 +5,7 @@ use serde::Serialize;
 use std::fs;
 use std::sync::{Arc, Mutex, MutexGuard};
 use structdb_core::change::Change;
-use structdb_core::Diffable;
+use structdb_core::{Diffable, Validatable};
 use thiserror::Error;
 use time::OffsetDateTime;
 use tracing::{error, info};
@@ -17,6 +17,9 @@ pub enum ConfigError {
 
     #[error("Validation Error")]
     ValidatonError(#[from] garde::Report),
+
+    #[error("Reference validation error: {0:?}")]
+    ReferenceValidationError(Vec<structdb_core::ValidationError>),
 
     #[error("Hash Error")]
     HashError(#[from] pwhash::error::Error),
@@ -236,6 +239,12 @@ impl<'a> ConfigTransaction<'a> {
 
     pub fn commit(mut self, changelog: &mut Vec<Change>) -> Result<(), ConfigError> {
         self.config.validate()?;
+
+        // Validate cross-references to catch dangling references caused by
+        // key renames or deletions within the transaction.
+        self.config
+            .validate_references(&self.config)
+            .map_err(ConfigError::ReferenceValidationError)?;
 
         let changes = self
             .config

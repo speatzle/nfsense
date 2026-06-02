@@ -156,6 +156,7 @@ macro_rules! update_thing {
     ($( $sub_system:ident ).+, $typ:ty) => {
         |params, state, extensions: &jsonrpsee::Extensions| {
             use serde::{Deserialize, Serialize};
+            use tracing::info;
 
             #[derive(Deserialize, Serialize)]
             struct UpdateThing {
@@ -176,10 +177,10 @@ macro_rules! update_thing {
                 Some(i) => {
                     let old_key = structdb_core::Keyed::get_key(&tx.data_mut().$($sub_system).+[i]);
                     let new_key = structdb_core::Keyed::get_key(&t.thing);
+                    info!("check if key are equal {} == {}", old_key, new_key);
                     if old_key != new_key {
-                        structdb_core::RenameRefs::rename_refs(
+                        structdb_core::RenameRefs::rename_refs::<$typ>(
                             tx.data_mut(),
-                            stringify!($typ),
                             &old_key,
                             &new_key,
                         );

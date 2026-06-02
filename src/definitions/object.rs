@@ -20,6 +20,7 @@ pub struct Object {
 #[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
+#[structdb(key = "name")]
 pub struct Address {
     #[garde(custom(validation::validate_name))]
     pub name: String,
@@ -47,6 +48,7 @@ pub enum AddressType {
 #[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
+#[structdb(key = "name")]
 pub struct Service {
     #[garde(custom(validation::validate_name))]
     pub name: String,

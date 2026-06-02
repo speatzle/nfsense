@@ -23,6 +23,7 @@ pub struct Service {
 #[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, PartialEq)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
+#[structdb(key = "name")]
 pub struct DHCPServer {
     pub name: String,
     #[requires(NetworkInterface)]
@@ -40,6 +41,7 @@ pub struct DHCPServer {
 #[derive(StructDb, Serialize, Deserialize, Clone, Validate, Default, Debug)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
+#[structdb(key = "name")]
 pub struct DNSServer {
     pub name: String,
     #[requires(NetworkInterface)]
@@ -50,6 +52,7 @@ pub struct DNSServer {
 #[derive(StructDb, Serialize, Deserialize, Clone, Validate, Default, Debug)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
+#[structdb(key = "name")]
 pub struct NTPServer {
     pub name: String,
     #[requires(NetworkInterface)]

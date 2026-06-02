@@ -144,7 +144,6 @@ export const subsystems = {
   firewall: { name: "Firewall", entities: {
     forward_rules: {
       name: "Forward Rule",
-      idType: "Number",
       ordered: true,
       fields: withCommon({ ...fs.rulesCommon, ...f.verdict }),
       default: { verdict: "accept", counter: true },
@@ -161,7 +160,6 @@ export const subsystems = {
     },
     destination_nat_rules: {
       name: "Destination NAT Rule",
-      idType: "Number",
       ordered: true,
       fields: withCommon({
         ...fs.rulesCommon,
@@ -185,7 +183,6 @@ export const subsystems = {
     source_nat_rules: {
       name: "Source NAT Rule",
       ordered: true,
-      idType: "Number",
       fields: withCommon({
         ...fs.rulesCommon,
         snat_heading: c.Heading("SNAT"),
@@ -213,7 +210,6 @@ export const subsystems = {
     },
     inbound_rules: {
       name: "Inbound Rule",
-      idType: "Number",
       ordered: true,
       fields: withCommon({ ...fs.rulesCommon, ...f.verdict }),
       default: { verdict: "accept", counter: true },
@@ -265,6 +261,7 @@ export const subsystems = {
     },
     policy_routes: {
       name: "Policy Route",
+      ordered: true,
       columns: [
         { heading: 'Name', path: 'name' },
         { heading: 'Interface', path: 'interface' },
@@ -275,8 +272,6 @@ export const subsystems = {
     },
     static_routes: {
       name: "Static Route",
-      ordered: true,
-      idType: "Number",
       fields: withCommon({
         ...f.interface,
         gateway: c.TextBox("Gateway"),
@@ -293,8 +288,6 @@ export const subsystems = {
     },
     virtual_routers: {
       name: "Virtual Routers",
-      ordered: true,
-      idType: "Number",
       fields: withCommon({ table_id: c.NumberBox("Table ID") }),
       columns: [
         { heading: "Name", path: "name" },
@@ -357,8 +350,6 @@ export const subsystems = {
   service: { name: "Service", entities: {
     dhcp_servers: {
       name: "DHCP Server",
-      ordered: true,
-      idType: "Number",
       fields: withCommon({
         ...f.interface,
         pool: c.MultiSelect("Pool", GetAddresses),
@@ -387,8 +378,6 @@ export const subsystems = {
     },
     dns_servers: {
       name: "DNS Server",
-      ordered: true,
-      idType: "Number",
       fields: withCommon({ ...f.interface }),
       columns: [
         { heading: "Interface", path: "interface" },
@@ -397,8 +386,6 @@ export const subsystems = {
     },
     ntp_servers: {
       name: "NTP Server",
-      ordered: true,
-      idType: "Number",
       fields: withCommon({ ...f.interface }),
       columns: [
         { heading: "Interface", path: "interface" },

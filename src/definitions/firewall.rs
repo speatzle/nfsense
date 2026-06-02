@@ -24,6 +24,7 @@ pub struct Firewall {
 #[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
+#[structdb(key = "name")]
 pub struct ForwardRule {
     pub name: String,
     #[requires(Service)]
@@ -43,6 +44,7 @@ pub struct ForwardRule {
 #[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
+#[structdb(key = "name")]
 pub struct DestinationNATRule {
     pub name: String,
     #[requires(Service)]
@@ -66,6 +68,7 @@ pub struct DestinationNATRule {
 #[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
+#[structdb(key = "name")]
 pub struct SourceNATRule {
     pub name: String,
     #[requires(Service)]
@@ -86,6 +89,7 @@ pub struct SourceNATRule {
 #[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
+#[structdb(key = "name")]
 pub struct InboundRule {
     pub name: String,
     #[requires(Service)]

@@ -26,6 +26,7 @@ pub struct Network {
 #[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, PartialEq)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
+#[structdb(key = "name")]
 pub struct NetworkInterface {
     #[garde(custom(validation::validate_name))]
     pub name: String,
@@ -86,6 +87,7 @@ pub enum AddressingMode {
 #[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, PartialEq)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
+#[structdb(key = "name")]
 pub struct StaticRoute {
     #[garde(custom(validation::validate_name))]
     pub name: String,
@@ -102,6 +104,7 @@ pub struct StaticRoute {
 #[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, PartialEq)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
+#[structdb(key = "name")]
 pub struct PolicyRoute {
     pub name: String,
     #[requires(VirtualRouter)]
@@ -168,6 +171,7 @@ pub struct Link {
 #[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, PartialEq)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
+#[structdb(key = "name")]
 pub struct VirtualRouter {
     #[garde(custom(validation::validate_name))]
     pub name: String,

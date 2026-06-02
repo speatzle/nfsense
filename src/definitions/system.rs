@@ -15,6 +15,7 @@ pub struct System {
 #[derive(StructDb, Serialize, Deserialize, Clone, Validate, Default, Debug)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
+#[structdb(key = "name")]
 pub struct User {
     #[garde(custom(validation::validate_name))]
     pub name: String,

@@ -27,6 +27,7 @@ pub struct Wireguard {
 #[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
+#[structdb(key = "name")]
 pub struct WireguardInterface {
     #[garde(custom(validation::validate_name))]
     pub name: String,
@@ -41,6 +42,7 @@ pub struct WireguardInterface {
 #[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug)]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
+#[structdb(key = "name")]
 pub struct WireguardPeer {
     #[garde(custom(validation::validate_name))]
     pub name: String,

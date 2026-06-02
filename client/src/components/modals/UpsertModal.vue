@@ -41,12 +41,12 @@ async function upsert() {
   if (!$isEdit) res = await apiCall(`${props.subsystem}.${props.entity}.create`, $vm);
   else if ($entity.idType === "Number")
     res = await apiCall(`${props.subsystem}.${props.entity}.update`, {
-      index: Number(props.id),
+      id: Number(props.id),
       thing: $vm,
     });
   else if (props.id === $vm.name || confirm("Do you want to change the name & all references?"))
     res = await apiCall(`${props.subsystem}.${props.entity}.update`, {
-      name: props.id,
+      id: props.id,
       thing: $vm,
     });
   else return;

@@ -152,25 +152,38 @@ macro_rules! create_thing {
 }
 
 #[macro_export]
-macro_rules! update_thing_by_name {
+macro_rules! update_thing {
     ($( $sub_system:ident ).+, $typ:ty) => {
         |params, state, extensions: &jsonrpsee::Extensions| {
             use serde::{Deserialize, Serialize};
 
             #[derive(Deserialize, Serialize)]
-            struct UpdateByName {
-                name: String,
+            struct UpdateThing {
+                id: String,
                 thing: $typ,
             }
 
-            let t: UpdateByName = params.parse().map_err(ApiError::ParameterDeserialize)?;
+            let t: UpdateThing = params.parse().map_err(ApiError::ParameterDeserialize)?;
             let mut cm = state.config_manager.clone();
             let mut tx = cm.start_transaction();
 
-            let index = tx.data_mut().$($sub_system).+.iter().position(|e| *e.name == t.name);
+            let index = tx.data_mut()
+                .$($sub_system).+
+                .iter()
+                .position(|e| structdb_core::Keyed::get_key(e) == t.id);
 
             match index {
                 Some(i) => {
+                    let old_key = structdb_core::Keyed::get_key(&tx.data_mut().$($sub_system).+[i]);
+                    let new_key = structdb_core::Keyed::get_key(&t.thing);
+                    if old_key != new_key {
+                        structdb_core::RenameRefs::rename_refs(
+                            tx.data_mut(),
+                            stringify!(#typ),
+                            &old_key,
+                            &new_key,
+                        );
+                    }
                     tx.data_mut().$($sub_system).+[i] = t.thing;
 
                     $crate::commit_and_changelog!(cm, tx, extensions)?;
@@ -181,36 +194,6 @@ macro_rules! update_thing_by_name {
                     tx.revert();
                     Err(ApiError::NotFound)
                 }
-            }
-        }
-    };
-}
-
-#[macro_export]
-macro_rules! update_thing_by_index {
-    ($( $sub_system:ident ).+, $typ:ty) => {
-        |params, state, extensions: &jsonrpsee::Extensions| {
-            use serde::{Deserialize, Serialize};
-
-            #[derive(Deserialize, Serialize)]
-            struct UpdateByIndex {
-                index: i64,
-                thing: $typ,
-            }
-
-            let t: UpdateByIndex = params.parse().map_err(ApiError::ParameterDeserialize)?;
-            let mut cm = state.config_manager.clone();
-            let mut tx = cm.start_transaction();
-
-            if tx.data_mut().$($sub_system).+.len() > t.index as usize {
-                tx.data_mut().$($sub_system).+[t.index as usize] = t.thing;
-
-                $crate::commit_and_changelog!(cm, tx, extensions)?;
-
-                Ok(())
-            } else {
-                tx.revert();
-                Err(ApiError::NotFound)
             }
         }
     };

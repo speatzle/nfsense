@@ -4,7 +4,7 @@ use crate::{
     definitions::network::{Link, NetworkInterface, PolicyRoute, StaticRoute, VirtualRouter},
     delete_thing, get_thing, list_things,
     state::RpcState,
-    update_thing_by_index, update_thing_by_name,
+    update_thing,
 };
 use jsonrpsee::{types::Params, Extensions, RpcModule};
 use std::process::Command;
@@ -35,7 +35,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method::<Result<(), ApiError>, _>(
             "network.static_routes.update",
-            update_thing_by_index!(network.static_routes, StaticRoute),
+            update_thing!(network.static_routes, StaticRoute),
         )
         .unwrap();
 
@@ -67,7 +67,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method::<Result<(), ApiError>, _>(
             "network.interfaces.update",
-            update_thing_by_name!(network.interfaces, NetworkInterface),
+            update_thing!(network.interfaces, NetworkInterface),
         )
         .unwrap();
 
@@ -105,7 +105,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method::<Result<(), ApiError>, _>(
             "network.virtual_routers.update",
-            update_thing_by_index!(network.virtual_routers, VirtualRouter),
+            update_thing!(network.virtual_routers, VirtualRouter),
         )
         .unwrap();
 
@@ -140,7 +140,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method::<Result<(), ApiError>, _>(
             "network.policy_routes.update",
-            update_thing_by_index!(network.policy_routes, PolicyRoute),
+            update_thing!(network.policy_routes, PolicyRoute),
         )
         .unwrap();
 

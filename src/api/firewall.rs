@@ -4,7 +4,7 @@ use crate::{
     definitions::firewall::{DestinationNATRule, ForwardRule, InboundRule, SourceNATRule},
     delete_thing, get_thing, list_things,
     state::RpcState,
-    update_thing_by_index,
+    update_thing,
 };
 use jsonrpsee::{Extensions, RpcModule};
 use time::OffsetDateTime;
@@ -34,7 +34,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method::<Result<(), ApiError>, _>(
             "firewall.forward_rules.update",
-            update_thing_by_index!(firewall.forward_rules, ForwardRule),
+            update_thing!(firewall.forward_rules, ForwardRule),
         )
         .unwrap();
 
@@ -69,7 +69,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method::<Result<(), ApiError>, _>(
             "firewall.destination_nat_rules.update",
-            update_thing_by_index!(firewall.destination_nat_rules, DestinationNATRule),
+            update_thing!(firewall.destination_nat_rules, DestinationNATRule),
         )
         .unwrap();
 
@@ -104,7 +104,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method::<Result<(), ApiError>, _>(
             "firewall.source_nat_rules.update",
-            update_thing_by_index!(firewall.source_nat_rules, SourceNATRule),
+            update_thing!(firewall.source_nat_rules, SourceNATRule),
         )
         .unwrap();
 
@@ -139,7 +139,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method::<Result<(), ApiError>, _>(
             "firewall.inbound_rules.update",
-            update_thing_by_index!(firewall.inbound_rules, InboundRule),
+            update_thing!(firewall.inbound_rules, InboundRule),
         )
         .unwrap();
 

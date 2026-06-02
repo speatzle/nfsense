@@ -1,7 +1,7 @@
 use super::ApiError;
 use crate::definitions::vpn::{WireguardInterface, WireguardPeer};
 use crate::state::RpcState;
-use crate::{create_thing, delete_thing, get_thing, list_things, update_thing_by_name};
+use crate::{create_thing, delete_thing, get_thing, list_things, update_thing};
 use jsonrpsee::types::Params;
 use jsonrpsee::{Extensions, RpcModule};
 use serde::{Deserialize, Serialize};
@@ -49,7 +49,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method::<Result<(), ApiError>, _>(
             "vpn.wireguard.interfaces.update",
-            update_thing_by_name!(vpn.wireguard.interfaces, WireguardInterface),
+            update_thing!(vpn.wireguard.interfaces, WireguardInterface),
         )
         .unwrap();
 
@@ -61,10 +61,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method(
-            "vpn.wireguard.peers.get",
-            get_thing!(vpn.wireguard.peers),
-        )
+        .register_method("vpn.wireguard.peers.get", get_thing!(vpn.wireguard.peers))
         .unwrap();
 
     module
@@ -84,7 +81,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method::<Result<(), ApiError>, _>(
             "vpn.wireguard.peers.update",
-            update_thing_by_name!(vpn.wireguard.peers, WireguardPeer),
+            update_thing!(vpn.wireguard.peers, WireguardPeer),
         )
         .unwrap();
 

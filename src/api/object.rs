@@ -5,7 +5,7 @@ use crate::{
     definitions::object::{Address, Service},
     delete_thing, get_thing, list_things,
     state::RpcState,
-    update_thing_by_name,
+    update_thing,
 };
 use jsonrpsee::{Extensions, RpcModule};
 use time::OffsetDateTime;
@@ -32,7 +32,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method::<Result<(), ApiError>, _>(
             "object.services.update",
-            update_thing_by_name!(object.services, Service),
+            update_thing!(object.services, Service),
         )
         .unwrap();
 
@@ -74,7 +74,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method::<Result<(), ApiError>, _>(
             "object.addresses.update",
-            update_thing_by_name!(object.addresses, Address),
+            update_thing!(object.addresses, Address),
         )
         .unwrap();
 

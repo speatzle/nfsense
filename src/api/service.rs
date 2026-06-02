@@ -4,7 +4,7 @@ use crate::{
     definitions::service::{DHCPServer, DNSServer, NTPServer},
     delete_thing, get_thing, list_things,
     state::RpcState,
-    update_thing_by_index,
+    update_thing,
 };
 use jsonrpsee::{Extensions, RpcModule};
 use time::OffsetDateTime;
@@ -31,7 +31,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method::<Result<(), ApiError>, _>(
             "service.dhcp_servers.update",
-            update_thing_by_index!(service.dhcp_servers, DHCPServer),
+            update_thing!(service.dhcp_servers, DHCPServer),
         )
         .unwrap();
 
@@ -63,7 +63,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method::<Result<(), ApiError>, _>(
             "service.dns_servers.update",
-            update_thing_by_index!(service.dns_servers, DNSServer),
+            update_thing!(service.dns_servers, DNSServer),
         )
         .unwrap();
 
@@ -95,7 +95,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method::<Result<(), ApiError>, _>(
             "service.ntp_servers.update",
-            update_thing_by_index!(service.ntp_servers, NTPServer),
+            update_thing!(service.ntp_servers, NTPServer),
         )
         .unwrap();
 

@@ -5,7 +5,7 @@ use serde::Serialize;
 use std::fs;
 use std::sync::{Arc, Mutex, MutexGuard};
 use structdb_core::change::Change;
-use structdb_core::{Diffable, Validatable};
+use structdb_core::Diffable;
 use thiserror::Error;
 use time::OffsetDateTime;
 use tracing::{error, info};
@@ -108,7 +108,7 @@ impl ConfigManager {
     }
 
     pub fn set_pending_config(&mut self, config: Config, user: String) -> Result<(), ConfigError> {
-        config.validate()?;
+        validate_config(&config)?;
         let mut data = self.shared_data.lock().unwrap();
 
         let changes = config.diff(&data.current_config, &mut vec![]);
@@ -238,13 +238,7 @@ impl<'a> ConfigTransaction<'a> {
     }
 
     pub fn commit(mut self, changelog: &mut Vec<Change>) -> Result<(), ConfigError> {
-        self.config.validate()?;
-
-        // Validate cross-references to catch dangling references caused by
-        // key renames or deletions within the transaction.
-        self.config
-            .validate_references(&self.config)
-            .map_err(ConfigError::ReferenceValidationError)?;
+        validate_config(&self.config)?;
 
         let changes = self
             .config
@@ -270,13 +264,25 @@ fn read_file_to_config(path: &str) -> Result<Config, ConfigError> {
     if conf.config_version != 1 {
         return Err(ConfigError::UnsupportedVersionError);
     }
-    conf.validate()?;
+    validate_config(&conf)?;
     Ok(conf)
 }
 
 fn write_config_to_file(path: &str, conf: Config) -> Result<(), ConfigError> {
     let data: String = serde_json::to_string_pretty(&conf)?;
     fs::write(path, data)?;
+    Ok(())
+}
+
+fn validate_config(conf: &Config) -> Result<(), ConfigError> {
+    // Garde validation (with Config context)
+    conf.validate()?;
+
+    // Duplicate key and reference validation
+    let errors = structdb_core::validate_all(conf);
+    if !errors.is_empty() {
+        return Err(ConfigError::ReferenceValidationError(errors));
+    }
     Ok(())
 }
 
@@ -305,6 +311,7 @@ pub fn generate_default_config(path: &str) -> Result<(), ConfigError> {
             log: true,
             verdict: crate::definitions::firewall::Verdict::Accept,
         });
+    validate_config(&conf)?;
     write_config_to_file(path, conf)
 }
 

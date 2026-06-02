@@ -64,22 +64,24 @@ impl Into<ErrorObject<'static>> for ApiError {
 }
 
 #[macro_export]
-macro_rules! get_thing_by_name {
+macro_rules! get_thing {
     ($( $sub_system:ident ).+) => {
         |params, state, _: &Extensions| {
             use serde::Deserialize;
 
             #[derive(Deserialize)]
-            struct GetByName {
-                name: String,
+            struct GetByID {
+                id: String,
             }
 
-            let t: GetByName = params.parse().map_err(ApiError::ParameterDeserialize)?;
+            let t: GetByID = params.parse().map_err(ApiError::ParameterDeserialize)?;
 
             let index = state
-            .config_manager
-            .get_pending_config()
-            .$($sub_system).+.iter().position(|e| *e.name == t.name);
+                .config_manager
+                .get_pending_config()
+                .$($sub_system).+
+                .iter()
+                .position(|e| structdb_core::Keyed::get_key(e) == t.id);
 
             match index {
                 Some(i) => Ok(state
@@ -87,32 +89,6 @@ macro_rules! get_thing_by_name {
                         .get_pending_config()
                         .$($sub_system).+[i].clone()),
                 None => Err(ApiError::NotFound)
-            }
-        }
-    };
-}
-
-#[macro_export]
-macro_rules! get_thing_by_index {
-    ($( $sub_system:ident ).+) => {
-        |params, state, _: &Extensions| {
-            use serde::{Deserialize, Serialize};
-
-            #[derive(Deserialize, Serialize)]
-            struct GetByIndex {
-                index: i64,
-            }
-
-            let t: GetByIndex = params.parse().map_err(ApiError::ParameterDeserialize)?;
-            let things = state
-            .config_manager
-            .get_pending_config()
-            .$($sub_system).+;
-
-            if things.len() > t.index as usize {
-                Ok(things[t.index as usize].clone())
-            } else {
-                Err(ApiError::NotFound)
             }
         }
     };
@@ -131,38 +107,46 @@ macro_rules! list_things {
 }
 
 #[macro_export]
+macro_rules! commit_and_changelog {
+    ($cm:ident, $tx:ident, $extensions:ident) => {{
+        let mut data_changes = Vec::new();
+        $tx.commit(&mut data_changes)
+            .map_err(ApiError::ConfigError)?;
+
+        if !data_changes.is_empty() {
+            let user = $extensions
+                .get::<crate::web::auth::Session>()
+                .map(|s| s.username.clone())
+                .unwrap_or_else(|| "unknown".to_string());
+            let change_set = crate::config_manager::ChangeSet {
+                user,
+                timestamp: OffsetDateTime::now_utc(),
+                changes: data_changes,
+            };
+            $cm.add_to_changelog(change_set);
+        }
+
+        Ok::<(), ApiError>(())
+    }};
+}
+
+#[macro_export]
 macro_rules! create_thing {
     ($( $sub_system:ident ).+, $typ:ty) => {
         |params, state, extensions: &jsonrpsee::Extensions| {
             let t: $typ = params.parse().map_err(ApiError::ParameterDeserialize)?;
+
+            // Extract the key before moving `t` into the collection
+            let id = structdb_core::Keyed::get_key(&t);
 
             let mut cm = state.config_manager.clone();
             let mut tx = cm.start_transaction();
 
             tx.data_mut().$($sub_system).+.push(t);
 
-            // 1. Commit to a temporary vec to get the data changes
-            let mut data_changes = Vec::new();
-            tx.commit(&mut data_changes).map_err(ApiError::ConfigError)?;
+            $crate::commit_and_changelog!(cm, tx, extensions)?;
 
-            // 2. If the transaction produced changes, wrap them in a ChangeSet
-            if !data_changes.is_empty() {
-                let user = extensions
-                    .get::<crate::web::auth::Session>()
-                    .map(|s| s.username.clone())
-                    .unwrap_or_else(|| "unknown".to_string());
-                let change_set = crate::config_manager::ChangeSet {
-                    user,
-                    timestamp: OffsetDateTime::now_utc(),
-                    changes: data_changes,
-                };
-                // 3. Add the complete, user-attributed ChangeSet to the central log
-                // NOTE: This assumes `ConfigManager` has been refactored to expose
-                // a method to add to the changelog.
-                cm.add_to_changelog(change_set);
-            }
-
-            Ok(())
+            Ok(id)
         }
     };
 }
@@ -189,21 +173,7 @@ macro_rules! update_thing_by_name {
                 Some(i) => {
                     tx.data_mut().$($sub_system).+[i] = t.thing;
 
-                    let mut data_changes = Vec::new();
-                    tx.commit(&mut data_changes).map_err(ApiError::ConfigError)?;
-
-                    if !data_changes.is_empty() {
-                        let user = extensions
-                            .get::<crate::web::auth::Session>()
-                            .map(|s| s.username.clone())
-                            .unwrap_or_else(|| "unknown".to_string());
-                        let change_set = crate::config_manager::ChangeSet {
-                            user,
-                            timestamp: OffsetDateTime::now_utc(),
-                            changes: data_changes,
-                        };
-                        cm.add_to_changelog(change_set);
-                    }
+                    $crate::commit_and_changelog!(cm, tx, extensions)?;
 
                     Ok(())
                 }
@@ -235,21 +205,8 @@ macro_rules! update_thing_by_index {
             if tx.data_mut().$($sub_system).+.len() > t.index as usize {
                 tx.data_mut().$($sub_system).+[t.index as usize] = t.thing;
 
-                let mut data_changes = Vec::new();
-                tx.commit(&mut data_changes).map_err(ApiError::ConfigError)?;
+                $crate::commit_and_changelog!(cm, tx, extensions)?;
 
-                if !data_changes.is_empty() {
-                    let user = extensions
-                        .get::<crate::web::auth::Session>()
-                        .map(|s| s.username.clone())
-                        .unwrap_or_else(|| "unknown".to_string());
-                    let change_set = crate::config_manager::ChangeSet {
-                        user,
-                        timestamp: OffsetDateTime::now_utc(),
-                        changes: data_changes,
-                    };
-                    cm.add_to_changelog(change_set);
-                }
                 Ok(())
             } else {
                 tx.revert();
@@ -260,96 +217,42 @@ macro_rules! update_thing_by_index {
 }
 
 #[macro_export]
-macro_rules! delete_thing_by_name {
+macro_rules! delete_thing {
     ($( $sub_system:ident ).+) => {
         |params, state, extensions: &jsonrpsee::Extensions| {
             use serde::{Deserialize, Serialize};
 
             #[derive(Deserialize, Serialize)]
-            struct DeleteByName {
-                name: String,
+            struct DeleteByID {
+                id: String,
             }
 
-            let t: DeleteByName = params.parse().map_err(ApiError::ParameterDeserialize)?;
+            let t: DeleteByID = params.parse().map_err(ApiError::ParameterDeserialize)?;
 
             let mut cm = state.config_manager.clone();
             let mut tx = cm.start_transaction();
 
-            let index = tx.data_mut().$($sub_system).+.iter().position(|e| *e.name == t.name);
+            let index = tx.data_mut().$($sub_system).+.iter().position(|e| structdb_core::Keyed::get_key(e) == t.id);
 
-            match index {
-                Some(i) => {
-                    tx.data_mut().$($sub_system).+.remove(i);
-
-                    let mut data_changes = Vec::new();
-                    tx.commit(&mut data_changes).map_err(ApiError::ConfigError)?;
-
-                    if !data_changes.is_empty() {
-                        let user = extensions
-                            .get::<crate::web::auth::Session>()
-                            .map(|s| s.username.clone())
-                            .unwrap_or_else(|| "unknown".to_string());
-                        let change_set = crate::config_manager::ChangeSet {
-                            user,
-                            timestamp: OffsetDateTime::now_utc(),
-                            changes: data_changes,
-                        };
-                        cm.add_to_changelog(change_set);
-                    }
-
-                    Ok(())
-                }
-                None => {
-                    tx.revert();
-                    Err(ApiError::NotFound)
-                }
-            }
+            delete_thing!(@commit $( $sub_system ).+; index; cm, tx, state, extensions)
         }
     };
-}
+    // Internal helper: executes the removal, commit, and changelog logic
+    (@commit $( $sub_system:ident ).+; $index:expr; $cm:ident, $tx:ident, $state:ident, $extensions:ident) => {{
+        match $index {
+            Some(i) => {
+                $tx.data_mut().$($sub_system).+.remove(i);
 
-#[macro_export]
-macro_rules! delete_thing_by_index {
-    ($( $sub_system:ident ).+) => {
-        |params, state, extensions: &jsonrpsee::Extensions| {
-            use serde::{Deserialize, Serialize};
-
-            #[derive(Deserialize, Serialize)]
-            struct DeleteByIndex {
-                index: i64,
-            }
-
-            let t: DeleteByIndex = params.parse().map_err(ApiError::ParameterDeserialize)?;
-
-            let mut cm = state.config_manager.clone();
-            let mut tx = cm.start_transaction();
-
-            if tx.data_mut().$($sub_system).+.len() > t.index as usize {
-                tx.data_mut().$($sub_system).+.remove(t.index as usize);
-
-                let mut data_changes = Vec::new();
-                tx.commit(&mut data_changes).map_err(ApiError::ConfigError)?;
-
-                if !data_changes.is_empty() {
-                    let user = extensions
-                        .get::<crate::web::auth::Session>()
-                        .map(|s| s.username.clone())
-                        .unwrap_or_else(|| "unknown".to_string());
-                    let change_set = crate::config_manager::ChangeSet {
-                        user,
-                        timestamp: OffsetDateTime::now_utc(),
-                        changes: data_changes,
-                    };
-                    cm.add_to_changelog(change_set);
-                }
+            $crate::commit_and_changelog!($cm, $tx, $extensions)?;
 
                 Ok(())
-            } else {
-                tx.revert();
+            }
+            None => {
+                $tx.revert();
                 Err(ApiError::NotFound)
             }
         }
-    };
+    }};
 }
 
 pub fn new_rpc_module(state: RpcState) -> RpcModule<RpcState> {

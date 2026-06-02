@@ -2,7 +2,7 @@ use super::ApiError;
 use crate::{
     create_thing,
     definitions::firewall::{DestinationNATRule, ForwardRule, InboundRule, SourceNATRule},
-    delete_thing_by_index, get_thing_by_index, list_things,
+    delete_thing, get_thing, list_things,
     state::RpcState,
     update_thing_by_index,
 };
@@ -13,7 +13,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method(
             "firewall.forward_rules.get",
-            get_thing_by_index!(firewall.forward_rules),
+            get_thing!(firewall.forward_rules),
         )
         .unwrap();
 
@@ -25,7 +25,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method::<Result<(), ApiError>, _>(
+        .register_method::<Result<String, ApiError>, _>(
             "firewall.forward_rules.create",
             create_thing!(firewall.forward_rules, ForwardRule),
         )
@@ -41,14 +41,14 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method::<Result<(), ApiError>, _>(
             "firewall.forward_rules.delete",
-            delete_thing_by_index!(firewall.forward_rules),
+            delete_thing!(firewall.forward_rules),
         )
         .unwrap();
 
     module
         .register_method(
             "firewall.destination_nat_rules.get",
-            get_thing_by_index!(firewall.destination_nat_rules),
+            get_thing!(firewall.destination_nat_rules),
         )
         .unwrap();
 
@@ -60,7 +60,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method::<Result<(), ApiError>, _>(
+        .register_method::<Result<String, ApiError>, _>(
             "firewall.destination_nat_rules.create",
             create_thing!(firewall.destination_nat_rules, DestinationNATRule),
         )
@@ -76,14 +76,14 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method::<Result<(), ApiError>, _>(
             "firewall.destination_nat_rules.delete",
-            delete_thing_by_index!(firewall.destination_nat_rules),
+            delete_thing!(firewall.destination_nat_rules),
         )
         .unwrap();
 
     module
         .register_method(
             "firewall.source_nat_rules.get",
-            get_thing_by_index!(firewall.source_nat_rules),
+            get_thing!(firewall.source_nat_rules),
         )
         .unwrap();
 
@@ -95,7 +95,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method::<Result<(), ApiError>, _>(
+        .register_method::<Result<String, ApiError>, _>(
             "firewall.source_nat_rules.create",
             create_thing!(firewall.source_nat_rules, SourceNATRule),
         )
@@ -111,14 +111,14 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method::<Result<(), ApiError>, _>(
             "firewall.source_nat_rules.delete",
-            delete_thing_by_index!(firewall.source_nat_rules),
+            delete_thing!(firewall.source_nat_rules),
         )
         .unwrap();
 
     module
         .register_method(
             "firewall.inbound_rules.get",
-            get_thing_by_index!(firewall.inbound_rules),
+            get_thing!(firewall.inbound_rules),
         )
         .unwrap();
 
@@ -130,7 +130,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method::<Result<(), ApiError>, _>(
+        .register_method::<Result<String, ApiError>, _>(
             "firewall.inbound_rules.create",
             create_thing!(firewall.inbound_rules, InboundRule),
         )
@@ -146,7 +146,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method::<Result<(), ApiError>, _>(
             "firewall.inbound_rules.delete",
-            delete_thing_by_index!(firewall.inbound_rules),
+            delete_thing!(firewall.inbound_rules),
         )
         .unwrap();
 }

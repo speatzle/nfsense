@@ -2,7 +2,7 @@ use super::ApiError;
 use crate::{
     create_thing,
     definitions::service::{DHCPServer, DNSServer, NTPServer},
-    delete_thing_by_index, get_thing_by_index, list_things,
+    delete_thing, get_thing, list_things,
     state::RpcState,
     update_thing_by_index,
 };
@@ -11,10 +11,7 @@ use time::OffsetDateTime;
 
 pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
-        .register_method(
-            "service.dhcp_servers.get",
-            get_thing_by_index!(service.dhcp_servers),
-        )
+        .register_method("service.dhcp_servers.get", get_thing!(service.dhcp_servers))
         .unwrap();
 
     module
@@ -25,7 +22,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method::<Result<(), ApiError>, _>(
+        .register_method::<Result<String, ApiError>, _>(
             "service.dhcp_servers.create",
             create_thing!(service.dhcp_servers, DHCPServer),
         )
@@ -41,15 +38,12 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method::<Result<(), ApiError>, _>(
             "service.dhcp_servers.delete",
-            delete_thing_by_index!(service.dhcp_servers),
+            delete_thing!(service.dhcp_servers),
         )
         .unwrap();
 
     module
-        .register_method(
-            "service.dns_servers.get",
-            get_thing_by_index!(service.dns_servers),
-        )
+        .register_method("service.dns_servers.get", get_thing!(service.dns_servers))
         .unwrap();
 
     module
@@ -60,7 +54,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method::<Result<(), ApiError>, _>(
+        .register_method::<Result<String, ApiError>, _>(
             "service.dns_servers.create",
             create_thing!(service.dns_servers, DNSServer),
         )
@@ -76,15 +70,12 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method::<Result<(), ApiError>, _>(
             "service.dns_servers.delete",
-            delete_thing_by_index!(service.dns_servers),
+            delete_thing!(service.dns_servers),
         )
         .unwrap();
 
     module
-        .register_method(
-            "service.ntp_servers.get",
-            get_thing_by_index!(service.ntp_servers),
-        )
+        .register_method("service.ntp_servers.get", get_thing!(service.ntp_servers))
         .unwrap();
 
     module
@@ -95,7 +86,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method::<Result<(), ApiError>, _>(
+        .register_method::<Result<String, ApiError>, _>(
             "service.ntp_servers.create",
             create_thing!(service.ntp_servers, NTPServer),
         )
@@ -111,7 +102,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method::<Result<(), ApiError>, _>(
             "service.ntp_servers.delete",
-            delete_thing_by_index!(service.ntp_servers),
+            delete_thing!(service.ntp_servers),
         )
         .unwrap();
 }

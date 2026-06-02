@@ -1,4 +1,4 @@
-use crate::delete_thing_by_name;
+use crate::{commit_and_changelog, delete_thing};
 use crate::{definitions::system::User, state::RpcState};
 use jsonrpsee::types::Params;
 use jsonrpsee::{Extensions, RpcModule};
@@ -31,7 +31,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method("system.users.delete", delete_thing_by_name!(system.users))
+        .register_method("system.users.delete", delete_thing!(system.users))
         .unwrap();
 }
 
@@ -116,21 +116,7 @@ pub fn create_user(p: Params, state: &RpcState, extensions: &Extensions) -> Resu
         hash: hash,
     });
 
-    let mut data_changes = Vec::new();
-    tx.commit(&mut data_changes)?;
-
-    if !data_changes.is_empty() {
-        let user = extensions
-            .get::<crate::web::auth::Session>()
-            .map(|s| s.username.clone())
-            .unwrap_or_else(|| "unknown".to_string());
-        let change_set = crate::config_manager::ChangeSet {
-            user,
-            timestamp: OffsetDateTime::now_utc(),
-            changes: data_changes,
-        };
-        cm.add_to_changelog(change_set);
-    }
+    commit_and_changelog!(cm, tx, extensions)?;
 
     Ok(())
 }
@@ -173,21 +159,7 @@ pub fn update_user(p: Params, state: &RpcState, extensions: &Extensions) -> Resu
                 hash,
             };
 
-            let mut data_changes = Vec::new();
-            tx.commit(&mut data_changes)?;
-
-            if !data_changes.is_empty() {
-                let user = extensions
-                    .get::<crate::web::auth::Session>()
-                    .map(|s| s.username.clone())
-                    .unwrap_or_else(|| "system".to_string());
-                let change_set = crate::config_manager::ChangeSet {
-                    user,
-                    timestamp: OffsetDateTime::now_utc(),
-                    changes: data_changes,
-                };
-                cm.add_to_changelog(change_set);
-            }
+            commit_and_changelog!(cm, tx, extensions)?;
 
             Ok(())
         }

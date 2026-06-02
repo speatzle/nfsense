@@ -3,7 +3,7 @@ use crate::definitions::util::interface::generate_interface_address_objects;
 use crate::{
     create_thing,
     definitions::object::{Address, Service},
-    delete_thing_by_name, get_thing_by_name, list_things,
+    delete_thing, get_thing, list_things,
     state::RpcState,
     update_thing_by_name,
 };
@@ -12,7 +12,7 @@ use time::OffsetDateTime;
 
 pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
-        .register_method("object.services.get", get_thing_by_name!(object.services))
+        .register_method("object.services.get", get_thing!(object.services))
         .unwrap();
 
     module
@@ -23,7 +23,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method::<Result<(), ApiError>, _>(
+        .register_method::<Result<String, ApiError>, _>(
             "object.services.create",
             create_thing!(object.services, Service),
         )
@@ -39,12 +39,12 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method::<Result<(), ApiError>, _>(
             "object.services.delete",
-            delete_thing_by_name!(object.services),
+            delete_thing!(object.services),
         )
         .unwrap();
 
     module
-        .register_method("object.addresses.get", get_thing_by_name!(object.addresses))
+        .register_method("object.addresses.get", get_thing!(object.addresses))
         .unwrap();
 
     module
@@ -65,7 +65,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method::<Result<(), ApiError>, _>(
+        .register_method::<Result<String, ApiError>, _>(
             "object.addresses.create",
             create_thing!(object.addresses, Address),
         )
@@ -81,7 +81,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method::<Result<(), ApiError>, _>(
             "object.addresses.delete",
-            delete_thing_by_name!(object.addresses),
+            delete_thing!(object.addresses),
         )
         .unwrap();
 }

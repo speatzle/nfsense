@@ -23,9 +23,9 @@ async function load() {
   let res: any;
   if ($entity.idType == "Number")
     res = await apiCall(`${props.subsystem}.${props.entity}.get`, {
-      index: (props.id as number) - 0,
+      id: (props.id as number) - 0,
     });
-  else res = await apiCall(`${props.subsystem}.${props.entity}.get`, { name: props.id });
+  else res = await apiCall(`${props.subsystem}.${props.entity}.get`, { id: props.id });
 
   if (res.Error === null) {
     console.debug("update data", res.Data);

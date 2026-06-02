@@ -2,8 +2,7 @@ use super::ApiError;
 use crate::{
     create_thing,
     definitions::network::{Link, NetworkInterface, PolicyRoute, StaticRoute, VirtualRouter},
-    delete_thing_by_index, delete_thing_by_name, get_thing_by_index, get_thing_by_name,
-    list_things,
+    delete_thing, get_thing, list_things,
     state::RpcState,
     update_thing_by_index, update_thing_by_name,
 };
@@ -15,7 +14,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method(
             "network.static_routes.get",
-            get_thing_by_index!(network.static_routes),
+            get_thing!(network.static_routes),
         )
         .unwrap();
 
@@ -27,7 +26,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method::<Result<(), ApiError>, _>(
+        .register_method::<Result<String, ApiError>, _>(
             "network.static_routes.create",
             create_thing!(network.static_routes, StaticRoute),
         )
@@ -43,15 +42,12 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method::<Result<(), ApiError>, _>(
             "network.static_routes.delete",
-            delete_thing_by_index!(network.static_routes),
+            delete_thing!(network.static_routes),
         )
         .unwrap();
 
     module
-        .register_method(
-            "network.interfaces.get",
-            get_thing_by_name!(network.interfaces),
-        )
+        .register_method("network.interfaces.get", get_thing!(network.interfaces))
         .unwrap();
 
     module
@@ -62,7 +58,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method::<Result<(), ApiError>, _>(
+        .register_method::<Result<String, ApiError>, _>(
             "network.interfaces.create",
             create_thing!(network.interfaces, NetworkInterface),
         )
@@ -78,7 +74,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method::<Result<(), ApiError>, _>(
             "network.interfaces.delete",
-            delete_thing_by_name!(network.interfaces),
+            delete_thing!(network.interfaces),
         )
         .unwrap();
     module
@@ -88,7 +84,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method(
             "network.virtual_routers.get",
-            get_thing_by_index!(network.virtual_routers),
+            get_thing!(network.virtual_routers),
         )
         .unwrap();
 
@@ -100,7 +96,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method::<Result<(), ApiError>, _>(
+        .register_method::<Result<String, ApiError>, _>(
             "network.virtual_routers.create",
             create_thing!(network.virtual_routers, VirtualRouter),
         )
@@ -116,14 +112,14 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method::<Result<(), ApiError>, _>(
             "network.virtual_routers.delete",
-            delete_thing_by_index!(network.virtual_routers),
+            delete_thing!(network.virtual_routers),
         )
         .unwrap();
 
     module
         .register_method(
             "network.policy_routes.get",
-            get_thing_by_index!(network.policy_routes),
+            get_thing!(network.policy_routes),
         )
         .unwrap();
 
@@ -135,7 +131,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method::<Result<(), ApiError>, _>(
+        .register_method::<Result<String, ApiError>, _>(
             "network.policy_routes.create",
             create_thing!(network.policy_routes, PolicyRoute),
         )
@@ -151,7 +147,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method::<Result<(), ApiError>, _>(
             "network.policy_routes.delete",
-            delete_thing_by_index!(network.policy_routes),
+            delete_thing!(network.policy_routes),
         )
         .unwrap();
 }

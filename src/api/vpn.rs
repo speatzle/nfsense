@@ -1,9 +1,7 @@
 use super::ApiError;
 use crate::definitions::vpn::{WireguardInterface, WireguardPeer};
 use crate::state::RpcState;
-use crate::{
-    create_thing, delete_thing_by_name, get_thing_by_name, list_things, update_thing_by_name,
-};
+use crate::{create_thing, delete_thing, get_thing, list_things, update_thing_by_name};
 use jsonrpsee::types::Params;
 use jsonrpsee::{Extensions, RpcModule};
 use serde::{Deserialize, Serialize};
@@ -30,7 +28,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method(
             "vpn.wireguard.interfaces.get",
-            get_thing_by_name!(vpn.wireguard.interfaces),
+            get_thing!(vpn.wireguard.interfaces),
         )
         .unwrap();
 
@@ -42,7 +40,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method::<Result<(), ApiError>, _>(
+        .register_method::<Result<String, ApiError>, _>(
             "vpn.wireguard.interfaces.create",
             create_thing!(vpn.wireguard.interfaces, WireguardInterface),
         )
@@ -58,14 +56,14 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method::<Result<(), ApiError>, _>(
             "vpn.wireguard.interfaces.delete",
-            delete_thing_by_name!(vpn.wireguard.interfaces),
+            delete_thing!(vpn.wireguard.interfaces),
         )
         .unwrap();
 
     module
         .register_method(
             "vpn.wireguard.peers.get",
-            get_thing_by_name!(vpn.wireguard.peers),
+            get_thing!(vpn.wireguard.peers),
         )
         .unwrap();
 
@@ -77,7 +75,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method::<Result<(), ApiError>, _>(
+        .register_method::<Result<String, ApiError>, _>(
             "vpn.wireguard.peers.create",
             create_thing!(vpn.wireguard.peers, WireguardPeer),
         )
@@ -93,7 +91,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method::<Result<(), ApiError>, _>(
             "vpn.wireguard.peers.delete",
-            delete_thing_by_name!(vpn.wireguard.peers),
+            delete_thing!(vpn.wireguard.peers),
         )
         .unwrap();
 }

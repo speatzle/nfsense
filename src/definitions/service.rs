@@ -31,8 +31,11 @@ pub struct DHCPServer {
     #[requires(Address)]
     pub pool: Vec<String>,
     pub lease_time: u64,
+    #[delegate]
     pub gateway_mode: GatewayMode,
+    #[delegate]
     pub dns_server_mode: DNSServerMode,
+    #[delegate]
     pub ntp_server_mode: NTPServerMode,
     // pub reservations: Vec<Reservation>,
     pub comment: String,
@@ -68,8 +71,10 @@ pub struct GatewayModeSpecify {
     pub gateway: String,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[derive(StructDb, Validate, Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "snake_case")]
+#[garde(context(Config))]
+#[garde(allow_unvalidated)]
 pub enum GatewayMode {
     None,
     Interface,
@@ -84,8 +89,10 @@ pub struct DNSServerModeSpecify {
     pub dns_servers: Vec<String>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[derive(StructDb, Validate, Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "snake_case")]
+#[garde(context(Config))]
+#[garde(allow_unvalidated)]
 pub enum DNSServerMode {
     None,
     Interface,
@@ -100,8 +107,10 @@ pub struct NTPServerModeSpecify {
     pub ntp_servers: Vec<String>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[derive(StructDb, Validate, Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "snake_case")]
+#[garde(context(Config))]
+#[garde(allow_unvalidated)]
 pub enum NTPServerMode {
     None,
     Interface,

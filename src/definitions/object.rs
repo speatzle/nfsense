@@ -24,6 +24,7 @@ pub struct Object {
 pub struct Address {
     #[garde(custom(validation::validate_name))]
     pub name: String,
+    #[delegate]
     pub address_type: AddressType,
     pub comment: String,
 }
@@ -36,8 +37,10 @@ pub struct AddressGroup {
     pub members: Vec<String>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[derive(StructDb, Validate, Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "snake_case")]
+#[garde(context(Config))]
+#[garde(allow_unvalidated)]
 pub enum AddressType {
     Host { address: IpAddr },
     Range { range: IpAddr },
@@ -52,6 +55,7 @@ pub enum AddressType {
 pub struct Service {
     #[garde(custom(validation::validate_name))]
     pub name: String,
+    #[delegate]
     pub service_type: ServiceType,
     pub comment: String,
 }
@@ -64,8 +68,10 @@ pub struct ServiceGroup {
     pub members: Vec<String>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[derive(StructDb, Validate, Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "lowercase")]
+#[garde(context(Config))]
+#[garde(allow_unvalidated)]
 pub enum ServiceType {
     TCP {
         source: PortDefinition,

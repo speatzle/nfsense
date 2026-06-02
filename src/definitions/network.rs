@@ -32,6 +32,7 @@ pub struct NetworkInterface {
     pub name: String,
     pub alias: String,
     pub comment: String,
+    #[delegate]
     pub interface_type: NetworkInterfaceType,
     pub addressing_mode: AddressingMode,
     #[requires(VirtualRouter)]
@@ -63,8 +64,10 @@ pub struct Bridge {
     pub members: Vec<String>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[derive(StructDb, Validate, Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "snake_case")]
+#[garde(context(Config))]
+#[garde(allow_unvalidated)]
 pub enum NetworkInterfaceType {
     // TODO figure out how to validate the device since it needs to soft fail
     Hardware { device: String },
@@ -73,8 +76,10 @@ pub enum NetworkInterfaceType {
     Bridge(Bridge),
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[derive(StructDb, Validate, Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "snake_case")]
+#[garde(context(Config))]
+#[garde(allow_unvalidated)]
 pub enum AddressingMode {
     None,
     Static {
@@ -122,6 +127,7 @@ pub struct PolicyRoute {
     pub comment: String,
     pub counter: bool,
     pub log: bool,
+    #[delegate]
     pub action: RouteAction,
 }
 
@@ -151,8 +157,10 @@ pub struct RouteActionVirtualRouter {
     pub virtual_router: String,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[derive(StructDb, Validate, Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "snake_case")]
+#[garde(context(Config))]
+#[garde(allow_unvalidated)]
 pub enum RouteAction {
     Gateway(RouteActionGateway),
     Interface(RouteActionInterface),

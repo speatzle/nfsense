@@ -83,6 +83,7 @@ pub struct SourceNATRule {
     pub automatic_forward_rule: bool,
     pub counter: bool,
     pub log: bool,
+    #[delegate]
     pub snat_type: SNATType,
 }
 
@@ -124,8 +125,10 @@ pub struct SNAT {
     pub service: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[derive(StructDb, Validate, Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "lowercase")]
+#[garde(context(Config))]
+#[garde(allow_unvalidated)]
 pub enum SNATType {
     SNAT(SNAT),
     Masquerade,

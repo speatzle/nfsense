@@ -179,7 +179,7 @@ macro_rules! update_thing {
                     if old_key != new_key {
                         structdb_core::RenameRefs::rename_refs(
                             tx.data_mut(),
-                            stringify!(#typ),
+                            stringify!($typ),
                             &old_key,
                             &new_key,
                         );

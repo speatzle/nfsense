@@ -18,10 +18,18 @@ export type Field = {
   is: Component | string;
   label?: string;
   props?: any;
-  // actions?: Action[],
+  actions?: Action[];
   // forceCastNumber`?: bool,
 };
 export type Fields = Record<Index, Field>;
+export type Action = {
+  name: string;
+  icon?: Component;
+  callback?: ActionCallback;
+  when?: ConditionFactory;
+};
+export type ActionCallback = (key: string, $formData: any) => Promise<void> | void;
+export type ConditionFactory = (key: string, formData: any) => boolean;
 
 // --- ENUM INPUT ---
 export type Variant = {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Fields } from "./input";
+import type { Fields, ActionCallback } from "./input";
 const props = withDefaults(
   defineProps<{
     // Two-Way Bindings
@@ -45,10 +45,19 @@ watch(
   },
   { deep: true, immediate: true },
 );
+
+function triggerAction(index: string, callback?: ActionCallback) {
+  callback?.(index, $$($modelValue));
+}
 </script>
 
 <template>
-  <div class="form">
+  <div
+    :class="{
+      form: 1,
+      'has-actions': Object.entries(props.fields).some(([_, field]) => field.actions?.length),
+    }"
+  >
     <component :is="`h${headingLevel}`" v-if="heading">{{ heading }}</component>
     <div class="form inner-form">
       <template v-for="[index, field] of Object.entries(props.fields)" :key="index">
@@ -63,7 +72,32 @@ watch(
               : field.props
           "
         />
+        <div class="actions flex-row" v-if="field.actions ?? []">
+          <button
+            v-for="action of field.actions?.filter((a) => !a.when || a.when(index, $modelValue))"
+            @click="triggerAction(index, action.callback)"
+          >
+            <component v-if="action.icon" :is="action.icon" />
+            <template v-else>{{ action.name }}</template>
+          </button>
+        </div>
       </template>
     </div>
   </div>
 </template>
+<style>
+.form.has-actions {
+  grid-template-columns: auto 1fr auto;
+}
+.actions {
+  gap: 0.25rem;
+  align-self: start;
+  & > button {
+    padding: 0.25rem;
+    & > svg {
+      padding: 0px;
+      margin: -0.25rem;
+    }
+  }
+}
+</style>

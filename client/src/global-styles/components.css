@@ -37,7 +37,7 @@ input {
   gap: 0.5rem;
 }
 :is(form, .form) :is(form, .form) { /* Subform and EnumInput */
-  grid-column: 1 / 3; /* Maintenance: This column-end must match the column count of the host form, +1 */
+  grid-column: 1 / -1; /* Maintenance: This column-end must match the column count of the host form, +1 */
   grid-template-columns: subgrid; /* All descendants of a form align to that same form */
   padding: 0px; /* To keep alignment, no padding is needed for those descendants */
 }
@@ -46,7 +46,7 @@ input {
   padding-left: 0.5rem;
 }
 :is(form, .form) > :is(button, .button, h1, h2, h3, h4, h5, h6) {
-  grid-column: 1 / 3; /* Full-Span children */
+  grid-column: 1 / -1; /* Full-Span children */
 }
 :is(form, .form) > label {
   grid-column: 1; /* Re-align unbalanced grid => allows the last column(s) to be optional */

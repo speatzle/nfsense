@@ -274,7 +274,7 @@ export const subsystems = {
       name: "Static Route",
       fields: withCommon({
         ...f.interface,
-        gateway: c.TextBox("Gateway"),
+        gateway: c.SingleSelect("Gateway", GetAddresses),
         destination: c.TextBox("Destination"),
         metric: c.NumberBox("Metric"),
       }),

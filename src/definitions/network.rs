@@ -100,8 +100,7 @@ pub struct StaticRoute {
     pub interface: String,
     #[requires(Address)]
     pub gateway: String,
-    #[requires(Address)]
-    pub destination: String,
+    pub destination: IpNet,
     pub metric: u64,
     pub comment: String,
 }

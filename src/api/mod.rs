@@ -189,7 +189,7 @@ macro_rules! update_thing {
 
                     $crate::commit_and_changelog!(cm, tx, extensions)?;
 
-                    Ok(())
+                    Ok(new_key)
                 }
                 None => {
                     tx.revert();

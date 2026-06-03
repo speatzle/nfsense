@@ -47,7 +47,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method::<Result<(), ApiError>, _>(
+        .register_method::<Result<String, ApiError>, _>(
             "vpn.wireguard.interfaces.update",
             update_thing!(vpn.wireguard.interfaces, WireguardInterface),
         )
@@ -79,7 +79,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method::<Result<(), ApiError>, _>(
+        .register_method::<Result<String, ApiError>, _>(
             "vpn.wireguard.peers.update",
             update_thing!(vpn.wireguard.peers, WireguardPeer),
         )

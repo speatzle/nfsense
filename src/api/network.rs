@@ -33,7 +33,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method::<Result<(), ApiError>, _>(
+        .register_method::<Result<String, ApiError>, _>(
             "network.static_routes.update",
             update_thing!(network.static_routes, StaticRoute),
         )
@@ -65,7 +65,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method::<Result<(), ApiError>, _>(
+        .register_method::<Result<String, ApiError>, _>(
             "network.interfaces.update",
             update_thing!(network.interfaces, NetworkInterface),
         )
@@ -103,7 +103,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method::<Result<(), ApiError>, _>(
+        .register_method::<Result<String, ApiError>, _>(
             "network.virtual_routers.update",
             update_thing!(network.virtual_routers, VirtualRouter),
         )
@@ -138,7 +138,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method::<Result<(), ApiError>, _>(
+        .register_method::<Result<String, ApiError>, _>(
             "network.policy_routes.update",
             update_thing!(network.policy_routes, PolicyRoute),
         )

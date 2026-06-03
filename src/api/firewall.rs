@@ -32,7 +32,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method::<Result<(), ApiError>, _>(
+        .register_method::<Result<String, ApiError>, _>(
             "firewall.forward_rules.update",
             update_thing!(firewall.forward_rules, ForwardRule),
         )
@@ -67,7 +67,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method::<Result<(), ApiError>, _>(
+        .register_method::<Result<String, ApiError>, _>(
             "firewall.destination_nat_rules.update",
             update_thing!(firewall.destination_nat_rules, DestinationNATRule),
         )
@@ -102,7 +102,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method::<Result<(), ApiError>, _>(
+        .register_method::<Result<String, ApiError>, _>(
             "firewall.source_nat_rules.update",
             update_thing!(firewall.source_nat_rules, SourceNATRule),
         )
@@ -137,7 +137,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method::<Result<(), ApiError>, _>(
+        .register_method::<Result<String, ApiError>, _>(
             "firewall.inbound_rules.update",
             update_thing!(firewall.inbound_rules, InboundRule),
         )

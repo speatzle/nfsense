@@ -29,7 +29,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method::<Result<(), ApiError>, _>(
+        .register_method::<Result<String, ApiError>, _>(
             "service.dhcp_servers.update",
             update_thing!(service.dhcp_servers, DHCPServer),
         )
@@ -61,7 +61,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method::<Result<(), ApiError>, _>(
+        .register_method::<Result<String, ApiError>, _>(
             "service.dns_servers.update",
             update_thing!(service.dns_servers, DNSServer),
         )
@@ -93,7 +93,7 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method::<Result<(), ApiError>, _>(
+        .register_method::<Result<String, ApiError>, _>(
             "service.ntp_servers.update",
             update_thing!(service.ntp_servers, NTPServer),
         )

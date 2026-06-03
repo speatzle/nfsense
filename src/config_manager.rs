@@ -79,13 +79,32 @@ pub struct ChangeSet {
 
 impl ConfigManager {
     pub fn new() -> Result<Self, ConfigError> {
+        let current_config = read_file_to_config(CURRENT_CONFIG_PATH)?;
+
+        let pending_config = read_file_to_config(PENDING_CONFIG_PATH)?;
+
+        let changelog = {
+            let changes = pending_config.diff(&current_config, &mut vec![]);
+            if !changes.is_empty() {
+                info!(
+                    "Reconstructed {} unapplied change(s) from saved config",
+                    changes.len()
+                );
+                vec![ChangeSet {
+                    user: "unknown".to_string(),
+                    timestamp: OffsetDateTime::now_utc(),
+                    changes,
+                }]
+            } else {
+                Vec::new()
+            }
+        };
+
         Ok(Self {
             shared_data: Arc::new(Mutex::new(SharedData {
-                current_config: read_file_to_config(CURRENT_CONFIG_PATH)?,
-                // TODO Dont Fail if pending config is missing, use current instead
-                pending_config: read_file_to_config(PENDING_CONFIG_PATH)?,
-                // TODO Figure out how to restore changes
-                changelog: Vec::new(),
+                current_config,
+                pending_config,
+                changelog,
                 in_memory: false,
             })),
         })

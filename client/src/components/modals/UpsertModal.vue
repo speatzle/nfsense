@@ -53,7 +53,7 @@ async function upsert() {
 
   if (res.Error === null) {
     toast.success(`Updated ${$entity.name}`);
-    popModal(true);
+    popModal(res.Data);
   } else console.debug("error", res);
 }
 

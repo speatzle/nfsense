@@ -31,10 +31,7 @@ async function load() {
 }
 
 async function deleteRow() {
-  const res = await apiCall(
-    `${$apiPath}.delete`,
-    $entity.ordered ? { index: $selection[0] } : { name: $displayData[$selection[0]].name },
-  );
+  const res = await apiCall(`${$apiPath}.delete`, { name: $displayData[$selection[0]].name });
   if (res.Error === null) {
     console.debug(`Deleted ${$entity.name}`);
     toast.success(`Deleted ${$entity.name}`);
@@ -62,8 +59,7 @@ async function createRow() {
 }
 
 async function editRow(index?: number) {
-  index ??= $selection[0];
-  const id = $entity.ordered ? index : ($displayData[index] ?? {}).name;
+  const id = ($displayData[index ?? $selection[0]] ?? {}).name;
   if (await pushModal(UpsertModal, { ...props, id })) load();
 }
 

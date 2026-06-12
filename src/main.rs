@@ -1,46 +1,26 @@
-// #![allow(dead_code)]
-
 use std::{
     collections::HashMap,
     sync::{Arc, RwLock},
+    time::Duration,
 };
 
-use crate::state::RpcState;
 use axum::{middleware, Router};
 use axum_reverse_proxy::ReverseProxy;
 use axum_server::tls_rustls::RustlsConfig;
-use config_manager::ConfigManager;
-use state::AppState;
+use nfsense::{
+    api, config_manager, state::AppState, web, web::auth::SessionState, CLIENT_ASSETS_PATH,
+    CLIENT_FAVICON_PATH, CLIENT_INDEX_PATH, HTTPS_CERT_PATH, HTTPS_KEY_PATH,
+};
 use std::env;
 use std::fs;
 use std::net::{IpAddr, Ipv6Addr, SocketAddr};
 use std::path::Path;
 use std::path::PathBuf;
-use std::time::Duration;
 use tokio::signal;
 use tower_cookies::CookieManagerLayer;
 use tower_http::services::{ServeDir, ServeFile};
 use tracing::{error, info};
 use tracing_subscriber;
-use web::auth::SessionState;
-
-#[macro_use]
-extern crate lazy_static;
-
-mod api;
-mod apply;
-mod config_manager;
-mod definitions;
-mod state;
-mod templates;
-mod validation;
-mod web;
-
-pub const CLIENT_INDEX_PATH: &str = "/usr/share/nfsense/html/index.html";
-pub const CLIENT_FAVICON_PATH: &str = "/usr/share/nfsense/html/favicon.svg";
-pub const CLIENT_ASSETS_PATH: &str = "/usr/share/nfsense/html/assets";
-pub const HTTPS_CERT_PATH: &str = "/var/lib/nfsense/cert.pem";
-pub const HTTPS_KEY_PATH: &str = "/var/lib/nfsense/key.pem";
 
 #[tokio::main]
 async fn main() {
@@ -66,7 +46,7 @@ async fn main() {
     }
 
     // TODO Check Config Manager Setup Error
-    let config_manager = ConfigManager::new().unwrap();
+    let config_manager = config_manager::ConfigManager::new().unwrap();
     let session_state = SessionState {
         sessions: Arc::new(RwLock::new(HashMap::new())),
     };
@@ -90,7 +70,7 @@ async fn main() {
         config_manager: config_manager.clone(),
     };
 
-    let rpc_module = api::new_rpc_module(RpcState {
+    let rpc_module = api::new_rpc_module(nfsense::state::RpcState {
         config_manager: app_state.config_manager.clone(),
         session_state,
         dbus_conn,
@@ -149,7 +129,7 @@ async fn main() {
         .await
         .unwrap();
 }
-// TODO this does not actually handle the signal?
+
 async fn shutdown_signal(
     handle: axum_server::Handle<SocketAddr>,
     rpc_handle: jsonrpsee::server::ServerHandle,

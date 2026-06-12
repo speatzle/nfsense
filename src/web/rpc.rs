@@ -63,7 +63,7 @@ where
     }
 }
 
-pub fn routes(rpc_module: RpcModule<RpcState>) -> (Router<super::super::AppState>, ServerHandle) {
+pub fn routes(rpc_module: RpcModule<RpcState>) -> (Router<crate::state::AppState>, ServerHandle) {
     // Create stop channel for graceful shutdown
     let (stop_handle, server_handle) = stop_channel();
 

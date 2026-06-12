@@ -50,6 +50,7 @@ struct LogICMP {
     #[serde(alias = "oob.out")]
     output_interface: String,
     #[serde(alias = "ip.ttl")]
+    #[serde(default)]
     ttl: u32,
     #[serde(alias = "src_ip")]
     source_ip: String,
@@ -81,6 +82,7 @@ struct LogTCP {
     #[serde(alias = "oob.out")]
     output_interface: String,
     #[serde(alias = "ip.ttl")]
+    #[serde(default)]
     ttl: u32,
     #[serde(alias = "src_ip")]
     source_ip: String,
@@ -128,6 +130,7 @@ struct LogUDP {
     #[serde(alias = "oob.out")]
     output_interface: String,
     #[serde(alias = "ip.ttl")]
+    #[serde(default)]
     ttl: u32,
     #[serde(alias = "src_ip")]
     source_ip: String,
@@ -161,6 +164,7 @@ struct LogUnknown {
     #[serde(alias = "oob.out")]
     output_interface: String,
     #[serde(alias = "ip.ttl")]
+    #[serde(default)]
     ttl: u32,
     #[serde(alias = "src_ip")]
     source_ip: String,

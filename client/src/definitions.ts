@@ -1,10 +1,16 @@
-import type { SearchProvider, Fields, Field, Variants } from "~/components/input/input";
+import type { SearchProvider, Fields, Field, Variants, Action } from "~/components/input/input";
 import ArrayDisplay from "~/components/display/ArrayDisplay.vue";
 import ElementDisplay from "~/components/display/ElementDisplay.vue";
 import EnumTypeDisplay from "~/components/display/EnumTypeDisplay.vue";
 import EnumValueDisplay from "~/components/display/EnumValueDisplay.vue";
 import PortServiceDisplay from "~/components/display/PortServiceDisplay.vue";
+import UpsertModal from "~/components/modals/UpsertModal.vue";
+import IActionAdd from "~icons/material-symbols/add";
+
 import { apiCall } from "./api";
+import { useModals } from "./composables/modals";
+
+const { pushModal } = useModals();
 
 // --- Search Providers --- //
 const GetEntity = (subsystem: string, entity: string): SearchProvider => {
@@ -52,15 +58,17 @@ const c = {
   NumberBox: (label, props?: Record<string, unknown>) => ({ is: "NumberBox", label, props }),
   CheckBox: (label) => ({ is: "CheckBox", label }),
   Heading: (caption: string) => ({ is: "Heading", props: { caption } }),
-  SingleSelect: (label, searchProvider: SearchProvider) => ({
+  SingleSelect: (label, searchProvider: SearchProvider, actions?: Action[]) => ({
     is: "SingleSelect",
     label,
     props: { searchProvider },
+    actions,
   }),
-  MultiSelect: (label, searchProvider: SearchProvider) => ({
+  MultiSelect: (label, searchProvider: SearchProvider, actions?: Action[]) => ({
     is: "MultiSelect",
     label,
     props: { searchProvider },
+    actions,
   }),
   EnumInput: (label, variants: Variants) => ({ is: "EnumInput", label, props: { variants } }),
 } satisfies { [k: string]: (label: string, ...args: any[]) => Field };
@@ -78,20 +86,31 @@ const _f = {
     "drop": { display: "Drop" },
     "continue": { display: "Continue" },
   }),
-  interface: c.SingleSelect("Interface", GetInterfaces),
+  interface: c.SingleSelect("Interface", GetInterfaces, [createAction("network", "interfaces", true)]),
   public_key: c.TextBox("Public Key"),
-  members: c.MultiSelect("Members", GetInterfaces),
+  members: c.MultiSelect("Members", GetInterfaces, [createAction("network", "interfaces")]),
 };
 const f = toComposableFields(_f);
+
+function createAction(subsystem: string, entity: string, single?: boolean): Action {
+  return {
+    name: "Create",
+    icon: IActionAdd,
+    callback: async (key, $formData) => {
+      const result = await pushModal(UpsertModal, { subsystem, entity });
+      if (result) $formData[key] = single ? result : [...$formData[key], result];
+    },
+  };
+}
 
 // oxfmt-ignore
 const fs = {
   rulesCommon: {
-    source_addresses: c.MultiSelect("Source", GetAddresses),
+    source_addresses: c.MultiSelect("Source", GetAddresses, [createAction("object", "addresses")]),
     negate_source: c.CheckBox("Negate Source"),
-    destination_addresses: c.MultiSelect("Destination", GetAddresses),
+    destination_addresses: c.MultiSelect("Destination", GetAddresses, [createAction("object", "addresses")]),
     negate_destination: c.CheckBox("Negate Destination"),
-    services: c.MultiSelect("Services", GetServices),
+    services: c.MultiSelect("Services", GetServices, [createAction("object", "services")]),
     counter: c.CheckBox("Counter"),
     log: c.CheckBox("Log"),
   },
@@ -164,8 +183,8 @@ export const subsystems = {
       fields: withCommon({
         ...fs.rulesCommon,
         dnat_heading: c.Heading("DNAT"),
-        dnat_address: c.SingleSelect("Destination", GetAddresses),
-        dnat_service: c.SingleSelect("Service", GetServices),
+        dnat_address: c.SingleSelect("Destination", GetAddresses, [createAction("object", "addresses", true)]),
+        dnat_service: c.SingleSelect("Service", GetServices, [createAction("object", "services", true)]),
         ...f.automatic_forward_rule,
       }),
       default: { counter: true },
@@ -189,8 +208,8 @@ export const subsystems = {
         snat_type: c.EnumInput("Type", {
           "masquerade": { display: "Masquerade" },
           "snat": { display: "SNAT", fields: {
-            address: c.SingleSelect("Source", GetAddresses),
-            service: c.SingleSelect("Service", GetServices),
+            address: c.SingleSelect("Source", GetAddresses, [createAction("object", "addresses", true)]),
+            service: c.SingleSelect("Service", GetServices, [createAction("object", "services", true)]),
           } },
         }),
         ...f.automatic_forward_rule,
@@ -232,7 +251,7 @@ export const subsystems = {
         interface_type: c.EnumInput("Type", {
           "hardware": { display: "Hardware", fields: { device: c.SingleSelect("Device", GetHardwareInterfaces) } },
           "vlan": { display: "VLAN", fields: {
-            parent: c.SingleSelect("VLAN Parent", GetInterfaces),
+            parent: c.SingleSelect("VLAN Parent", GetInterfaces, [createAction("network", "interfaces", true)]),
             id: c.NumberBox("VLAN ID", { min: 1, max: 4094 }),
           } },
           "bond": { display: "Bond", fields: { ...f.members } },
@@ -243,7 +262,7 @@ export const subsystems = {
           "static": { display: "Static", fields: { address: c.TextBox("Address") } },
           "dhcp": { display: "DHCP" },
         }),
-        virtual_router: c.SingleSelect("Virtual Router", GetVirtualRouters),
+        virtual_router: c.SingleSelect("Virtual Router", GetVirtualRouters, [createAction("network", "virtual_routers", true)]),
       }),
       columns: [
         { heading: "Name", path: "name" },
@@ -274,7 +293,7 @@ export const subsystems = {
       name: "Static Route",
       fields: withCommon({
         ...f.interface,
-        gateway: c.SingleSelect("Gateway", GetAddresses),
+        gateway: c.SingleSelect("Gateway", GetAddresses, [createAction("object", "addresses", true)]),
         destination: c.TextBox("Destination"),
         metric: c.NumberBox("Metric"),
       }),
@@ -304,7 +323,7 @@ export const subsystems = {
           "host": { display: "Host", fields: { address: c.TextBox("Address") } },
           "range": { display: "Range", fields: { range: c.TextBox("Range") } },
           "network": { display: "Network", fields: { network: c.TextBox("Network") } },
-          "group": { display: "Group", fields: { members: c.MultiSelect("Members", GetAddresses) } },
+          "group": { display: "Group", fields: { members: c.MultiSelect("Members", GetAddresses, [createAction("object", "addresses")]) } },
         }),
       }),
       columns: [
@@ -326,7 +345,7 @@ export const subsystems = {
           "tcp": { display: "TCP", fields: portFields },
           "udp": { display: "UDP", fields: portFields },
           "icmp": { display: "ICMP", fields: { ptypes: c.MultiSelect("Packet Types", ICMPPacketTypes) } },
-          "group": { display: "Group", fields: { members: c.MultiSelect("Members", GetServices) } },
+          "group": { display: "Group", fields: { members: c.MultiSelect("Members", GetServices, [createAction("object", "services")]) } },
         }),
       }),
       columns: [
@@ -352,21 +371,21 @@ export const subsystems = {
       name: "DHCP Server",
       fields: withCommon({
         ...f.interface,
-        pool: c.MultiSelect("Pool", GetAddresses),
+        pool: c.MultiSelect("Pool", GetAddresses, [createAction("object", "addresses")]),
         gateway_mode: c.EnumInput("Gateway Mode", {
           "none": { display: "None" },
           "interface": { display: "Interface" },
-          "specify": { display: "Specify", fields: { gateway: c.SingleSelect("Gateway", GetAddresses) } },
+          "specify": { display: "Specify", fields: { gateway: c.SingleSelect("Gateway", GetAddresses, [createAction("object", "addresses", true)]) } },
         }),
         dns_server_mode: c.EnumInput("DNS Server Mode", {
           "none": { display: "None" },
           "interface": { display: "Interface" },
-          "specify": { display: "Specify", fields: { dns_servers: c.MultiSelect("DNS Servers", GetAddresses) } },
+          "specify": { display: "Specify", fields: { dns_servers: c.MultiSelect("DNS Servers", GetAddresses, [createAction("object", "addresses")]) } },
         }),
         ntp_server_mode: c.EnumInput("NTP Server Mode", {
           "none": { display: "None" },
           "interface": { display: "Interface" },
-          "specify": { display: "Specify", fields: { ntp_servers: c.MultiSelect("NTP Servers", GetAddresses) } },
+          "specify": { display: "Specify", fields: { ntp_servers: c.MultiSelect("NTP Servers", GetAddresses, [createAction("object", "addresses")]) } },
         }),
         lease_time: c.NumberBox("Lease Time"),
       }),
@@ -410,7 +429,7 @@ export const subsystems = {
         ...f.public_key,
         private_key: c.TextBox("Private Key"),
         listen_port: c.NumberBox("Listen Port"),
-        peers: c.MultiSelect("Peers", GetPeers),
+        peers: c.MultiSelect("Peers", GetPeers, [createAction("vpn", "wireguard.peers")]),
       }),
     },
     "wireguard.peers": {
@@ -418,7 +437,7 @@ export const subsystems = {
       fields: withCommon({
         ...f.public_key,
         preshared_key: c.TextBox("Preshared Key"),
-        allowed_ips: c.MultiSelect("Allowed IPs", GetAddresses),
+        allowed_ips: c.MultiSelect("Allowed IPs", GetAddresses, [createAction("object", "addresses")]),
         endpoint: c.TextBox("Endpoint"),
         persistent_keepalive: c.NumberBox("Persistent Keepalive"),
       }),

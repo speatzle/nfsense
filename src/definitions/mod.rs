@@ -5,5 +5,4 @@ pub mod network;
 pub mod object;
 pub mod service;
 pub mod system;
-pub mod util;
 pub mod vpn;

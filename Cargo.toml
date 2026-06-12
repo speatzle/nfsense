@@ -44,5 +44,7 @@ axum-reverse-proxy = "1.0.3"
 tower = "0.5.2"
 #structdb-core = { path = "../structdb/structdb-core" }
 #structdb-macros = { path = "../structdb/structdb-macros" }
+ clap = { version = "4.6.1", features = ["derive"] }
+ zlink = { version = "0.5.0", default-features = false, features = ["tokio", "service", "proxy", "tracing"] }
  structdb-core = { git = "https://git.soontm.de/speatzle/structdb.git" }
  structdb-macros = { git = "https://git.soontm.de/speatzle/structdb.git" }

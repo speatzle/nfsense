@@ -5,6 +5,7 @@ pub mod definitions;
 pub mod state;
 pub mod templates;
 pub mod validation;
+pub mod varlink;
 pub mod web;
 
 #[macro_use]

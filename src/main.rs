@@ -8,8 +8,8 @@ use axum::{middleware, Router};
 use axum_reverse_proxy::ReverseProxy;
 use axum_server::tls_rustls::RustlsConfig;
 use nfsense::{
-    api, config_manager, state::AppState, web, web::auth::SessionState, CLIENT_ASSETS_PATH,
-    CLIENT_FAVICON_PATH, CLIENT_INDEX_PATH, HTTPS_CERT_PATH, HTTPS_KEY_PATH,
+    api, config_manager, state::AppState, varlink, web, web::auth::SessionState,
+    CLIENT_ASSETS_PATH, CLIENT_FAVICON_PATH, CLIENT_INDEX_PATH, HTTPS_CERT_PATH, HTTPS_KEY_PATH,
 };
 use std::env;
 use std::fs;
@@ -60,6 +60,12 @@ async fn main() {
             }
         }
         return;
+    }
+
+    info!("Starting Varlink API");
+    if let Err(e) = varlink::start() {
+        error!("Failed to start Varlink server: {e}");
+        std::process::exit(1);
     }
 
     info!("Connecting to System dbus...");

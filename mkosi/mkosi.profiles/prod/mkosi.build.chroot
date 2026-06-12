@@ -17,6 +17,7 @@ echo "Build Backend"
 cd $SRCDIR
 cargo build --release
 install -D target/release/nfsense "$DESTDIR/usr/sbin/nfsense"
+install -D target/release/nfctl "$DESTDIR/usr/sbin/nfctl"
 
 echo Copy Templates
 mkdir -p "$DESTDIR/usr/share/nfsense/templates/"

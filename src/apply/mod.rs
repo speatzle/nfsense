@@ -29,4 +29,7 @@ pub enum ApplyError {
 
     #[error("Config Check Failed")]
     ConfigCheckFailed,
+
+    #[error("Unsupported object type: {0}")]
+    ObjectReferenceError(String),
 }

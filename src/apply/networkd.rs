@@ -1,9 +1,12 @@
 use super::util;
 use super::ApplyError;
 use crate::{
-    definitions::{config::Config, network::NetworkInterfaceType},
+    definitions::{config::Config, network::NetworkInterfaceType, object::AddressType},
     templates,
 };
+use ipnet::IpNet;
+use serde::Serialize;
+use std::net::IpAddr;
 use std::process::Command;
 use std::{error::Error, io::Write};
 use tera::Context;
@@ -14,6 +17,13 @@ const NETWORKD_CONFIG_PATH: &str = "/run/systemd/network";
 pub struct File {
     pub name: String,
     pub content: String,
+}
+
+#[derive(Serialize)]
+pub struct StaticRouteContext {
+    pub destination: IpNet,
+    pub gateway: IpAddr,
+    pub metric: u64,
 }
 
 pub fn delete_files_in_folder(path: &str) -> std::io::Result<()> {
@@ -222,7 +232,28 @@ pub fn generate_networkd_config_files(
         // TODO Use Backreferenceing instead of loop and if
         for static_route in &pending_config.network.static_routes {
             if static_route.interface == interface.name {
-                static_routes.push(static_route);
+                let gateway_address =
+                    static_route.get_gateway(&pending_config).ok_or_else(|| {
+                        ApplyError::ObjectReferenceError(format!(
+                            "Static route '{}' references non-existent gateway address",
+                            static_route.name
+                        ))
+                    })?;
+                match gateway_address.address_type {
+                    AddressType::Host { address } => {
+                        static_routes.push(StaticRouteContext {
+                            destination: static_route.destination,
+                            gateway: address,
+                            metric: static_route.metric,
+                        });
+                    }
+                    _ => {
+                        return Err(ApplyError::ObjectReferenceError(format!(
+                            "Static route '{}' gateway must be a Host address, got {:?}",
+                            static_route.name, gateway_address.address_type
+                        )));
+                    }
+                };
             }
         }
         context.insert("static_routes", &static_routes);

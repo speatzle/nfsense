@@ -39,14 +39,6 @@ async function load() {
   $loading = false;
 }
 
-async function generateKeys() {
-  const res = await apiCall("vpn.wireguard.keypair.generate", {});
-  if (res.Error === null) {
-    console.debug("keypair", res.Data);
-    alert(JSON.stringify(res.Data));
-  } else console.debug("error", res);
-}
-
 async function deleteInterface() {
   const res = await apiCall("vpn.wireguard.interfaces.delete", {
     name: $displayData[$selection[0]].name,
@@ -72,7 +64,6 @@ onMounted(load);
   <Page title="Wireguard Interfaces">
     <template #header>
       <button @click="load">Refresh</button>
-      <button @click="generateKeys">Generate Keys</button>
       <button @click="createInterface">Create</button>
       <button :disabled="$selection.length != 1" @click="editInterface">Edit</button>
       <button :disabled="$selection.length != 1" @click="deleteInterface">Delete</button>

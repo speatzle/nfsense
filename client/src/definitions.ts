@@ -6,6 +6,7 @@ import EnumValueDisplay from "~/components/display/EnumValueDisplay.vue";
 import PortServiceDisplay from "~/components/display/PortServiceDisplay.vue";
 import UpsertModal from "~/components/modals/UpsertModal.vue";
 import IActionAdd from "~icons/material-symbols/add";
+import IActionKey from "~icons/material-symbols/key";
 
 import { apiCall } from "./api";
 import { useModals } from "./composables/modals";
@@ -426,7 +427,21 @@ export const subsystems = {
     "wireguard.interfaces": {
       name: "Wireguard Interface",
       fields: withCommon({
-        ...f.public_key,
+        public_key: {
+          is: "TextBox",
+          label: "Public Key",
+          actions: [{
+            name: "Generate",
+            icon: markRaw(IActionKey),
+            callback: async (_, $formData) => {
+              const res = await apiCall("vpn.wireguard.keypair.generate", {});
+              if (res.Error === null) {
+                $formData.public_key = res.Data.pubkey;
+                $formData.private_key = res.Data.privkey;
+              }
+            },
+          }],
+        },
         private_key: c.TextBox("Private Key"),
         listen_port: c.NumberBox("Listen Port"),
         peers: c.MultiSelect("Peers", GetPeers, [createAction("vpn", "wireguard.peers")]),

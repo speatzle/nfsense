@@ -15,6 +15,7 @@ pub struct VPN {
 
 #[derive(StructDb, Serialize, Deserialize, Clone, Validate, Default, Debug)]
 #[garde(context(Config))]
+#[garde(custom(validation::validate_wireguard_ports))]
 pub struct Wireguard {
     #[collection]
     #[garde(dive)]
@@ -33,7 +34,7 @@ pub struct WireguardInterface {
     pub name: String,
     pub public_key: String,
     pub private_key: String,
-    pub listen_port: Option<u64>,
+    pub listen_port: u64,
     #[requires(WireguardPeer)]
     pub peers: Vec<String>,
     pub comment: String,

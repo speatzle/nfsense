@@ -16,3 +16,20 @@ pub fn validate_name(value: &str, _: &Config) -> garde::Result {
     }
     Ok(())
 }
+
+pub fn validate_endpoint_host(value: &str, ctx: &Config) -> garde::Result {
+    let addr = ctx
+        .object
+        .addresses
+        .iter()
+        .find(|a| a.name == value)
+        .ok_or_else(|| garde::Error::new(format!("address '{}' not found", value)))?;
+
+    match &addr.address_type {
+        crate::definitions::object::AddressType::Host { .. } => Ok(()),
+        other => Err(garde::Error::new(format!(
+            "endpoint '{}' is {:?}, must be a Host address",
+            value, other
+        ))),
+    }
+}

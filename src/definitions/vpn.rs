@@ -33,7 +33,7 @@ pub struct WireguardInterface {
     pub name: String,
     pub public_key: String,
     pub private_key: String,
-    pub listen_port: u64,
+    pub listen_port: Option<u64>,
     #[requires(WireguardPeer)]
     pub peers: Vec<String>,
     pub comment: String,
@@ -50,8 +50,17 @@ pub struct WireguardPeer {
     pub preshared_key: Option<String>,
     #[requires(Address)]
     pub allowed_ips: Vec<String>,
-    #[requires(Address)]
-    pub endpoint: Option<String>,
+    pub endpoint: Option<WireguardEndpoint>,
     pub persistent_keepalive: Option<u64>,
     pub comment: String,
+}
+
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, PartialEq)]
+#[garde(context(Config))]
+#[garde(allow_unvalidated)]
+pub struct WireguardEndpoint {
+    #[requires(Address)]
+    #[garde(custom(validation::validate_endpoint_host))]
+    pub address: String,
+    pub port: u64,
 }

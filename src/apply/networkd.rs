@@ -1,7 +1,9 @@
 use super::util;
 use super::ApplyError;
 use crate::{
-    definitions::{config::Config, network::NetworkInterfaceType, object::AddressType},
+    definitions::{
+        config::Config, network::NetworkInterfaceType, object::Address, object::AddressType,
+    },
     templates,
 };
 use ipnet::IpNet;
@@ -9,10 +11,20 @@ use serde::Serialize;
 use std::net::IpAddr;
 use std::process::Command;
 use std::{error::Error, io::Write};
+use structdb_core::Database;
 use tera::Context;
 use tracing::{error, info};
 
 const NETWORKD_CONFIG_PATH: &str = "/run/systemd/network";
+
+#[derive(Serialize)]
+struct PeerContext {
+    public_key: String,
+    preshared_key: Option<String>,
+    allowed_ips: Vec<String>,
+    endpoint: Option<String>,
+    persistent_keepalive: Option<u64>,
+}
 
 pub struct File {
     pub name: String,
@@ -186,11 +198,30 @@ pub fn generate_networkd_config_files(
         context.insert("interface", &interface);
         let mut peers = Vec::new();
         for peer in interface.get_peers(&pending_config) {
-            let mut temp = peer.clone();
-            temp.allowed_ips = util::convert_addresses_to_strings(
+            let allowed_ips = util::convert_addresses_to_strings(
                 peer.get_allowed_ips(&pending_config).cloned().collect(),
             );
-            peers.push(temp);
+
+            // Resolve endpoint address + port to formatted string
+            let endpoint = peer.endpoint.as_ref().map(|ep| {
+                let addr = pending_config
+                    .get::<Address>(&ep.address)
+                    .expect("validation ensures endpoint address exists");
+                match &addr.address_type {
+                    AddressType::Host { address } => {
+                        format!("{}:{}", address, ep.port)
+                    }
+                    _ => unreachable!("validation enforces Host type for endpoint"),
+                }
+            });
+
+            peers.push(PeerContext {
+                public_key: peer.public_key.clone(),
+                preshared_key: peer.preshared_key.clone(),
+                allowed_ips,
+                endpoint,
+                persistent_keepalive: peer.persistent_keepalive,
+            });
         }
 
         context.insert("peers", &peers);

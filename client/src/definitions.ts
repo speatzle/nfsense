@@ -443,7 +443,7 @@ export const subsystems = {
           }],
         },
         private_key: c.TextBox("Private Key"),
-        listen_port: c.NumberBox("Listen Port"),
+        listen_port: c.NumberBox("Listen Port", { default: 51820 }),
         peers: c.MultiSelect("Peers", GetPeers, [createAction("vpn", "wireguard.peers")]),
       }),
     },
@@ -453,9 +453,20 @@ export const subsystems = {
         ...f.public_key,
         preshared_key: c.TextBox("Preshared Key"),
         allowed_ips: c.MultiSelect("Allowed IPs", GetAddresses, [createAction("object", "addresses")]),
-        endpoint: c.TextBox("Endpoint"),
+        endpoint: c.EnumInput("Endpoint", {
+          "none": { display: "None" },
+          "specify": {
+            display: "Specify",
+            fields: {
+              address: c.SingleSelect("Address", GetAddresses, [createAction("object", "addresses", true)]),
+              port: c.NumberBox("Port"),
+            },
+            default: { port: 51820 },
+          },
+        }),
         persistent_keepalive: c.NumberBox("Persistent Keepalive"),
       }),
+      default: { endpoint: "none" },
       columns: [
         { heading: "Name", path: "name" },
         { heading: "Allowed IPs", path: "allowed_ips", component: markRaw(ArrayDisplay), componentProp: "data" },

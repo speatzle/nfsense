@@ -236,6 +236,7 @@ export const subsystems = {
       columns: [
         { heading: 'Name', path: 'name' },
         { heading: 'Source', path: 'source_addresses', component: markRaw(ArrayDisplay), componentProp: 'data' },
+        { heading: 'Destination', path: 'destination_addresses', component: markRaw(ArrayDisplay), componentProp: 'data' },
         { heading: 'Service', path: 'services', component: markRaw(ArrayDisplay), componentProp: 'data' },
         { heading: 'Verdict', path: 'verdict' },
         { heading: 'Counter', path: 'counter' },

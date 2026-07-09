@@ -77,7 +77,7 @@ function changeVariant(variant: Index) {
       <button
         v-for="[index, variant] of Object.entries(props.variants)"
         :key="index"
-        :class="{ selected: $currentVariant === index }"
+        :class="{ selected: $currentVariant === index, accent: $currentVariant === index }"
         @click="() => changeVariant(index)"
       >
         <component :is="variant.icon" v-if="variant.icon" />
@@ -99,12 +99,7 @@ function changeVariant(variant: Index) {
   gap: 0.25rem;
 }
 .pillbar > button {
-  padding: 0.25rem;
+  --button-padding: 0.25rem;
   gap: 0.25rem;
-}
-.pillbar > .selected {
-  background-color: var(--cl-bg-sl);
-  border: 1px solid var(--cl-fg);
-  padding: calc(0.25rem - 1px);
 }
 </style>

@@ -70,8 +70,8 @@ onMounted(load);
   <Page :title="`${$entity.name}s`">
     <template #header>
       <button @click="load">Refresh</button>
-      <button @click="createRow">Create</button>
-      <button :disabled="$selection.length != 1" @click="() => editRow()">Edit</button>
+      <button @click="createRow" :class="{accent: $selection.length != 1}">Create</button>
+      <button :disabled="$selection.length != 1" :class="{accent: $selection.length == 1}" @click="() => editRow()">Edit</button>
       <button :disabled="$selection.length != 1" @click="deleteRow">Delete</button>
     </template>
     <NiceTable

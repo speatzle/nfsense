@@ -76,6 +76,7 @@ function triggerAction(index: string, callback?: ActionCallback) {
           <button
             v-for="action of field.actions?.filter((a) => !a.when || a.when(index, $modelValue))"
             @click="triggerAction(index, action.callback)"
+            class="accent"
           >
             <component v-if="action.icon" :is="action.icon" />
             <template v-else>{{ action.name }}</template>
@@ -93,10 +94,10 @@ function triggerAction(index: string, callback?: ActionCallback) {
   gap: 0.25rem;
   align-self: start;
   & > button {
-    padding: 0.25rem;
+    --button-padding: calc(0.25rem + 1px); /* Slightly better alignment */
     & > svg {
-      padding: 0px;
       margin: -0.25rem;
+      --cl-fg-l: var(--cl-accent-fg-l);
     }
   }
 }

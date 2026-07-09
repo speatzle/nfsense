@@ -45,7 +45,7 @@ export default defineConfig({
       ],
       types: [{ from: "focus-trap-vue", names: ["FocusTrap"] }],
     }),
-    Icons({}),
+    Icons({scale: 1.5}),
   ],
 
   // Easy Imports (Keep in sync with tsconfig.json!)

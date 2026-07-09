@@ -15,7 +15,8 @@ const { popModal } = useModals();
 </template>
 <style scoped>
 :is(.modal-header, .modal-body, .modal-footer) {
-  border: 0.25rem solid var(--cl-bg-el);
+  border: 2px solid var(--cl-bd);
+  background-color: var(--cl-bg);
 }
 :is(.modal-body, .modal-footer) {
   border-top: none;
@@ -28,13 +29,12 @@ const { popModal } = useModals();
 }
 .modal-header {
   place-items: center;
-  background: var(--cl-bg-el);
+  border-bottom: none;
+  padding: calc(0.5rem);
 
   & > button {
-    padding: 0rem;
-    &:hover {
-      background: var(--cl-bg-hl);
-    }
+    --button-padding: 0rem;
+    --button-border: 0px;
   }
 }
 .modal-footer {

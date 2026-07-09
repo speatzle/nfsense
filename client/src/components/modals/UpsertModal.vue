@@ -67,11 +67,19 @@ onMounted(async () => {
     <template v-else-if="!$entity">No editType for this Entity</template>
     <template v-else>
       <NicerForm v-model="$vm" class="scroll" :fields="$entity.fields" />
-      <pre v-text="JSON.stringify($vm, null, 2)" />
+      <pre class="pad" v-text="JSON.stringify($vm, null, 2)"/>
     </template>
     <template #footer>
-      <button @click="upsert">Submit</button>
       <button @click="popModal">Discard</button>
+      <button @click="upsert" class="accent">Submit</button>
     </template>
   </Modal>
 </template>
+<style>
+pre {
+  --cl-z: 0;
+  --cl-e: -1;
+  background: var(--cl-bg);
+  user-select: text;
+}
+</style>

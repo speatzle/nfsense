@@ -1,7 +1,12 @@
+/* Component Defaults / Design Parameters */
+:root {
+  --button-border: 1px;
+  --button-padding: 0.5rem;
+}
+
 /* CSS Components */
 button, .button {
   text-decoration: unset;
-  border: unset;
   text-align: unset;
   font-weight: unset;
   line-height: unset;
@@ -12,18 +17,16 @@ button, .button {
   overflow: clip;
   vertical-align: center;
 
-  padding: 0.5rem;
+  padding: calc(var(--button-padding) - var(--button-border));
   gap: 0.5rem;
 
   cursor: pointer;
   align-items: center;
   justify-content: center;
   white-space: nowrap;
+  transition: background 0.1s ease-out, background-color 0.1s ease-out;
 }
-.button > svg, button > svg {
-  min-width: 1.5rem;
-  min-height: 1.5rem;
-}
+
 
 input {
   height: 1.5rem;
@@ -42,7 +45,7 @@ input {
   padding: 0px; /* To keep alignment, no padding is needed for those descendants */
 }
 :is(form, .form) :is(form, .form) > .inner-form { /* Soft-Nesting for Subform and EnumInput */
-  border-left: 2px solid var(--cl-fg);
+  border-left: 2px solid var(--cl-fg-1);
   padding-left: 0.5rem;
 }
 :is(form, .form) > :is(button, .button, h1, h2, h3, h4, h5, h6) {
@@ -65,13 +68,13 @@ th:hover {
 }
 th, td {
   padding: 0.5rem;
-  border: 0.125rem solid var(--cl-bg-el);
+  border: 0.125rem solid var(--cl-el);
 }
 td {
   vertical-align: top;
 }
 
-th>* {
+th > * {
   justify-content: center;
   align-items: center;
 }
@@ -79,50 +82,52 @@ th svg {
   height: 1rem;
 }
 
-.search-bar {
-  display: block;
-  padding: 0.4rem;
-  border: 1px solid var(--cl-fg);
-}
-
 /* Coloring */
 button, .button {
-  background-color: var(--cl-bg-el);
-}
-/* Button Background Exception for Nav Menu */
-.nav-body button,
-.nav-body .button {
   background-color: var(--cl-bg);
+  height: auto;
+  border-style: solid;
+  border-width: var(--button-border);
 }
 .button:hover, button:hover,
 .button:focus, button:focus {
-  background-color: var(--cl-bg-hl);
+  --cl-i: 1;
 }
 
 .button:disabled, button:disabled, .disabled {
-  background-color: var(--cl-bg-hl);
+  --cl-e: -1;
   pointer-events: none;
 }
 
 input, textarea {
-  background-color: var(--cl-bg-hl);
-  border: 1px solid var(--cl-fg);
+  --cl-z: 2;
+  background-color: var(--cl-bg);
+  border-style: solid;
+  border-width: 1px;
 }
 
-table {
-  background-color: var(--cl-table-body);
+@media (prefers-color-scheme: light) {
+  input, textarea {
+    --cl-z: 0;
+  }
 }
 
 th {
-  background-color: var(--cl-table-head);
+  --cl-z: 2;
+  background-color: var(--cl-bg);
+  color: var(--cl-on-el);
 }
-
-tbody tr:hover, th:hover {
-  background-color: var(--cl-table-hl);
+tr {
+  background-color: var(--cl-bg);
 }
-
+tr:nth-child(even) {
+  --cl-z: 1;
+}
+:is(tbody tr, th):hover {
+  --cl-i: 1;
+}
 tbody tr.selected {
-  background-color: var(--cl-table-sl)
+  --cl-i: 2;
 }
 
 .pillbar {
@@ -138,6 +143,7 @@ tbody tr.selected {
 }
 
 .pill {
-  border: 1px solid var(--cl-fg);
+  border-style: solid;
+  border-width: 1px;
   padding: 0.25rem;
 }

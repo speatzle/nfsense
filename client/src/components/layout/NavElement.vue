@@ -17,6 +17,8 @@ watchEffect(() => emit("update:depth", $expanded ? ($lowerDepth || 0) + 1 : 0));
 
 const tallyChildren = (routes: NavRoute[]): number =>
   routes.reduce((tally, route) => tally + 1 + tallyChildren(route.children ?? []), 0);
+
+const _document = document;
 </script>
 <template>
   <router-link
@@ -24,7 +26,12 @@ const tallyChildren = (routes: NavRoute[]): number =>
     :to="props.route.href"
     class="button"
     :title="props.route.caption"
-    @click="props.clickHandler"
+    @click="
+      () => {
+        props.clickHandler();
+        (_document.activeElement as HTMLElement)?.blur();
+      }
+    "
   >
     <component :is="props.route.icon" />
     <span v-text="props.route.caption" />
@@ -53,11 +60,13 @@ const tallyChildren = (routes: NavRoute[]): number =>
   & svg {
     place-self: center;
   }
-  &:not(:hover) {
-    background: transparent;
-  }
   & > span:last-child {
     grid-column: 2 / -1;
+  }
+  &.router-link-active {
+    --cl-bg-l: var(--cl-accent-bg-l);
+    --cl-base: var(--cl-primary);
+    --cl-fg-l: var(--cl-accent-fg-l);
   }
 }
 
@@ -65,18 +74,20 @@ const tallyChildren = (routes: NavRoute[]): number =>
   transition: transform 0.2s ease-out;
   &.expanded {
     transform: rotate(180deg);
+    --cl-base: var(--cl-primary);
   }
 }
 
 .dropdown {
+  --cl-z: 0;
+  --cl-bd-base: var(--cl-primary);
+  --cl-bd-l: var(--cl-accent-bg-l);
+  background: var(--cl-bg);
   max-height: 0px;
-  border-left: 2px solid var(--cl-fg);
-  backdrop-filter: brightness(75%);
+  border-width: 4px;
+  border-left-style: solid;
   padding-left: calc(0.5rem - 2px);
 
-  & .button:not(:hover) {
-    background: transparent;
-  }
   &.expanded {
     max-height: var(--predicted-height);
   }

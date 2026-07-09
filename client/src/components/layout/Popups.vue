@@ -22,9 +22,9 @@ const { modalStack, popModal } = useModals();
 }
 
 .popup {
+  --cl-z: 1;
   display: grid;
   grid-template-rows: auto 1fr auto;
-  background: var(--cl-bg);
   width: calc(min(100vw, 50rem) - 5vw);
   height: calc(min(100vh, 50rem) - 5vh);
   grid-column: 1;

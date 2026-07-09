@@ -31,7 +31,7 @@ syncModel(toRef(props, "modelValue"), $$($modelValue), (v) => emit("update:model
       v-for="[index, option] of Object.entries(props.options)"
       :key="index"
       class="option"
-      :class="{ selected: $modelValue === index }"
+      :class="{ selected: $modelValue === index, accent: $modelValue === index }"
       @click="() => ($modelValue = index)"
     >
       <component :is="option.icon" />
@@ -48,8 +48,5 @@ div {
 button {
   padding: 0.25rem;
   gap: 0.25rem;
-}
-.selected {
-  background-color: var(--cl-bg-sl);
 }
 </style>

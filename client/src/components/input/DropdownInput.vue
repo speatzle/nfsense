@@ -178,7 +178,7 @@ function handleKeydown(e: KeyboardEvent) {
 <template>
   <div
     ref="inputDiv"
-    :class="{ multiselect: 1, 'cl-secondary': 1, expanded: $expanded }"
+    :class="{ multiselect: 1, expanded: $expanded }"
     @keydown="handleKeydown"
     @focusin="
       ($event) => {
@@ -194,14 +194,14 @@ function handleKeydown(e: KeyboardEvent) {
         <div
           v-for="(key, index) of $modelValue as Index[]"
           :key="key"
-          :class="{ navigated: $selCount + $navigated === index }"
+          :class="{ navigated: $selCount + $navigated === index, button: 1 }"
           @click="() => toggle(key)"
           v-text="$options[key]?.display"
         />
       </div>
       <div class="searchbar">
         <div class="expand button" :tabindex="$expanded ? undefined : -1">
-          <i-material-symbols-expand-circle-down-outline width="1em" height="1em" />
+          <i-material-symbols-expand-circle-down-outline />
         </div>
         <input
           v-if="props.multiple || $modelValue === null"
@@ -228,6 +228,7 @@ function handleKeydown(e: KeyboardEvent) {
               ? $modelValue?.some((x: Index) => x == key)
               : key == $modelValue,
             navigated: $navigated === index + 1,
+            button: 1,
           }"
           @click="() => toggle(key)"
         >
@@ -248,12 +249,19 @@ function handleKeydown(e: KeyboardEvent) {
 
 <style scoped>
 * {
-  border: none;
+  border-width: 0px;
+  border-style: none;
 }
+
+.multiselect {
+  --cl-z: 2;
+}
+
 .selection,
 .searchbar,
 .dropdown {
-  border: 1px solid var(--cl-fg);
+  border-width: 1px;
+  border-style: solid;
 }
 .selection {
   border-bottom: none;
@@ -269,11 +277,6 @@ function handleKeydown(e: KeyboardEvent) {
   flex-grow: 1;
   padding: 0.5rem;
   gap: 0.5rem;
-  background-color: var(--cl-bg);
-}
-
-.selection > div {
-  background-color: var(--cl-bg-el);
 }
 
 :is(.selection, .dropdown) > div {
@@ -281,21 +284,21 @@ function handleKeydown(e: KeyboardEvent) {
   padding: 0.25rem;
   gap: 0.5rem;
   cursor: pointer;
-}
-:is(.selection, .dropdown) > div > div {
-  justify-content: center;
-}
-:is(.selection, .dropdown) > div.selected {
-  background-color: var(--cl-bg-sl);
-}
-:is(.selection, .dropdown) > div:hover,
-:is(.selection, .dropdown) > div.navigated {
-  background-color: var(--cl-bg-hl);
+  justify-content: left;
+
+  &.selected {
+    --cl-z: 3;
+  }
+  & > div {
+    justify-content: center;
+  }
+  &.navigated {
+    --cl-z: 0;
+  }
 }
 
 .searchbar {
   flex-flow: row nowrap;
-  background: var(--cl-bg-hl);
 }
 .expand {
   padding: 0px;

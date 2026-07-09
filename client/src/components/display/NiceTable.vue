@@ -165,10 +165,10 @@ function dragDropRow() {
 
 <style scoped>
 .dragged-over-before {
-  border-top: 0.25rem solid var(--cl-fg);
+  border-top: 0.25rem solid var(--cl-bd);
 }
 .dragged-over-after {
-  border-bottom: 0.25rem solid var(--cl-fg);
+  border-bottom: 0.25rem solid var(--cl-bd);
 }
 
 tr {

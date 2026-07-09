@@ -10,9 +10,9 @@
   padding: 0px;
   margin: 0px;
   user-select: inherit;
-  color: inherit;
   overflow: clip; /* Replaces overflow: hidden, which previously broke subgrid alignment */
   flex-shrink: 0;
+  outline: none;
 }
 
 div, ul, ol, nav {

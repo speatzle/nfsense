@@ -78,11 +78,11 @@ onMounted(async () => {
     `"
     :class="{ layout: 1, 'nav-open': $navOpen }"
   >
-    <button class="nav-head cl-secondary cl-force-dark" @click="$navOpen = !$navOpen">
-      <i-mdi-letter-n-box-outline />
+    <button class="nav-head" @click="$navOpen = !$navOpen">
+      <i-mdi-letter-n-box />
       <h1>nfSense</h1>
     </button>
-    <div class="nav-body cl-secondary cl-force-dark">
+    <div class="nav-body">
       <div class="nav-container">
         <NavElements
           :routes="navRoutes"
@@ -109,17 +109,17 @@ onMounted(async () => {
 
   <Transition name="fade">
     <div v-if="$authState === AuthState.Unauthenticated" class="login">
-      <FocusTrap>
-        <form class="cl-secondary pad" @submit.prevent>
-          <h1>nfSense Login</h1>
-          <h2 v-show="$loginDisabled">Logging in...</h2>
-          <label for="username" :hidden="$loginDisabled" v-text="'Username'" />
-          <input v-model="$username" name="username" v-show="!$loginDisabled" />
-          <label for="password" :hidden="$loginDisabled" v-text="'Password'" />
-          <input v-model="$password" name="password" type="password" v-show="!$loginDisabled" />
-          <button @click="tryLogin">Login</button>
-        </form>
-      </FocusTrap>
+      <!-- <FocusTrap> -->
+      <form class="pad" @submit.prevent>
+        <h1>nfSense Login</h1>
+        <h2 v-show="$loginDisabled">Logging in...</h2>
+        <label for="username" :hidden="$loginDisabled" v-text="'Username'" />
+        <input v-model="$username" name="username" v-show="!$loginDisabled" />
+        <label for="password" :hidden="$loginDisabled" v-text="'Password'" />
+        <input v-model="$password" name="password" type="password" v-show="!$loginDisabled" />
+        <button @click="tryLogin" class="accent">Login</button>
+      </form>
+      <!-- </FocusTrap> -->
     </div>
   </Transition>
 </template>
@@ -140,6 +140,18 @@ onMounted(async () => {
 }
 .login {
   place-items: center;
+  & > form {
+    --cl-z: 1;
+    background: var(--cl-bg);
+    & > button {
+      --cl-z: 2;
+    }
+  }
+}
+
+:is(.nav-head, .nav-body) {
+  --cl-z: 1;
+  border-right-style: solid;
 }
 
 .nav-head {
@@ -147,12 +159,28 @@ onMounted(async () => {
   justify-content: left;
   padding-left: 0px;
   gap: 0px;
+  --button-border: 0px;
 
+  & > svg {
+    --cl-fg-l: var(--cl-accent-fg-l);
+    --cl-base: var(--cl-primary);
+    background: radial-gradient(
+      circle,
+      var(--cl-fg) 0%,
+      var(--cl-fg) 30%,
+      #00000000 30%,
+      #00000000 100%
+    );
+  }
+  & > svg > * {
+    --cl-fg-l: var(--cl-accent-bg-l);
+    --cl-base: var(--cl-primary);
+  }
   &:focus {
-    background: var(--cl-bg);
+    --cl-i: 0;
   }
   &:hover {
-    background: var(--cl-bg-el);
+    --cl-i: 1;
   }
   & > svg {
     width: var(--reduced-width);
@@ -165,6 +193,8 @@ onMounted(async () => {
   display: grid;
   grid-template: 1fr auto / 1fr;
   overflow: auto;
+  background-color: var(--cl-bg);
+  --button-border: 0px;
 
   & .flex-row * {
     flex: 1;
@@ -172,8 +202,8 @@ onMounted(async () => {
   & .nav-container {
     scrollbar-width: none;
     background: /* Top/Bottom Cover, Top/Bottom Shadow */
-      linear-gradient(var(--cl-bg) 30%, transparent) center top,
-      linear-gradient(transparent, var(--cl-bg) 70%) center bottom,
+      linear-gradient(var(--cl-el) 30%, transparent) center top,
+      linear-gradient(transparent, var(--cl-el) 70%) center bottom,
       linear-gradient(#00000080, transparent) center top,
       linear-gradient(transparent, #00000080) center bottom;
     background-repeat: no-repeat;
@@ -189,7 +219,9 @@ onMounted(async () => {
       display: none;
     }
     & > .nav-elements {
-      grid-template-columns: calc(var(--reduced-width) - 0.25rem) 1fr auto; /* -0.25rem adjustment is for halved 0.5rem padding */
+      grid-template-columns:
+        calc(var(--reduced-width) - 0.25rem)
+        1fr auto; /* -0.25rem adjustment is for halved 0.5rem padding */
     }
   }
 }
@@ -207,12 +239,15 @@ onMounted(async () => {
 
 /* Desktop */
 @media (min-width: 769px) {
+  :is(.nav-head, .nav-body) {
+    border-right-width: 2px;
+  }
   .layout:not(.nav-open) :is(.nav-head, .nav-body) {
-    width: calc(0% + var(--reduced-width));
+    width: calc(0% + var(--reduced-width) + 2px);
   }
   .layout:not(.nav-open) .page {
-    left: calc(calc(-100vw + 100%) + var(--sidepane-width) + var(--reduced-width));
-    width: calc(calc(0% + 100vw) - var(--sidepane-width) - var(--reduced-width));
+    left: calc(calc(-100vw + 100%) + var(--sidepane-width) + var(--reduced-width) + 2px);
+    width: calc(calc(0% + 100vw) - var(--sidepane-width) - var(--reduced-width) - 2px);
   }
   .layout:not(.nav-open) > .nav-body > .flex-row {
     flex-direction: column;
@@ -227,6 +262,9 @@ onMounted(async () => {
 
 /* Mobile */
 @media (max-width: 768px) {
+  :is(.nav-head, .nav-body) {
+    border-right-width: 0px;
+  }
   .layout {
     grid-template-rows: auto auto 1fr;
     grid-template-areas:

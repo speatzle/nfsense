@@ -1,17 +1,66 @@
 # Global Styles
 This folder contains stylesheets which contain rules that apply to everything in the project.
 
-## atomic.css: Atomic Styles
-Utility classes which set only one or a few generic attributes.
+## Colors: Cascading Color Design System
 
-## colors.css: Color System
-Contains the definition of Base Colors, Color Palettes and Color Contexts.
+CCDS uses OKLCH and a small set of *cascading semantic parameters* for elevation, interaction state and content emphasis to derive final lightness for every element's background, foreground, and border. They compose with *base values for lightness, hue and chroma* to create a perceptually uniform system where visual hierarchy emerges naturally from semantic markup. Theme switching becomes trivial by overriding only a small subset of base values.
 
-## components.css: Pure Style Components
-These components are meant to style DOM elements regardless of which Vue component renders them, promoting reuse.
+The following diagram illustrates how colors are derived:
+```mermaid
+flowchart TD
+  subgraph fcc[Per-Element Final Color]
+    subgraph lc[Lightness Calculation]
+      bgl["Background (--cl-bg-fin-l)"]
+      bdl["Border (--cl-bd-fin-l)"]
+      fgl["Foreground (--cl-fg-fin-l)"]
+    end
+    c["Chroma<br>(Tapered by Lightness)"]
+    h[Hue]
+    l[Lightness]
+    fc["Final Colors (--cl-bg/fg/bd)"]
+  end
+  subgraph ep[Semantic Parameters]
+    i["Interaction State (--cl-i)"]
+    z["Surface Elevation (--cl-z)"]
+    b["Base Color (--cl-base-*)"]
+    e["Content Emphasis (--cl-e)"]
+  end
+  subgraph sp[Theme Parameters]
+  subgraph bl[Base Lightnesses]
+    bgbl["Background (--cl-bg-l)"]
+    fgbl["Foreground (--cl-fg-l)"]
+    bdbl["Border (--cl-bd-l)"]
+  end
+    subgraph bc[Base Colors]
+    bp["Primary (--cl-primary)"]
+    bn["Neutral (--cl-neutral)"]
+    etc["Functional, Etc. (e.g. --cl-error, --cl-secondary, ...)"]
+    end
+    subgraph lo[Lightness Offsets]
+      direction TD
+      ioff["Interaction (--cl-ioff)"]
+      zoff["Elevation (--cl-zoff)"]
+      eoff["(De-)Emphasis (--cl-eoff)"]
+    end
+  end
+  lc --> c
+  lc --> l
+  h --> fc
+  c --> fc
+  l --> fc
+  b --> h
+  b --> c
+  
+  ioff --X--- i
+  zoff --X--- z
+  eoff --X--- e
+  
+  bc --- b
+  bl --> lc
 
-## mlfe.css: CSS Reset
-MLFE is a minimal but aggressive CSS reset that helps us with designing predictable layout.
-
-## transitions.css: Generi Transitions
-Contains transition classes for use with Vues `Transition` components.
+  z --=--> bgl
+  i --=--> bgl
+  e --=--> bdl
+  z --=--> bdl
+  e --=--> fgl
+```

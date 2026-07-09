@@ -78,7 +78,9 @@ onMounted(load);
       v-model:selection="$selection"
       v-model:data="$displayData"
       :columns="$columns"
-      :table-props="$entity.ordered ? { draggable: true } : { sort: true, sortSelf: true }"
+      :draggable="$entity.ordered"
+      :sort="!$entity.ordered"
+      :sort-self="!$entity.ordered"
       @dragged-row="moveRow"
       @row-action="(index) => editRow(index)"
     />

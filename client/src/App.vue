@@ -196,14 +196,18 @@ onMounted(async () => {
   background-color: var(--cl-bg);
   --button-border: 0px;
 
+  & :is(button, .button):not(:hover, :focus) {
+    background: transparent;
+  }
+
   & .flex-row * {
     flex: 1;
   }
   & .nav-container {
     scrollbar-width: none;
     background: /* Top/Bottom Cover, Top/Bottom Shadow */
-      linear-gradient(var(--cl-el) 30%, transparent) center top,
-      linear-gradient(transparent, var(--cl-el) 70%) center bottom,
+      linear-gradient(var(--cl-bg) 30%, transparent) center top,
+      linear-gradient(transparent, var(--cl-bg) 70%) center bottom,
       linear-gradient(#00000080, transparent) center top,
       linear-gradient(transparent, #00000080) center bottom;
     background-repeat: no-repeat;

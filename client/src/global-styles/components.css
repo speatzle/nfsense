@@ -68,7 +68,6 @@ th:hover {
 }
 th, td {
   padding: 0.5rem;
-  border: 0.125rem solid var(--cl-el);
 }
 td {
   vertical-align: top;
@@ -116,6 +115,11 @@ th {
   --cl-z: 2;
   background-color: var(--cl-bg);
   color: var(--cl-on-el);
+}
+th, td {
+  /* Match border to background of th => bg + 2z */
+  --bg-2z-l: calc(var(--cl-bg-l) + 2*var(--cl-zoff));
+  border: 0.125rem solid oklch(from var(--cl-bd) var(--bg-2z-l) calc(sin((1 - var(--bg-2z-l)) * pi) * c) h);
 }
 tr {
   background-color: var(--cl-bg);

@@ -167,8 +167,8 @@ onMounted(async () => {
     background: radial-gradient(
       circle,
       var(--cl-fg) 0%,
-      var(--cl-fg) 30%,
-      #00000000 30%,
+      var(--cl-fg) 25%,
+      #00000000 25%,
       #00000000 100%
     );
   }

@@ -2,7 +2,7 @@ use super::ApiError;
 use crate::{
     create_thing,
     definitions::firewall::{DestinationNATRule, ForwardRule, InboundRule, SourceNATRule},
-    delete_thing, get_thing, list_things,
+    delete_thing, get_thing, list_things, move_thing,
     state::RpcState,
     update_thing,
 };
@@ -46,6 +46,13 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
+        .register_method::<Result<(), ApiError>, _>(
+            "firewall.forward_rules.move",
+            move_thing!(firewall.forward_rules),
+        )
+        .unwrap();
+
+    module
         .register_method(
             "firewall.destination_nat_rules.get",
             get_thing!(firewall.destination_nat_rules),
@@ -77,6 +84,13 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .register_method::<Result<(), ApiError>, _>(
             "firewall.destination_nat_rules.delete",
             delete_thing!(firewall.destination_nat_rules),
+        )
+        .unwrap();
+
+    module
+        .register_method::<Result<(), ApiError>, _>(
+            "firewall.destination_nat_rules.move",
+            move_thing!(firewall.destination_nat_rules),
         )
         .unwrap();
 
@@ -116,6 +130,13 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
+        .register_method::<Result<(), ApiError>, _>(
+            "firewall.source_nat_rules.move",
+            move_thing!(firewall.source_nat_rules),
+        )
+        .unwrap();
+
+    module
         .register_method(
             "firewall.inbound_rules.get",
             get_thing!(firewall.inbound_rules),
@@ -147,6 +168,13 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .register_method::<Result<(), ApiError>, _>(
             "firewall.inbound_rules.delete",
             delete_thing!(firewall.inbound_rules),
+        )
+        .unwrap();
+
+    module
+        .register_method::<Result<(), ApiError>, _>(
+            "firewall.inbound_rules.move",
+            move_thing!(firewall.inbound_rules),
         )
         .unwrap();
 }

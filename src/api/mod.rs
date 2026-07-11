@@ -239,6 +239,55 @@ macro_rules! delete_thing {
     }};
 }
 
+#[macro_export]
+macro_rules! move_thing {
+    ($( $sub_system:ident ).+) => {
+        |params, state, extensions: &jsonrpsee::Extensions| {
+            use serde::Deserialize;
+
+            #[derive(Deserialize)]
+            struct MoveParams {
+                index: usize,
+                to_index: usize,
+            }
+
+            let p: MoveParams = params.parse().map_err(ApiError::ParameterDeserialize)?;
+
+            let mut cm = state.config_manager.clone();
+            let mut tx = cm.start_transaction();
+
+            let rules = &mut tx.data_mut().$($sub_system).+;
+            let len = rules.len();
+
+            let from = if p.index < len {
+                Some(p.index)
+            } else {
+                None
+            };
+
+            match from {
+                Some(from) => {
+                    if p.to_index >= len {
+                        tx.revert();
+                        return Err(ApiError::NotFound);
+                    }
+
+                    let rule = rules.remove(from);
+                    rules.insert(p.to_index, rule);
+
+                    $crate::commit_and_changelog!(cm, tx, extensions)?;
+
+                    Ok(())
+                }
+                None => {
+                    tx.revert();
+                    Err(ApiError::NotFound)
+                }
+            }
+        }
+    };
+}
+
 pub fn new_rpc_module(state: RpcState) -> RpcModule<RpcState> {
     let mut module = RpcModule::new(state);
 

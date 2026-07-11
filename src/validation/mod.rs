@@ -55,3 +55,49 @@ pub fn validate_endpoint_host(value: &str, ctx: &Config) -> garde::Result {
         ))),
     }
 }
+
+pub fn validate_firewall_uuids(
+    conf: &crate::definitions::config::Config,
+) -> Vec<structdb_core::ValidationError> {
+    let mut errors = Vec::new();
+    let mut uuids = std::collections::HashSet::new();
+
+    for rule in &conf.firewall.forward_rules {
+        if !uuids.insert(rule.uuid) {
+            errors.push(structdb_core::ValidationError::DuplicateKey {
+                collection: "firewall_rules".to_string(),
+                item_type: "ForwardRule".to_string(),
+                key: rule.uuid.to_string(),
+            });
+        }
+    }
+    for rule in &conf.firewall.destination_nat_rules {
+        if !uuids.insert(rule.uuid) {
+            errors.push(structdb_core::ValidationError::DuplicateKey {
+                collection: "firewall_rules".to_string(),
+                item_type: "DestinationNATRule".to_string(),
+                key: rule.uuid.to_string(),
+            });
+        }
+    }
+    for rule in &conf.firewall.source_nat_rules {
+        if !uuids.insert(rule.uuid) {
+            errors.push(structdb_core::ValidationError::DuplicateKey {
+                collection: "firewall_rules".to_string(),
+                item_type: "SourceNATRule".to_string(),
+                key: rule.uuid.to_string(),
+            });
+        }
+    }
+    for rule in &conf.firewall.inbound_rules {
+        if !uuids.insert(rule.uuid) {
+            errors.push(structdb_core::ValidationError::DuplicateKey {
+                collection: "firewall_rules".to_string(),
+                item_type: "InboundRule".to_string(),
+                key: rule.uuid.to_string(),
+            });
+        }
+    }
+
+    errors
+}

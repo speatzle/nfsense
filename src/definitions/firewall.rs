@@ -3,6 +3,7 @@ use super::object::{Address, Service};
 use garde::Validate;
 use serde::{Deserialize, Serialize};
 use structdb_macros::StructDb;
+use uuid::Uuid;
 
 #[derive(StructDb, Serialize, Deserialize, Clone, Validate, Default, Debug)]
 #[garde(context(Config))]
@@ -27,6 +28,9 @@ pub struct Firewall {
 #[structdb(key = "name")]
 pub struct ForwardRule {
     pub name: String,
+    #[garde(skip)]
+    #[serde(default)]
+    pub uuid: Uuid,
     #[requires(Service)]
     pub services: Vec<String>,
     #[requires(Address)]
@@ -47,6 +51,9 @@ pub struct ForwardRule {
 #[structdb(key = "name")]
 pub struct DestinationNATRule {
     pub name: String,
+    #[garde(skip)]
+    #[serde(default)]
+    pub uuid: Uuid,
     #[requires(Service)]
     pub services: Vec<String>,
     #[requires(Address)]
@@ -71,6 +78,9 @@ pub struct DestinationNATRule {
 #[structdb(key = "name")]
 pub struct SourceNATRule {
     pub name: String,
+    #[garde(skip)]
+    #[serde(default)]
+    pub uuid: Uuid,
     #[requires(Service)]
     pub services: Vec<String>,
     #[requires(Address)]
@@ -93,6 +103,9 @@ pub struct SourceNATRule {
 #[structdb(key = "name")]
 pub struct InboundRule {
     pub name: String,
+    #[garde(skip)]
+    #[serde(default)]
+    pub uuid: Uuid,
     #[requires(Service)]
     pub services: Vec<String>,
     #[requires(Address)]

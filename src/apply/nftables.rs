@@ -263,8 +263,6 @@ pub fn generate_nftables(
     pending_config: Config,
     _current_config: Config,
 ) -> Result<(), ApplyError> {
-    // TODO add a uuid to rules to be able to identify them and their counters to prevent rule reordering swapping counter values
-    // Also usefull for log matching
     let mut batch = Batch::new();
 
     // Create table if not exists
@@ -395,10 +393,10 @@ pub fn generate_nftables(
     }));
 
     // Inbound Rules
-    for (index, res) in (0u32..).zip(pending_config.firewall.inbound_rules.iter().enumerate()) {
+    for res in pending_config.firewall.inbound_rules.iter().enumerate() {
         let (_, rule) = res;
 
-        let counter_name = format!("inbound_{}", index);
+        let counter_name = format!("inbound_{}", rule.uuid);
         if rule.counter {
             counters.push(counter_name.clone());
             create_counter(&mut batch, counter_name.clone());
@@ -537,7 +535,7 @@ pub fn generate_nftables(
     ) {
         let (_, rule) = res;
 
-        let counter_name = format!("dnat_{}", index);
+        let counter_name = format!("dnat_{}", rule.uuid);
         if rule.counter {
             counters.push(counter_name.clone());
             create_counter(&mut batch, counter_name.clone());
@@ -649,7 +647,7 @@ pub fn generate_nftables(
                 right: Expression::Number(index + NFTABLES_CT_DNAT_MARK_OFFSET),
             }));
             if rule.log {
-                forward_expression.push(generate_log_statement(format!("fw_dnat_{}", index)));
+                forward_expression.push(generate_log_statement(format!("fw_dnat_{}", rule.uuid)));
             }
             forward_expression.push(Statement::Accept(None));
 
@@ -677,10 +675,10 @@ pub fn generate_nftables(
     }));
 
     // Create snat rules and their automatic forward rules
-    for (index, res) in (0u32..).zip(pending_config.firewall.source_nat_rules.iter().enumerate()) {
+    for (_index, res) in (0u32..).zip(pending_config.firewall.source_nat_rules.iter().enumerate()) {
         let (_, rule) = res;
 
-        let counter_name = format!("snat_{}", index);
+        let counter_name = format!("snat_{}", rule.uuid);
         if rule.counter {
             counters.push(counter_name.clone());
             create_counter(&mut batch, counter_name.clone());
@@ -784,7 +782,8 @@ pub fn generate_nftables(
                 forward_expression.extend(match_expression);
 
                 if rule.log {
-                    forward_expression.push(generate_log_statement(format!("fw_snat_{}", index)));
+                    forward_expression
+                        .push(generate_log_statement(format!("fw_snat_{}", rule.uuid)));
                 }
                 forward_expression.push(Statement::Accept(None));
 
@@ -800,11 +799,11 @@ pub fn generate_nftables(
         }
     }
 
-    // TODO create normal forward rules
-    for (index, res) in (0u32..).zip(pending_config.firewall.forward_rules.iter().enumerate()) {
+    // create normal forward rules
+    for res in pending_config.firewall.forward_rules.iter().enumerate() {
         let (_, rule) = res;
 
-        let counter_name = format!("fw_{}", index);
+        let counter_name = format!("fw_{}", rule.uuid);
         if rule.counter {
             counters.push(counter_name.clone());
             create_counter(&mut batch, counter_name.clone());

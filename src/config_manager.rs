@@ -1,4 +1,5 @@
 use super::definitions::config::Config;
+use crate::validation;
 use garde::Validate;
 use pwhash::sha512_crypt;
 use serde::Serialize;
@@ -9,6 +10,7 @@ use structdb_core::Diffable;
 use thiserror::Error;
 use time::OffsetDateTime;
 use tracing::{error, info};
+use uuid::Uuid;
 
 #[derive(Error, Debug)]
 pub enum ConfigError {
@@ -303,6 +305,13 @@ fn validate_config(conf: &Config) -> Result<(), ConfigError> {
     if !errors.is_empty() {
         return Err(ConfigError::ReferenceValidationError(errors));
     }
+
+    // UUID uniqueness check across all firewall rules
+    let errors = validation::validate_firewall_uuids(conf);
+    if !errors.is_empty() {
+        return Err(ConfigError::ReferenceValidationError(errors));
+    }
+
     Ok(())
 }
 
@@ -321,6 +330,7 @@ pub fn generate_default_config(path: &str) -> Result<(), ConfigError> {
         .inbound_rules
         .push(crate::definitions::firewall::InboundRule {
             name: "Default Allow Inbound".to_string(),
+            uuid: Uuid::new_v4(),
             services: vec![],
             source_addresses: vec![],
             negate_source: false,

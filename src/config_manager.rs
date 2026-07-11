@@ -265,10 +265,11 @@ impl<'a> ConfigTransaction<'a> {
 
         if !changes.is_empty() {
             changelog.extend(changes);
-            self.shared_data.pending_config = self.config.clone();
-            if !self.shared_data.in_memory {
-                write_config_to_file(PENDING_CONFIG_PATH, self.config.clone())?;
-            }
+        }
+
+        self.shared_data.pending_config = self.config.clone();
+        if !self.shared_data.in_memory {
+            write_config_to_file(PENDING_CONFIG_PATH, self.config.clone())?;
         }
 
         Ok(())

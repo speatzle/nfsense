@@ -1,15 +1,156 @@
 use super::ApiError;
 use crate::{
-    definitions::firewall::{DestinationNATRule, ForwardRule, InboundRule, SourceNATRule},
-    delete_thing, get_thing, list_things, move_thing,
+    definitions::firewall::{
+        DestinationNATRule, ForwardRule, InboundRule, RuleWithCounts, SourceNATRule,
+    },
+    delete_thing, get_thing, move_thing,
     state::RpcState,
 };
 use jsonrpsee::{Extensions, RpcModule};
+use nftables::{helper, schema::NfListObject, schema::NfObject};
 use serde::Deserialize;
+use std::collections::HashMap;
 use uuid::Uuid;
 
 use crate::commit_and_changelog;
 use time::OffsetDateTime;
+use tracing::warn;
+
+fn reset_counter(counter_name: &str) -> Result<(), ApiError> {
+    let output = std::process::Command::new("nft")
+        .args(["reset", "counter", "inet", "nfsense_inet", counter_name])
+        .output()
+        .map_err(|e| {
+            warn!("Failed to run nft reset counter: {}", e);
+            ApiError::CommandError
+        })?;
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        warn!("nft reset counter failed: {}", stderr);
+        return Err(ApiError::CommandError);
+    }
+    Ok(())
+}
+
+fn get_counter_counts() -> HashMap<Uuid, (u64, u64)> {
+    match helper::get_current_ruleset_with_args(
+        helper::DEFAULT_NFT,
+        vec!["list", "counters", "table", "inet", "nfsense_inet"],
+    ) {
+        Ok(ruleset) => {
+            let mut counts = HashMap::new();
+            for obj in ruleset.objects.iter() {
+                if let NfObject::ListObject(NfListObject::Counter(counter)) = obj {
+                    let name = counter.name.to_string();
+                    let packets = counter.packets.unwrap_or(0) as u64;
+                    let bytes = counter.bytes.unwrap_or(0) as u64;
+                    // Strip prefix to get UUID — counter name format is {prefix}{uuid}
+                    if let Some(uuid_str) = name
+                        .strip_prefix("inbound_")
+                        .or_else(|| name.strip_prefix("dnat_"))
+                        .or_else(|| name.strip_prefix("snat_"))
+                        .or_else(|| name.strip_prefix("fw_"))
+                    {
+                        if let Ok(uuid) = Uuid::parse_str(uuid_str) {
+                            counts.insert(uuid, (packets, bytes));
+                        }
+                    }
+                }
+            }
+            counts
+        }
+        Err(e) => {
+            warn!("Failed to fetch counter counts: {}", e);
+            HashMap::new()
+        }
+    }
+}
+
+fn enrich_forward_rules(
+    rules: Vec<ForwardRule>,
+    counts_by_uuid: &HashMap<Uuid, (u64, u64)>,
+) -> Vec<RuleWithCounts<ForwardRule>> {
+    rules
+        .into_iter()
+        .map(|rule| match counts_by_uuid.get(&rule.uuid) {
+            Some(&(p, b)) => RuleWithCounts {
+                counter_packets: p as i64,
+                counter_bytes: b as i64,
+                rule,
+            },
+            None => RuleWithCounts {
+                counter_packets: -1,
+                counter_bytes: -1,
+                rule,
+            },
+        })
+        .collect()
+}
+
+fn enrich_dnat_rules(
+    rules: Vec<DestinationNATRule>,
+    counts_by_uuid: &HashMap<Uuid, (u64, u64)>,
+) -> Vec<RuleWithCounts<DestinationNATRule>> {
+    rules
+        .into_iter()
+        .map(|rule| match counts_by_uuid.get(&rule.uuid) {
+            Some(&(p, b)) => RuleWithCounts {
+                counter_packets: p as i64,
+                counter_bytes: b as i64,
+                rule,
+            },
+            None => RuleWithCounts {
+                counter_packets: -1,
+                counter_bytes: -1,
+                rule,
+            },
+        })
+        .collect()
+}
+
+fn enrich_snat_rules(
+    rules: Vec<SourceNATRule>,
+    counts_by_uuid: &HashMap<Uuid, (u64, u64)>,
+) -> Vec<RuleWithCounts<SourceNATRule>> {
+    rules
+        .into_iter()
+        .map(|rule| match counts_by_uuid.get(&rule.uuid) {
+            Some(&(p, b)) => RuleWithCounts {
+                counter_packets: p as i64,
+                counter_bytes: b as i64,
+                rule,
+            },
+            None => RuleWithCounts {
+                counter_packets: -1,
+                counter_bytes: -1,
+                rule,
+            },
+        })
+        .collect()
+}
+
+fn enrich_inbound_rules(
+    rules: Vec<InboundRule>,
+    counts_by_uuid: &HashMap<Uuid, (u64, u64)>,
+) -> Vec<RuleWithCounts<InboundRule>> {
+    rules
+        .into_iter()
+        .map(|rule| match counts_by_uuid.get(&rule.uuid) {
+            Some(&(p, b)) => RuleWithCounts {
+                counter_packets: p as i64,
+                counter_bytes: b as i64,
+                rule,
+            },
+            None => RuleWithCounts {
+                counter_packets: -1,
+                counter_bytes: -1,
+                rule,
+            },
+        })
+        .collect()
+}
+
+use serde::Serialize;
 
 macro_rules! create_firewall_thing {
     ($( $sub_system:ident ).+, $typ:ty) => {
@@ -78,6 +219,43 @@ macro_rules! update_firewall_thing {
     };
 }
 
+macro_rules! list_firewall_things {
+    ($( $sub_system:ident ).+, $prefix:expr, $enrich_fn:expr) => {
+        |_, state, _: &Extensions| {
+            let rules = state
+                .config_manager
+                .get_pending_config()
+                .$($sub_system).+
+                .clone();
+            let counts = get_counter_counts();
+            Ok($enrich_fn(rules, &counts))
+        }
+    };
+}
+
+macro_rules! reset_firewall_counter {
+($( $sub_system:ident ).+, $prefix:expr) => {
+    |params, state, _: &Extensions| {
+        #[derive(Deserialize)]
+        struct ResetParams {
+            name: String,
+        }
+
+        let p: ResetParams = params.parse().map_err(ApiError::ParameterDeserialize)?;
+
+        let config = state.config_manager.get_pending_config();
+        let rule = config
+            .$($sub_system).+
+            .iter()
+            .find(|e| e.name == p.name)
+            .ok_or(ApiError::NotFound)?;
+
+        let counter_name = format!("{}{}", $prefix, rule.uuid);
+        reset_counter(&counter_name)
+    }
+};
+}
+
 pub fn register_methods(module: &mut RpcModule<RpcState>) {
     module
         .register_method(
@@ -87,9 +265,9 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method::<Result<Vec<ForwardRule>, ApiError>, _>(
+        .register_method::<Result<Vec<RuleWithCounts<ForwardRule>>, ApiError>, _>(
             "firewall.forward_rules.list",
-            list_things!(firewall.forward_rules),
+            list_firewall_things!(firewall.forward_rules, "fw_", enrich_forward_rules),
         )
         .unwrap();
 
@@ -122,6 +300,13 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
+        .register_method::<Result<(), ApiError>, _>(
+            "firewall.forward_rules.reset_counter",
+            reset_firewall_counter!(firewall.forward_rules, "fw_"),
+        )
+        .unwrap();
+
+    module
         .register_method(
             "firewall.destination_nat_rules.get",
             get_thing!(firewall.destination_nat_rules),
@@ -129,9 +314,9 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method::<Result<Vec<DestinationNATRule>, ApiError>, _>(
+        .register_method::<Result<Vec<RuleWithCounts<DestinationNATRule>>, ApiError>, _>(
             "firewall.destination_nat_rules.list",
-            list_things!(firewall.destination_nat_rules),
+            list_firewall_things!(firewall.destination_nat_rules, "dnat_", enrich_dnat_rules),
         )
         .unwrap();
 
@@ -164,6 +349,13 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
+        .register_method::<Result<(), ApiError>, _>(
+            "firewall.destination_nat_rules.reset_counter",
+            reset_firewall_counter!(firewall.destination_nat_rules, "dnat_"),
+        )
+        .unwrap();
+
+    module
         .register_method(
             "firewall.source_nat_rules.get",
             get_thing!(firewall.source_nat_rules),
@@ -171,9 +363,9 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method::<Result<Vec<SourceNATRule>, ApiError>, _>(
+        .register_method::<Result<Vec<RuleWithCounts<SourceNATRule>>, ApiError>, _>(
             "firewall.source_nat_rules.list",
-            list_things!(firewall.source_nat_rules),
+            list_firewall_things!(firewall.source_nat_rules, "snat_", enrich_snat_rules),
         )
         .unwrap();
 
@@ -206,6 +398,13 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
+        .register_method::<Result<(), ApiError>, _>(
+            "firewall.source_nat_rules.reset_counter",
+            reset_firewall_counter!(firewall.source_nat_rules, "snat_"),
+        )
+        .unwrap();
+
+    module
         .register_method(
             "firewall.inbound_rules.get",
             get_thing!(firewall.inbound_rules),
@@ -213,9 +412,9 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .unwrap();
 
     module
-        .register_method::<Result<Vec<InboundRule>, ApiError>, _>(
+        .register_method::<Result<Vec<RuleWithCounts<InboundRule>>, ApiError>, _>(
             "firewall.inbound_rules.list",
-            list_things!(firewall.inbound_rules),
+            list_firewall_things!(firewall.inbound_rules, "inbound_", enrich_inbound_rules),
         )
         .unwrap();
 
@@ -244,6 +443,13 @@ pub fn register_methods(module: &mut RpcModule<RpcState>) {
         .register_method::<Result<(), ApiError>, _>(
             "firewall.inbound_rules.move",
             move_thing!(firewall.inbound_rules),
+        )
+        .unwrap();
+
+    module
+        .register_method::<Result<(), ApiError>, _>(
+            "firewall.inbound_rules.reset_counter",
+            reset_firewall_counter!(firewall.inbound_rules, "inbound_"),
         )
         .unwrap();
 }

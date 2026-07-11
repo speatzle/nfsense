@@ -4,6 +4,7 @@ import ElementDisplay from "~/components/display/ElementDisplay.vue";
 import EnumTypeDisplay from "~/components/display/EnumTypeDisplay.vue";
 import EnumValueDisplay from "~/components/display/EnumValueDisplay.vue";
 import PortServiceDisplay from "~/components/display/PortServiceDisplay.vue";
+import NiceNumberDisplay from "~/components/display/NiceNumberDisplay.vue";
 import UpsertModal from "~/components/modals/UpsertModal.vue";
 import IActionAdd from "~icons/material-symbols/add";
 import IActionKey from "~icons/material-symbols/key";
@@ -174,6 +175,8 @@ export const subsystems = {
         { heading: 'Service', path: 'services', component: markRaw(ArrayDisplay), componentProp: 'data' },
         { heading: 'Verdict', path: 'verdict' },
         { heading: 'Counter', path: 'counter' },
+        { heading: 'Packets', path: 'counter_packets', component: markRaw(NiceNumberDisplay) },
+        { heading: 'Bytes', path: 'counter_bytes', component: markRaw(NiceNumberDisplay), props: { unit: 'bytes' } },
         { heading: 'Log', path: 'log' },
         { heading: 'Comment', path: 'comment' },
       ]
@@ -197,6 +200,8 @@ export const subsystems = {
         { heading: 'Translated Address', path: 'dnat_address', component: markRaw(ElementDisplay), componentProp: 'data' },
         { heading: 'Translated Service', path: 'dnat_service', component: markRaw(ElementDisplay), componentProp: 'data' },
         { heading: 'Counter', path: 'counter' },
+        { heading: 'Packets', path: 'counter_packets', component: markRaw(NiceNumberDisplay) },
+        { heading: 'Bytes', path: 'counter_bytes', component: markRaw(NiceNumberDisplay), props: { unit: 'bytes' } },
         { heading: 'Comment', path: 'comment' },
       ]
     },
@@ -225,6 +230,8 @@ export const subsystems = {
         { heading: 'Translated Address', path: 'snat_type.snat.address', component: markRaw(ElementDisplay), componentProp: 'data' },
         { heading: 'Translated Service', path: 'snat_type.snat.service', component: markRaw(ElementDisplay), componentProp: 'data' },
         { heading: 'Counter', path: 'counter' },
+        { heading: 'Packets', path: 'counter_packets', component: markRaw(NiceNumberDisplay) },
+        { heading: 'Bytes', path: 'counter_bytes', component: markRaw(NiceNumberDisplay), props: { unit: 'bytes' } },
         { heading: 'Comment', path: 'comment' },
       ],
     },
@@ -240,6 +247,8 @@ export const subsystems = {
         { heading: 'Service', path: 'services', component: markRaw(ArrayDisplay), componentProp: 'data' },
         { heading: 'Verdict', path: 'verdict' },
         { heading: 'Counter', path: 'counter' },
+        { heading: 'Packets', path: 'counter_packets', component: markRaw(NiceNumberDisplay) },
+        { heading: 'Bytes', path: 'counter_bytes', component: markRaw(NiceNumberDisplay), props: { unit: 'bytes' } },
         { heading: 'Log', path: 'log' },
         { heading: 'Comment', path: 'comment' },
       ]

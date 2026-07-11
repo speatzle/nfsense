@@ -146,3 +146,11 @@ pub enum SNATType {
     SNAT(SNAT),
     Masquerade,
 }
+
+#[derive(Serialize, Clone, Debug)]
+pub struct RuleWithCounts<T: Serialize + Clone> {
+    #[serde(flatten)]
+    pub rule: T,
+    pub counter_packets: i64,
+    pub counter_bytes: i64,
+}

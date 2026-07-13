@@ -168,8 +168,12 @@ pub fn list_network_links(
             let output = String::from_utf8_lossy(&out.stdout).to_string();
 
             for l in output.split("\n") {
+                let name = l.trim();
+                if name.is_empty() || name == "lo" {
+                    continue;
+                }
                 links.push(Link {
-                    name: l.to_string(),
+                    name: name.to_string(),
                 })
             }
 

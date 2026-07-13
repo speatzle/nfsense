@@ -3,6 +3,7 @@ use super::ApplyError;
 use crate::{
     definitions::{
         config::Config, network::NetworkInterfaceType, object::Address, object::AddressType,
+        vpn::WireguardEndpoint,
     },
     templates,
 };
@@ -203,17 +204,18 @@ pub fn generate_networkd_config_files(
             );
 
             // Resolve endpoint address + port to formatted string
-            let endpoint = peer.endpoint.as_ref().map(|ep| {
-                let addr = pending_config
-                    .get::<Address>(&ep.address)
-                    .expect("validation ensures endpoint address exists");
-                match &addr.address_type {
-                    AddressType::Host { address } => {
-                        format!("{}:{}", address, ep.port)
+            let endpoint = match &peer.endpoint {
+                WireguardEndpoint::Specify { address, port } => {
+                    let addr = pending_config
+                        .get::<Address>(address)
+                        .expect("validation ensures endpoint address exists");
+                    match &addr.address_type {
+                        AddressType::Host { address } => Some(format!("{}:{}", address, port)),
+                        _ => unreachable!("validation enforces Host type for endpoint"),
                     }
-                    _ => unreachable!("validation enforces Host type for endpoint"),
                 }
-            });
+                WireguardEndpoint::None => None,
+            };
 
             peers.push(PeerContext {
                 public_key: peer.public_key.clone(),

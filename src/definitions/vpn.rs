@@ -51,17 +51,22 @@ pub struct WireguardPeer {
     pub preshared_key: Option<String>,
     #[requires(Address)]
     pub allowed_ips: Vec<String>,
-    pub endpoint: Option<WireguardEndpoint>,
+    pub endpoint: WireguardEndpoint,
     pub persistent_keepalive: Option<u64>,
     pub comment: String,
 }
 
-#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, PartialEq)]
+#[derive(StructDb, Serialize, Deserialize, Clone, Validate, Debug, PartialEq, Default)]
+#[serde(rename_all = "snake_case")]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
-pub struct WireguardEndpoint {
-    #[requires(Address)]
-    #[garde(custom(validation::validate_endpoint_host))]
-    pub address: String,
-    pub port: u64,
+pub enum WireguardEndpoint {
+    #[default]
+    None,
+    Specify {
+        #[requires(Address)]
+        #[garde(custom(validation::validate_endpoint_host))]
+        address: String,
+        port: u64,
+    },
 }

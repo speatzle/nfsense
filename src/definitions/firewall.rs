@@ -139,6 +139,7 @@ pub struct SNAT {
 }
 
 #[derive(StructDb, Validate, Serialize, Deserialize, Clone, Debug, PartialEq)]
+// This needs to stay lowercase for single word Acronyms
 #[serde(rename_all = "lowercase")]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]

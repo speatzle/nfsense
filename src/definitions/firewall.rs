@@ -139,7 +139,7 @@ pub struct SNAT {
 }
 
 #[derive(StructDb, Validate, Serialize, Deserialize, Clone, Debug, PartialEq)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "lowercase")]
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub enum SNATType {

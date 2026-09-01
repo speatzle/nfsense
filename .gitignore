@@ -2,7 +2,7 @@
 config.json
 pending.json
 *.pem
-/target
+target
 mkosi/mkosi.cache
 mkosi/mkosi.output
 mkosi/mkosi.local

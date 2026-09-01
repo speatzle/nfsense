@@ -144,6 +144,8 @@ fn get_session(cookies: Cookies, state: SessionState) -> Result<Session, AuthErr
 #[derive(BuildInfo)]
 struct BuildTag;
 
+// TODO, this should be hashed with a installation specific salt (machine-id application?) to prevent leaking the git version to unauthenticated clients but still be able to the webinterface that it needs a refresh.
+// Low priority since the Webinterface should be inaccessible to untrusted clients in the first place.
 #[derive(Serialize)]
 pub struct SessionResponse {
     pub commit_hash: String,

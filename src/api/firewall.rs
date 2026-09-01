@@ -150,8 +150,6 @@ fn enrich_inbound_rules(
         .collect()
 }
 
-use serde::Serialize;
-
 macro_rules! create_firewall_thing {
     ($( $sub_system:ident ).+, $typ:ty) => {
         |params, state, extensions: &jsonrpsee::Extensions| {

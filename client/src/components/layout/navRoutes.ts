@@ -2,7 +2,7 @@
 import IDashboard from "~icons/ri/dashboard-2-line";
 import IRule from "~icons/material-symbols/rule-folder-outline-sharp";
 import IAddress from "~icons/eos-icons/ip";
-import IEthernet from "~icons/bi/ethernet";
+import IEthernetRaw from "~icons/lucide/ethernet-port";
 import IService from "~icons/material-symbols/home-repair-service";
 import ISNAT from "~icons/mdi/arrow-expand-right";
 import IDNAT from "~icons/mdi/arrow-collapse-right";
@@ -23,7 +23,15 @@ import IRouter from "~icons/mdi/router";
 import ISettings from "~icons/material-symbols/settings";
 import IShield from "~icons/mdi/shield-outline";
 import IUpdate from "~icons/material-symbols/system-update-alt";
-import ILog from "~icons/icon-park-outline/log";
+import ILog from "~icons/lucide/logs";
+import { FunctionalComponent, SVGAttributes } from "vue";
+
+const IEthernet: FunctionalComponent<SVGAttributes> = (props, ctx) =>
+  h(IEthernetRaw, {
+    ...props,
+    ...ctx.attrs,
+    class: ["rotate-180", props.class, ctx.attrs.class],
+  });
 
 export type NavRoute = {
   icon: Component;

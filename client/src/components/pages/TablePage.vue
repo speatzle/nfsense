@@ -5,6 +5,11 @@ import UpsertModal from "../modals/UpsertModal.vue";
 const props = defineProps<{
   subsystem: keyof typeof subsystems;
   entity: string;
+  actions?: {
+    caption: string;
+    target: "single" | "any" | "pair" | "none";
+    callback: (data: any) => void;
+  }[];
 }>();
 const $subsystem = $(computed(() => subsystems[props.subsystem]));
 const $entity = $(computed(() => ($subsystem.entities as Record<string, Entity>)[props.entity]));
@@ -63,6 +68,13 @@ async function editRow(index?: number) {
   if (await pushModal(UpsertModal, { ...props, id })) load();
 }
 
+const isSelectionTarget = {
+  single: () => $selection.length == 1,
+  pair: () => $selection.length == 2,
+  any: () => $selection.length >= 1,
+  none: () => $selection.length == 0,
+}
+
 onMounted(load);
 </script>
 
@@ -73,6 +85,7 @@ onMounted(load);
       <button @click="createRow" :class="{accent: $selection.length != 1}">Create</button>
       <button :disabled="$selection.length != 1" :class="{accent: $selection.length == 1}" @click="() => editRow()">Edit</button>
       <button :disabled="$selection.length != 1" @click="deleteRow">Delete</button>
+      <button :disabled="!isSelectionTarget[action.target]()" v-for="action of props.actions" v-text="action.caption" @click="action.callback(action.target == 'single' ? $data[$selection[0]] : $selection.map(id => $data[id])); load()"/>
     </template>
     <NiceTable
       v-model:selection="$selection"

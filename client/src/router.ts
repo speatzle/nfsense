@@ -1,4 +1,5 @@
 import { createWebHistory, createRouter } from "vue-router";
+import RulesPage from "./components/pages/RulesPage.vue";
 import TablePage from "./components/pages/TablePage.vue";
 import { subsystems } from "./definitions";
 import ConfigPage from "./components/pages/ConfigPage.vue";
@@ -11,10 +12,10 @@ import DashboardPage from "./components/pages/DashboardPage.vue";
 const tableViewRoutes = Object.entries(subsystems).map(([subsystem, sub]) => ({
   path: "/" + subsystem,
   children: Object.entries(sub.entities)
-    .filter(([_, entity]) => entity.columns)
-    .map(([entity, _]) => ({
+    .filter(([, entity]) => entity.columns)
+    .map(([entity]) => ({
       path: entity,
-      component: TablePage,
+      component: subsystem === "firewall" ? RulesPage : TablePage,
       props: { subsystem, entity },
     })),
 }));

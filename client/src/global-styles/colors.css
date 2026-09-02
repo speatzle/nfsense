@@ -55,9 +55,10 @@
   --cl-bd-fin-l: calc(var(--cl-bd-l) + var(--cl-z)*var(--cl-zoff) + var(--cl-e)*var(--cl-eoff));
 
   /* Final color */
-  --cl-bg: oklch(from var(--cl-bg-base) var(--cl-bg-fin-l) calc(sin((1 - var(--cl-bg-fin-l)) * pi) * c) h);
-  --cl-fg: oklch(from var(--cl-fg-base) var(--cl-fg-fin-l) calc(sin((1 - var(--cl-fg-fin-l)) * pi) * c) h);
-  --cl-bd: oklch(from var(--cl-bd-base) var(--cl-bd-l) calc(sin((1 - var(--cl-bd-l)) * pi) * c) h);
+  --cl-l-taper-exponent: 1; /* Decrease this to make lighter/darker colors more saturated, may cause lightness clipping */
+  --cl-bg: oklch(from var(--cl-bg-base) var(--cl-bg-fin-l) calc(pow(sin((1 - var(--cl-bg-fin-l)) * pi), var(--cl-l-taper-exponent)) * c) h);
+  --cl-fg: oklch(from var(--cl-fg-base) var(--cl-fg-fin-l) calc(pow(sin((1 - var(--cl-fg-fin-l)) * pi), var(--cl-l-taper-exponent)) * c) h);
+  --cl-bd: oklch(from var(--cl-bd-base) var(--cl-bd-l) calc(pow(sin((1 - var(--cl-bd-fin-l)) * pi), var(--cl-l-taper-exponent)) * c) h);
 
   /* Border+Foreground Color default-safe, background usually transparent */
   border-color: var(--cl-bd);

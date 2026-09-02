@@ -35,6 +35,7 @@ const _document = document;
   >
     <component :is="props.route.icon" />
     <span v-text="props.route.caption" />
+    <component v-if="props.route.statusComponent" :is="props.route.statusComponent"/>
   </router-link>
   <template v-else-if="props.route.children">
     <div class="button" @click="$expanded = !$expanded">

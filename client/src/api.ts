@@ -13,12 +13,32 @@ export function setup(_UnauthorizedCallback: () => void) {
   UnauthorizedCallback = _UnauthorizedCallback;
 }
 
+let $pendingChangeCount = 0;
+export function usePendingChangeCount() {
+  return $$($pendingChangeCount);
+}
+
 export async function apiCall(method: string, params: Record<string, any>): Promise<any> {
   try {
     const pResult = jrpc.call(method, params);
     console.debug("[API] Calling ", method, params, pResult);
     const result = await pResult;
     console.debug("[API] Response", method, result);
+
+    // TODO: Replace with websocket later
+    if (["config.pending.apply", "config.pending.discard", "config.pending.set"].includes(method)
+      || [".create", ".update", ".delete"].some(suffix => method.endsWith(suffix))) {
+      try {
+        const res = await apiCall("config.pending.log", {});
+        if (res.Error === null) {
+          const changelog = res.Data;
+          $pendingChangeCount = changelog.length;
+        } else console.debug("error fetching pending log", res);
+      } catch (ex: any) {
+        console.debug("error fetching pending log", ex)
+      }
+    }
+
     return { Data: result, Error: null };
   } catch (ex: any) {
     if (ex.code === 401) UnauthorizedCallback();
@@ -71,6 +91,18 @@ export async function checkAuthentication() {
         window.location.reload();
       }
     } else window.localStorage.setItem("commit_hash", data.commit_hash);
+
+    // TODO: Replace with websocket later
+    try {
+      const res = await apiCall("config.pending.log", {});
+      if (res.Error === null) {
+        const changelog = res.Data;
+      $pendingChangeCount = changelog.length;
+      } else console.debug("error fetching pending log", res);
+    } catch (ex: any) {
+      console.debug("error fetching pending log", ex)
+    }
+
     return { auth: 2, error: null };
   } catch (error) {
     return { auth: 0, error: error };

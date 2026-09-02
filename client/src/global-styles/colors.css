@@ -5,6 +5,7 @@
   --cl-primary: oklch(50% 0.2 290); /* Brand Purple of nfSense, used as an accent color */
   /* --cl-secondary: oklch(from var(--cl-primary) l c h +- HarmonicDistance) /* Secondary and Tertiary color can be derived trivially like this */
   --cl-neutral: oklch(50% 0.05 270); /* Desaturated blue is a great neutral */
+  --cl-warning: oklch(80% 0.16 90);
 
   /* Lightness Offsets */
   --cl-zoff: 0.05; /* Differentiation between surfaces */
@@ -19,6 +20,7 @@
   /* Accent overrides for consistent branding */
   --cl-accent-bg-l: 0.40;
   --cl-accent-fg-l: 0.95;
+  --cl-warning-l: 0.7;
 
   /* Defaults for per-element parameters */
   --cl-z: 0; /* Surface Elevation */
@@ -71,4 +73,9 @@
   --cl-bg-z-invariant-l: var(--cl-accent-bg-l);
   --cl-fg-fin-l: var(--cl-accent-fg-l);
   --button-border: 0px;
+}
+
+.warning-icon {
+  --cl-base: var(--cl-warning);
+  --cl-fg-l: var(--cl-warning-l);
 }

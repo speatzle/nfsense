@@ -25,6 +25,7 @@ import IShield from "~icons/mdi/shield-outline";
 import IUpdate from "~icons/material-symbols/system-update-alt";
 import ILog from "~icons/lucide/logs";
 import { FunctionalComponent, SVGAttributes } from "vue";
+import ConfigStatusDisplay from "~/components/display/ConfigStatusDisplay.vue";
 
 const IEthernet: FunctionalComponent<SVGAttributes> = (props, ctx) =>
   h(IEthernetRaw, {
@@ -38,6 +39,7 @@ export type NavRoute = {
   caption: string;
   children?: NavRoute[];
   href?: string;
+  statusComponent?: Component;
 };
 
 // oxfmt-ignore
@@ -76,5 +78,5 @@ export const navRoutes: NavRoute[] = [
     { caption: "Log", icon: ILog, href: "/system/logs" },
     { caption: "Updates", icon: IUpdate, href: "/system/updates" },
   ] },
-  { caption: "Config", icon: IConfig, href: "/config/config" },
+  { caption: "Config", icon: IConfig, href: "/config/config", statusComponent: ConfigStatusDisplay },
 ];

@@ -132,7 +132,7 @@ onMounted(load);
       v-model:data="$displayData"
       :columns="columns"
       :loading="$loading"
-      :table-props="{ sort: true, sortSelf: true }"
+      sort sortSelf
     />
   </Page>
 </template>

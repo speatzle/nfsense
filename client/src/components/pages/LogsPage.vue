@@ -66,7 +66,7 @@ onBeforeUnmount(() => {
       v-model:data="$logs"
       :columns="columns"
       :loading="$loading"
-      :table-props="{ sort: true, sortSelf: true }"
+      sort sortSelf
     />
   </Page>
 </template>

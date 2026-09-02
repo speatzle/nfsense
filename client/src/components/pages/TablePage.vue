@@ -60,12 +60,12 @@ async function moveRow(from: number, to: number) {
 }
 
 async function createRow() {
-  if (await pushModal(UpsertModal, props)) load();
+  if (await pushModal(UpsertModal, { subsystem: props.subsystem, entity: props.entity, id })) load();
 }
 
 async function editRow(index?: number) {
   const id = ($displayData[index ?? $selection[0]] ?? {}).name;
-  if (await pushModal(UpsertModal, { ...props, id })) load();
+  if (await pushModal(UpsertModal, { subsystem: props.subsystem, entity: props.entity, id })) load();
 }
 
 const isSelectionTarget = {

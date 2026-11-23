@@ -12,6 +12,16 @@ const SERVICE_CHRONY: &str = "chronyd.service";
 const SERVICE_NETWORKD: &str = "systemd-networkd.service";
 const SERVICE_NFTABLES: &str = "nftables.service";
 
+const MANAGED_SERVICES: &[&str] = &[
+    SERVICE_UNBOUND,
+    SERVICE_SSH,
+    SERVICE_KEAV4,
+    SERVICE_KEAV6,
+    SERVICE_CHRONY,
+    SERVICE_NETWORKD,
+    SERVICE_NFTABLES,
+];
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Service {
     pub name: String,
@@ -72,13 +82,20 @@ async fn get_service_status(
     }
 }
 
-// TODO add services whitelist
+fn parse_managed_service(params: Params<'_>) -> Result<String, ApiError> {
+    let unit: String = params.parse().map_err(ApiError::ParameterDeserialize)?;
+    if !MANAGED_SERVICES.contains(&unit.as_str()) {
+        return Err(ApiError::ServiceNotAllowed);
+    }
+    Ok(unit)
+}
+
 async fn restart_service<'a>(
     params: Params<'a>,
     _state: Arc<RpcState>,
     _: Extensions,
 ) -> Result<(), ApiError> {
-    let unit: String = params.parse().map_err(ApiError::ParameterDeserialize)?;
+    let unit = parse_managed_service(params)?;
     let systemd_manager = zbus_systemd::systemd1::ManagerProxy::new(&_state.dbus_conn).await?;
     let unit_object_path = systemd_manager.get_unit(unit).await?;
     let systemd_unit =
@@ -92,11 +109,24 @@ async fn stop_service<'a>(
     _state: Arc<RpcState>,
     _: Extensions,
 ) -> Result<(), ApiError> {
-    let unit: String = params.parse().map_err(ApiError::ParameterDeserialize)?;
+    let unit = parse_managed_service(params)?;
     let systemd_manager = zbus_systemd::systemd1::ManagerProxy::new(&_state.dbus_conn).await?;
     let unit_object_path = systemd_manager.get_unit(unit).await?;
     let systemd_unit =
         zbus_systemd::systemd1::UnitProxy::new(&_state.dbus_conn, unit_object_path).await?;
     systemd_unit.stop("replace".to_string()).await?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_managed_service() {
+        let ok = parse_managed_service(Params::new(Some(r#""unbound.service""#)));
+        assert_eq!(ok.unwrap(), SERVICE_UNBOUND);
+        let rejected = parse_managed_service(Params::new(Some(r#""getty@tty1.service""#)));
+        assert!(matches!(rejected, Err(ApiError::ServiceNotAllowed)));
+    }
 }

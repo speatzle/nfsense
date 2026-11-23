@@ -23,6 +23,9 @@ pub enum ApiError {
     #[error("Command Error")]
     CommandError,
 
+    #[error("Service Not Allowed")]
+    ServiceNotAllowed,
+
     //#[error("Already Exists")]
     //AlreadyExists,
     #[error("Hash Error")]

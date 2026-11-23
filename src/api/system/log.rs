@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, PoisonError};
 use std::thread;
 use tokio::sync::broadcast;
 use tracing::{error, info, trace, warn};
@@ -192,7 +192,9 @@ impl<'de> serde::Deserialize<'de> for LogEntry {
 }
 
 fn get_or_spawn_broadcaster() -> broadcast::Sender<LogEntry> {
-    let mut guard = LOG_BROADCASTER.lock().unwrap();
+    let mut guard = LOG_BROADCASTER
+        .lock()
+        .unwrap_or_else(PoisonError::into_inner);
 
     if let Some(tx) = &*guard {
         return tx.clone();
@@ -205,7 +207,12 @@ fn get_or_spawn_broadcaster() -> broadcast::Sender<LogEntry> {
 
     // OS thread as to not block tokio
     thread::spawn(move || {
-        log_reader_thread(tx_for_thread);
+        if let Err(msg) = crate::panic::catch(|| log_reader_thread(tx_for_thread)) {
+            error!("Log reader thread panicked: {}", msg);
+            *LOG_BROADCASTER
+                .lock()
+                .unwrap_or_else(PoisonError::into_inner) = None;
+        }
     });
 
     *guard = Some(tx.clone());
@@ -218,7 +225,9 @@ fn log_reader_thread(tx: broadcast::Sender<LogEntry>) {
         Err(e) => {
             error!("Could not open log socket {}: {}", ULOG_SOCKET_PATH, e);
             // Reset Mutex so we can start again
-            let mut guard = LOG_BROADCASTER.lock().unwrap();
+            let mut guard = LOG_BROADCASTER
+                .lock()
+                .unwrap_or_else(PoisonError::into_inner);
             *guard = None;
             return;
         }
@@ -242,7 +251,9 @@ fn log_reader_thread(tx: broadcast::Sender<LogEntry>) {
 
         if let Ok(log_entry) = serde_json::from_str::<LogEntry>(&line) {
             if tx.send(log_entry).is_err() {
-                let mut guard = LOG_BROADCASTER.lock().unwrap();
+                let mut guard = LOG_BROADCASTER
+                    .lock()
+                    .unwrap_or_else(PoisonError::into_inner);
                 if tx.receiver_count() == 0 {
                     info!("No log subscribers left. Stopping dedicated reader thread.");
                     *guard = None;
@@ -252,7 +263,9 @@ fn log_reader_thread(tx: broadcast::Sender<LogEntry>) {
         }
     }
 
-    let mut guard = LOG_BROADCASTER.lock().unwrap();
+    let mut guard = LOG_BROADCASTER
+        .lock()
+        .unwrap_or_else(PoisonError::into_inner);
     *guard = None;
     warn!("Log reader thread exited (EOF/Pipe Closed)");
 }

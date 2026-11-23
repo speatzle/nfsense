@@ -32,4 +32,7 @@ pub enum ApplyError {
 
     #[error("Unsupported object type: {0}")]
     ObjectReferenceError(String),
+
+    #[error("Panic: {0}")]
+    Panic(String),
 }

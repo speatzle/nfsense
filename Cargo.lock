@@ -1657,6 +1657,7 @@ dependencies = [
  "axum-reverse-proxy",
  "axum-server",
  "clap",
+ "futures-util",
  "garde",
  "ipnet",
  "jsonrpsee",
@@ -3045,6 +3046,7 @@ dependencies = [
  "tokio-util",
  "tower-layer",
  "tower-service",
+ "tracing",
 ]
 
 [[package]]

@@ -40,11 +40,13 @@ pub enum ConfigError {
 pub const CURRENT_CONFIG_PATH: &str = "/var/lib/nfsense/config.json";
 pub const PENDING_CONFIG_PATH: &str = "/var/lib/nfsense/pending.json";
 
-static GENERATE_FUNCTIONS: &'static [fn(
+type GenerateFunction = fn(
     apply: bool,
     pending_config: Config,
     current_config: Config,
-) -> Result<(), super::apply::ApplyError>] = &[
+) -> Result<(), super::apply::ApplyError>;
+
+static GENERATE_FUNCTIONS: &[GenerateFunction] = &[
     super::apply::networkd::generate_networkd,
     super::apply::nftables::generate_nftables,
     super::apply::kea::generate_kea,
@@ -112,25 +114,33 @@ impl ConfigManager {
         })
     }
 
+    fn lock_data(&self) -> MutexGuard<'_, SharedData> {
+        self.shared_data.lock().unwrap_or_else(|poisoned| {
+            error!("Config lock was poisoned by an earlier panic, recovering");
+            self.shared_data.clear_poison();
+            poisoned.into_inner()
+        })
+    }
+
     pub fn get_current_config(&self) -> Config {
-        self.shared_data.lock().unwrap().current_config.clone()
+        self.lock_data().current_config.clone()
     }
 
     pub fn get_pending_config(&self) -> Config {
-        self.shared_data.lock().unwrap().pending_config.clone()
+        self.lock_data().pending_config.clone()
     }
 
     pub fn get_pending_changelog(&self) -> Vec<ChangeSet> {
-        self.shared_data.lock().unwrap().changelog.clone()
+        self.lock_data().changelog.clone()
     }
 
     pub fn add_to_changelog(&mut self, change_set: ChangeSet) {
-        self.shared_data.lock().unwrap().changelog.push(change_set);
+        self.lock_data().changelog.push(change_set);
     }
 
     pub fn set_pending_config(&mut self, config: Config, user: String) -> Result<(), ConfigError> {
         validate_config(&config)?;
-        let mut data = self.shared_data.lock().unwrap();
+        let mut data = self.lock_data();
 
         let changes = config.diff(&data.current_config, &mut vec![]);
 
@@ -154,11 +164,12 @@ impl ConfigManager {
     }
 
     pub fn apply_pending_changes(&mut self) -> Result<(), ConfigError> {
-        let mut data = self.shared_data.lock().unwrap();
+        let mut data = self.lock_data();
 
         // TODO Improve Error Handling
         for apply_function in GENERATE_FUNCTIONS {
-            match (apply_function)(
+            match run_generator(
+                *apply_function,
                 true,
                 data.pending_config.clone(),
                 data.current_config.clone(),
@@ -168,7 +179,8 @@ impl ConfigManager {
                     error!("Ran into an error while applying, Reverting to current config... Error: {}", e);
 
                     for apply_function in GENERATE_FUNCTIONS {
-                        match (apply_function)(
+                        match run_generator(
+                            *apply_function,
                             true,
                             // These are swapped for revert
                             data.current_config.clone(),
@@ -201,12 +213,13 @@ impl ConfigManager {
     }
 
     pub fn generate_current(&mut self) -> Result<(), ConfigError> {
-        let data = self.shared_data.lock().unwrap();
+        let data = self.lock_data();
 
         let mut errors = vec![];
         // TODO use null config as start? force full generation
         for apply_function in GENERATE_FUNCTIONS {
-            match (apply_function)(
+            match run_generator(
+                *apply_function,
                 false,
                 data.current_config.clone(),
                 data.current_config.clone(),
@@ -235,7 +248,7 @@ impl ConfigManager {
     }
 
     pub fn discard_pending_changes(&mut self) -> Result<(), ConfigError> {
-        let mut data = self.shared_data.lock().unwrap();
+        let mut data = self.lock_data();
         // TODO Remove Pending Config File
 
         data.pending_config = data.current_config.clone();
@@ -244,7 +257,7 @@ impl ConfigManager {
     }
 
     pub fn start_transaction(&mut self) -> ConfigTransaction<'_> {
-        let data = self.shared_data.lock().unwrap();
+        let data = self.lock_data();
 
         ConfigTransaction {
             config: data.pending_config.clone(),
@@ -313,6 +326,16 @@ fn validate_config(conf: &Config) -> Result<(), ConfigError> {
     }
 
     Ok(())
+}
+
+fn run_generator(
+    generate: GenerateFunction,
+    apply: bool,
+    pending_config: Config,
+    current_config: Config,
+) -> Result<(), crate::apply::ApplyError> {
+    crate::panic::catch(|| generate(apply, pending_config, current_config))
+        .unwrap_or_else(|msg| Err(crate::apply::ApplyError::Panic(msg)))
 }
 
 pub fn generate_default_config(path: &str) -> Result<(), ConfigError> {
@@ -451,5 +474,31 @@ mod tests {
         // Verify the changelog is empty
         let changelog = manager.get_pending_changelog();
         assert!(changelog.is_empty());
+    }
+
+    #[test]
+    fn test_poisoned_lock_recovers() {
+        let manager = ConfigManager::new_for_test(create_test_config(), create_test_config());
+        let m = manager.clone();
+        let res = std::thread::spawn(move || {
+            let _guard = m.lock_data();
+            panic!("panic while holding the config lock");
+        })
+        .join();
+        assert!(res.is_err());
+        assert!(manager.shared_data.is_poisoned());
+        assert_eq!(manager.get_current_config().system.users.len(), 1);
+        assert!(!manager.shared_data.is_poisoned());
+    }
+
+    #[test]
+    fn test_generator_panic_becomes_error() {
+        fn panicking(_: bool, _: Config, _: Config) -> Result<(), crate::apply::ApplyError> {
+            panic!("generator boom");
+        }
+        let res = run_generator(panicking, false, Config::default(), Config::default());
+        assert!(
+            matches!(res, Err(crate::apply::ApplyError::Panic(msg)) if msg == "generator boom")
+        );
     }
 }

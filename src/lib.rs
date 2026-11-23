@@ -2,6 +2,7 @@ pub mod api;
 pub mod apply;
 pub mod config_manager;
 pub mod definitions;
+pub mod panic;
 pub mod state;
 pub mod templates;
 pub mod validation;

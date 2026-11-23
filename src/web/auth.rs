@@ -2,7 +2,7 @@ use crate::definitions::system::User;
 use std::collections::HashMap;
 
 use rbtag::BuildInfo;
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, PoisonError, RwLock};
 use uuid::Uuid;
 
 use crate::state::AppState;
@@ -81,7 +81,11 @@ async fn login_handler(
         state.config_manager.get_current_config().system.users,
     ) {
         if sha512_crypt::verify(payload.password, &user.hash) {
-            let mut sessions = state.session_state.sessions.write().unwrap();
+            let mut sessions = state
+                .session_state
+                .sessions
+                .write()
+                .unwrap_or_else(PoisonError::into_inner);
             let id = Uuid::new_v4().to_string();
 
             sessions.insert(
@@ -108,7 +112,11 @@ async fn logout_handler(cookies: Cookies, state: State<AppState>) -> impl IntoRe
         Some(s) => {
             let session_id = s.value();
 
-            let mut sessions = state.session_state.sessions.write().unwrap();
+            let mut sessions = state
+                .session_state
+                .sessions
+                .write()
+                .unwrap_or_else(PoisonError::into_inner);
 
             // TODO Fix Cookie remove
             // cookies.remove(s.clone());
@@ -130,7 +138,10 @@ fn get_session(cookies: Cookies, state: SessionState) -> Result<Session, AuthErr
         Some(s) => {
             let session_id = s.value();
 
-            let sessions = state.sessions.write().unwrap();
+            let sessions = state
+                .sessions
+                .write()
+                .unwrap_or_else(PoisonError::into_inner);
 
             if let Some(session) = sessions.get(session_id) {
                 return Ok(session.clone());

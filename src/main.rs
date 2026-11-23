@@ -18,6 +18,7 @@ use std::path::Path;
 use std::path::PathBuf;
 use tokio::signal;
 use tower_cookies::CookieManagerLayer;
+use tower_http::catch_panic::CatchPanicLayer;
 use tower_http::services::{ServeDir, ServeFile};
 use tracing::{error, info};
 use tracing_subscriber;
@@ -114,7 +115,8 @@ async fn main() {
         .merge(web::auth::routes())
         .with_state(app_state)
         .merge(webinterface_router)
-        .layer(CookieManagerLayer::new());
+        .layer(CookieManagerLayer::new())
+        .layer(CatchPanicLayer::new());
 
     let config = RustlsConfig::from_pem_file(
         PathBuf::from(HTTPS_CERT_PATH),

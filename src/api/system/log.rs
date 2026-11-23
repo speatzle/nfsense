@@ -180,14 +180,18 @@ impl<'de> serde::Deserialize<'de> for LogEntry {
     fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
         let value = Value::deserialize(d)?;
 
-        Ok(
-            match value.get("ip.protocol").and_then(Value::as_u64).unwrap() {
-                1 => LogEntry::ICMP(LogICMP::deserialize(value).unwrap()),
-                6 => LogEntry::TCP(LogTCP::deserialize(value).unwrap()),
-                17 => LogEntry::UDP(LogUDP::deserialize(value).unwrap()),
-                _ => LogEntry::Unknown(LogUnknown::deserialize(value).unwrap()),
-            },
-        )
+        let protocol = value
+            .get("ip.protocol")
+            .and_then(Value::as_u64)
+            .ok_or_else(|| serde::de::Error::missing_field("ip.protocol"))?;
+
+        match protocol {
+            1 => LogICMP::deserialize(value).map(LogEntry::ICMP),
+            6 => LogTCP::deserialize(value).map(LogEntry::TCP),
+            17 => LogUDP::deserialize(value).map(LogEntry::UDP),
+            _ => LogUnknown::deserialize(value).map(LogEntry::Unknown),
+        }
+        .map_err(serde::de::Error::custom)
     }
 }
 
@@ -324,4 +328,15 @@ async fn forward_logs_to_sink(sink: SubscriptionSink, mut rx: broadcast::Receive
         }
     }
     trace!("Stopped forwarding logs");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn malformed_log_line_returns_error() {
+        assert!(serde_json::from_str::<LogEntry>(r#"{"ip.protocol":6}"#).is_err());
+        assert!(serde_json::from_str::<LogEntry>(r#"{"foo":1}"#).is_err());
+    }
 }

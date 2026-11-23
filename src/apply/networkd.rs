@@ -9,7 +9,7 @@ use crate::{
 };
 use ipnet::IpNet;
 use serde::Serialize;
-use std::net::IpAddr;
+use std::net::{IpAddr, SocketAddr};
 use std::process::Command;
 use std::{error::Error, io::Write};
 use structdb_core::Database;
@@ -213,7 +213,15 @@ pub fn generate_networkd_config_files(
                         ))
                     })?;
                     match &addr.address_type {
-                        AddressType::Host { address } => Some(format!("{}:{}", address, port)),
+                        AddressType::Host { address } => {
+                            let port = u16::try_from(*port).map_err(|_| {
+                                ApplyError::ObjectReferenceError(format!(
+                                    "invalid endpoint port {} for peer {}",
+                                    port, peer.name
+                                ))
+                            })?;
+                            Some(SocketAddr::new(*address, port).to_string())
+                        }
                         _ => {
                             return Err(ApplyError::ObjectReferenceError(format!(
                                 "wireguard peer '{}' endpoint '{}' must be a Host address",
@@ -343,5 +351,23 @@ mod tests {
         let conf: Config = serde_json::from_value(v).unwrap();
         let res = generate_networkd_config_files(conf.clone(), conf);
         assert!(matches!(res, Err(ApplyError::ObjectReferenceError(_))));
+    }
+
+    use serde_json::json;
+
+    #[test]
+    fn wireguard_ipv6_endpoint_is_bracketed() {
+        let mut config = serde_json::to_value(Config::default()).unwrap();
+        config["object"]["addresses"] = json!([{"name": "h", "comment": "", "address_type": {"host": {"address": "2001:db8::1"}}}]);
+        config["vpn"]["wireguard"]["peers"] = json!([{"name": "p1", "public_key": "k", "preshared_key": null, "allowed_ips": [], "endpoint": {"specify": {"address": "h", "port": 51820}}, "persistent_keepalive": null, "comment": ""}]);
+        config["vpn"]["wireguard"]["interfaces"] = json!([{"name": "wg0", "public_key": "k", "private_key": "k", "listen_port": 51820, "peers": ["p1"], "comment": ""}]);
+        let config: Config = serde_json::from_value(config).unwrap();
+
+        let files = generate_networkd_config_files(config.clone(), config).unwrap();
+        let netdev = files
+            .iter()
+            .find(|f| f.name == "40-create-wireguard-wg0.netdev")
+            .unwrap();
+        assert!(netdev.content.contains("Endpoint=[2001:db8::1]:51820"));
     }
 }

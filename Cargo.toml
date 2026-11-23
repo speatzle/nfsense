@@ -1,3 +1,6 @@
+[workspace]
+members = ["e2e"]
+
 [package]
 name = "nfsense"
 version = "0.1.0"

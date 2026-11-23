@@ -1,0 +1,23 @@
+[package]
+name = "nfsense-e2e"
+version = "0.1.0"
+edition = "2021"
+publish = false
+default-run = "nfsense-e2e"
+
+[lib]
+name = "nfsense_e2e"
+path = "src/lib.rs"
+
+[[bin]]
+name = "nfsense-e2e"
+path = "src/main.rs"
+
+[[bin]]
+name = "nfsense-e2e-probe"
+path = "src/bin/probe.rs"
+
+[dependencies]
+serde_json = "1"
+base64 = "0.22"
+fs2 = "0.4"

@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
 use std::{os::unix::fs::PermissionsExt, thread};
-use tokio::fs;
 use tracing::error;
 use zlink::{introspect, proxy, service, unix, ReplyError, Server};
 
@@ -36,7 +35,7 @@ const VARLINK_SOCKET_PATH: &str = "/run/nfsense/net.nfsense";
 pub fn start() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let _ = std::fs::remove_file(VARLINK_SOCKET_PATH);
     let listener = unix::bind(VARLINK_SOCKET_PATH)?;
-    let _ = fs::set_permissions(VARLINK_SOCKET_PATH, std::fs::Permissions::from_mode(0o600));
+    std::fs::set_permissions(VARLINK_SOCKET_PATH, std::fs::Permissions::from_mode(0o600))?;
 
     thread::spawn(move || {
         let rt = tokio::runtime::Runtime::new().expect("failed to create varlink runtime");

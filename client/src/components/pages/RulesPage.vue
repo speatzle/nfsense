@@ -24,5 +24,6 @@ async function resetCounter(entry: any) {
     caption: 'Reset Counter',
     target: 'single',
     callback: resetCounter,
+    enabled: (entry: any) => entry.counter,
   }]"/>
 </template>

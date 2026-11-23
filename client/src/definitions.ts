@@ -147,7 +147,6 @@ type Subsystem = {
 };
 export type Entity = {
   name: string;
-  idType?: "Number" | "String";
   ordered?: true;
   fields?: Fields;
   default?: Record<string, any>;

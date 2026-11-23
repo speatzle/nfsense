@@ -17,15 +17,9 @@ let $vm = {} as any; // TODO: Add proper type
 let $loading = true;
 
 async function load() {
-  console.log({ LOOKATME: $isEdit });
   if (!$isEdit) return void ($loading = false);
   $loading = true;
-  let res: any;
-  if ($entity.idType == "Number")
-    res = await apiCall(`${props.subsystem}.${props.entity}.get`, {
-      id: (props.id as number) - 0,
-    });
-  else res = await apiCall(`${props.subsystem}.${props.entity}.get`, { id: props.id });
+  const res = await apiCall(`${props.subsystem}.${props.entity}.get`, { id: props.id });
 
   if (res.Error === null) {
     console.debug("update data", res.Data);
@@ -39,11 +33,6 @@ async function upsert() {
   let res: any;
 
   if (!$isEdit) res = await apiCall(`${props.subsystem}.${props.entity}.create`, $vm);
-  else if ($entity.idType === "Number")
-    res = await apiCall(`${props.subsystem}.${props.entity}.update`, {
-      id: Number(props.id),
-      thing: $vm,
-    });
   else if (props.id === $vm.name || confirm("Do you want to change the name & all references?"))
     res = await apiCall(`${props.subsystem}.${props.entity}.update`, {
       id: props.id,

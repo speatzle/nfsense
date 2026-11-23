@@ -2,14 +2,17 @@
 import { subsystems, type Entity } from "~/definitions";
 import UpsertModal from "../modals/UpsertModal.vue";
 
+type TableAction = {
+  caption: string;
+  target: "single" | "any" | "pair" | "none";
+  callback: (data: any) => unknown;
+  enabled?: (data: any) => boolean;
+};
+
 const props = defineProps<{
   subsystem: keyof typeof subsystems;
   entity: string;
-  actions?: {
-    caption: string;
-    target: "single" | "any" | "pair" | "none";
-    callback: (data: any) => void;
-  }[];
+  actions?: TableAction[];
 }>();
 const $subsystem = $(computed(() => subsystems[props.subsystem]));
 const $entity = $(computed(() => ($subsystem.entities as Record<string, Entity>)[props.entity]));
@@ -68,11 +71,24 @@ async function editRow(index?: number) {
   if (await pushModal(UpsertModal, { subsystem: props.subsystem, entity: props.entity, id })) load();
 }
 
-const isSelectionTarget = {
-  single: () => $selection.length == 1,
-  pair: () => $selection.length == 2,
-  any: () => $selection.length >= 1,
-  none: () => $selection.length == 0,
+function actionData(action: TableAction) {
+  return action.target == "single" ? $displayData[$selection[0]] : $selection.map((i) => $displayData[i]);
+}
+
+function isActionEnabled(action: TableAction) {
+  const isSelectionTarget = {
+    single: () => $selection.length == 1,
+    pair: () => $selection.length == 2,
+    any: () => $selection.length >= 1,
+    none: () => $selection.length == 0,
+  }
+
+  return isSelectionTarget[action.target]() && (!action.enabled || action.enabled(actionData(action)));
+}
+
+async function runAction(action: TableAction) {
+  await action.callback(actionData(action));
+  load();
 }
 
 onMounted(load);
@@ -85,7 +101,7 @@ onMounted(load);
       <button @click="createRow" :class="{accent: $selection.length != 1}">Create</button>
       <button :disabled="$selection.length != 1" :class="{accent: $selection.length == 1}" @click="() => editRow()">Edit</button>
       <button :disabled="$selection.length != 1" @click="deleteRow">Delete</button>
-      <button :disabled="!isSelectionTarget[action.target]()" v-for="action of props.actions" v-text="action.caption" @click="action.callback(action.target == 'single' ? $data[$selection[0]] : $selection.map(id => $data[id])); load()"/>
+      <button :disabled="!isActionEnabled(action)" v-for="action of props.actions" v-text="action.caption" @click="runAction(action)"/>
     </template>
     <NiceTable
       v-model:selection="$selection"

@@ -17,3 +17,28 @@ cat > /etc/systemd/journald.conf <<EOF
 ForwardToConsole=yes
 ForwardToWall=yes
 EOF
+
+
+echo "Normalize modes of the files from mkosi.extra"
+# mkosi copies mkosi.extra with the modes of the checkout, and those depend
+# on the umask of whoever checked it out: with umask 077 the image shipped
+# /usr/share as 0700 and configs as 0600, unreadable for unbound and kea.
+# git only records 644 and 755, and a umask never strips the owner bits, so
+# restore what git means for exactly the paths we ship: directories 755,
+# files 755 if owner-executable, otherwise 644. Symlinks are left alone.
+# Runs inside the image, so nothing outside it can be touched.
+for tree in "$SRCDIR/mkosi/mkosi.extra" $(for p in ${PROFILES:-}; do echo "$SRCDIR/mkosi/mkosi.profiles/$p/mkosi.extra"; done); do
+    [ -d "$tree" ] || continue
+    (cd "$tree" && find . -mindepth 1 ! -type l -print0) | while IFS= read -r -d '' rel; do
+        src="$tree/${rel#./}"
+        dst="/${rel#./}"
+        [ -e "$dst" ] && [ ! -L "$dst" ] || continue
+        if [ -d "$src" ]; then
+            chmod 755 "$dst"
+        elif [ -x "$src" ]; then
+            chmod 755 "$dst"
+        else
+            chmod 644 "$dst"
+        fi
+    done
+done

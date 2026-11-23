@@ -1,5 +1,8 @@
 #!/bin/bash
 set -euo pipefail
+# Files created here end up in the image; do not inherit a restrictive
+# umask from the builder (it made shipped files unreadable for services).
+umask 022
 
 echo "Build"
 export SHELL=bash
@@ -21,13 +24,13 @@ install -D target/release/nfctl "$DESTDIR/usr/sbin/nfctl"
 
 echo Copy Templates
 mkdir -p "$DESTDIR/usr/share/nfsense/templates/"
-cp -r src/templates/* "$DESTDIR/usr/share/nfsense/templates/"
+cp -r --no-preserve=mode src/templates/* "$DESTDIR/usr/share/nfsense/templates/"
 
 echo "Building Client"
 cd $SRCDIR/client
 CI=true pnpm install --frozen-lockfile
 CI=true pnpm run build-only
 mkdir -p "$DESTDIR/usr/share/nfsense/html"
-cp -r dist/* "$DESTDIR/usr/share/nfsense/html/"
+cp -r --no-preserve=mode dist/* "$DESTDIR/usr/share/nfsense/html/"
 
 echo "Build Complete"

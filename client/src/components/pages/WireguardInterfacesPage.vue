@@ -41,7 +41,7 @@ async function load() {
 
 async function deleteInterface() {
   const res = await apiCall("vpn.wireguard.interfaces.delete", {
-    name: $displayData[$selection[0]].name,
+    id: $displayData[$selection[0]].name,
   });
   if (res.Error === null) console.debug("deleted interface");
   else console.debug("error", res);

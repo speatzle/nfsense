@@ -127,7 +127,7 @@ async fn main() {
 
     let handle = axum_server::Handle::new();
 
-    let _shutdown_future = shutdown_signal(handle.clone(), rpc_handle);
+    tokio::spawn(shutdown_signal(handle.clone(), rpc_handle));
 
     info!("Server started successfully");
     let addr = SocketAddr::new(IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 0)), 4444);

@@ -249,7 +249,10 @@ impl ConfigManager {
 
     pub fn discard_pending_changes(&mut self) -> Result<(), ConfigError> {
         let mut data = self.lock_data();
-        // TODO Remove Pending Config File
+
+        if !data.in_memory {
+            write_config_to_file(PENDING_CONFIG_PATH, data.current_config.clone())?;
+        }
 
         data.pending_config = data.current_config.clone();
         data.changelog = Vec::new();
@@ -500,5 +503,25 @@ mod tests {
         assert!(
             matches!(res, Err(crate::apply::ApplyError::Panic(msg)) if msg == "generator boom")
         );
+    }
+
+    #[test]
+    fn test_discard_pending_changes_resets_to_current() {
+        let current = create_test_config();
+        let mut pending = current.clone();
+        pending.system.users[0].comment = "changed".to_string();
+        let mut manager = ConfigManager::new_for_test(current.clone(), pending.clone());
+        manager
+            .set_pending_config(pending, "test@test.com".to_string())
+            .unwrap();
+        assert!(!manager.get_pending_changelog().is_empty());
+
+        manager.discard_pending_changes().unwrap();
+
+        assert_eq!(
+            serde_json::to_value(manager.get_pending_config()).unwrap(),
+            serde_json::to_value(current).unwrap()
+        );
+        assert!(manager.get_pending_changelog().is_empty());
     }
 }

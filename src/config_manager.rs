@@ -314,7 +314,7 @@ fn write_config_to_file(path: &str, conf: Config) -> Result<(), ConfigError> {
 
 fn validate_config(conf: &Config) -> Result<(), ConfigError> {
     // Garde validation (with Config context)
-    conf.validate()?;
+    conf.validate_with(conf)?;
 
     // Duplicate key and reference validation
     let errors = structdb_core::validate_all(conf);

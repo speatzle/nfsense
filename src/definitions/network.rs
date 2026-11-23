@@ -33,6 +33,7 @@ pub struct NetworkInterface {
     pub alias: String,
     pub comment: String,
     #[delegate]
+    #[garde(dive)]
     pub interface_type: NetworkInterfaceType,
     pub addressing_mode: AddressingMode,
     #[requires(VirtualRouter)]
@@ -43,6 +44,7 @@ pub struct NetworkInterface {
 #[garde(context(Config))]
 #[garde(allow_unvalidated)]
 pub struct Vlan {
+    #[garde(range(min = 1, max = 4094))]
     pub id: i32,
     #[requires(NetworkInterface)]
     pub parent: String,
@@ -70,8 +72,11 @@ pub struct Bridge {
 #[garde(allow_unvalidated)]
 pub enum NetworkInterfaceType {
     // TODO figure out how to validate the device since it needs to soft fail
-    Hardware { device: String },
-    Vlan(Vlan),
+    Hardware {
+        #[garde(custom(validation::validate_device))]
+        device: String,
+    },
+    Vlan(#[garde(dive)] Vlan),
     Bond(Bond),
     Bridge(Bridge),
 }

@@ -33,6 +33,7 @@ pub struct WireguardInterface {
     #[garde(custom(validation::validate_name))]
     pub name: String,
     pub public_key: String,
+    #[garde(custom(validation::validate_wireguard_key))]
     pub private_key: String,
     pub listen_port: u64,
     #[requires(WireguardPeer)]
@@ -47,10 +48,13 @@ pub struct WireguardInterface {
 pub struct WireguardPeer {
     #[garde(custom(validation::validate_name))]
     pub name: String,
+    #[garde(custom(validation::validate_wireguard_key))]
     pub public_key: String,
+    #[garde(custom(validation::validate_optional_wireguard_key))]
     pub preshared_key: Option<String>,
     #[requires(Address)]
     pub allowed_ips: Vec<String>,
+    #[garde(dive)]
     pub endpoint: WireguardEndpoint,
     pub persistent_keepalive: Option<u64>,
     pub comment: String,

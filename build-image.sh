@@ -3,15 +3,17 @@ set -euo pipefail
 IMAGE_VERSION="g$(git rev-parse --short=10 HEAD)"
 #IMAGE_VERSION="v0.0.1"
 
-rm -f mkosi/mkosi.output/nfsense* initrd*
+rm -f mkosi/mkosi.output/nfsense*
 
 if [[ $# -ne 1 ]]; then
     echo "Prod Mode"
-    mkosi --directory mkosi --profile=prod  --image-version="${IMAGE_VERSION}" build
+    IMAGE_NAME=nfsense
+    mkosi --directory mkosi --output-directory mkosi.output --profile=prod --image-version="${IMAGE_VERSION}" build
 else
     if [ "$1" ==  "dev" ]; then
         echo "Dev Mode"
-        mkosi --directory mkosi --profile=dev --image-version="${IMAGE_VERSION}" build
+        IMAGE_NAME=nfsense-dev
+        mkosi --directory mkosi --output-directory mkosi.output --profile=dev --image-version="${IMAGE_VERSION}" build
         echo "Done"
     else
         echo 'Too many/few arguments, expecting [dev]' >&2
@@ -20,7 +22,7 @@ else
 fi
 
 
-COMPRESSED_FILE=$(find mkosi/mkosi.output -name "nfsense_${IMAGE_VERSION}.raw.zst" -print -quit)
+COMPRESSED_FILE=$(find mkosi/mkosi.output -name "${IMAGE_NAME}_${IMAGE_VERSION}.raw.zst" -print -quit)
 
 if [ -z "$COMPRESSED_FILE" ]; then
     echo "Error: Could not find image for version ${IMAGE_VERSION}"

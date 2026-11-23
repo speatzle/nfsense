@@ -13,7 +13,7 @@ cd nfsense
 ./install.sh
 ```
 
-After the Installation is complete you will need to login to the web interface at https://<your-ip>:8080 with the user root and password nfsense.
+After the Installation is complete you will need to login to the web interface at https://<your-ip>:4444 with the user root and password nfsense.
 Configure the Network interfaces, your default route and apply the Changes.
 Otherwise there will be no network connectivity after reboot.
 

@@ -21,11 +21,13 @@ pub fn generate_chrony(
     let mut subnets = vec![];
 
     for server in &pending_config.service.ntp_servers {
-        if let AddressingMode::Static { address } = &server
-            .get_interface(&pending_config)
-            .unwrap()
-            .addressing_mode
-        {
+        let interface = server.get_interface(&pending_config).ok_or_else(|| {
+            ApplyError::ObjectReferenceError(format!(
+                "NTP server '{}' references non-existent interface",
+                server.name
+            ))
+        })?;
+        if let AddressingMode::Static { address } = &interface.addressing_mode {
             subnets.push(address.network().to_string());
             subnets.push(address.trunc().to_string());
         }
@@ -44,9 +46,6 @@ pub fn generate_chrony(
             return Err(ApplyError::TemplateError(e));
         }
     }
-
-    info!("Deleting old Chrony Config");
-    std::fs::remove_file(CHRONY_CONFIG_PATH)?;
 
     info!("Writing new Chrony Config");
     let mut f = std::fs::File::create(CHRONY_CONFIG_PATH)?;

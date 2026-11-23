@@ -25,7 +25,12 @@ pub fn generate_unbound(
     let mut subnets = vec![];
 
     for server in &pending_config.service.dns_servers {
-        let interface = server.get_interface(&pending_config).unwrap();
+        let interface = server.get_interface(&pending_config).ok_or_else(|| {
+            ApplyError::ObjectReferenceError(format!(
+                "DNS server '{}' references non-existent interface",
+                server.name
+            ))
+        })?;
         if let NetworkInterfaceType::Hardware { device } = interface.interface_type.clone() {
             interfaces.push(device);
         } else {
@@ -51,9 +56,6 @@ pub fn generate_unbound(
             return Err(ApplyError::TemplateError(e));
         }
     }
-
-    info!("Deleting old Unbound Config");
-    std::fs::remove_file(UNBOUND_CONFIG_PATH)?;
 
     info!("Writing new Unbound Config");
     let mut f = std::fs::File::create(UNBOUND_CONFIG_PATH)?;

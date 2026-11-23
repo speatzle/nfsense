@@ -36,6 +36,34 @@ fn port_definition_to_expression(port_def: &PortDefinition) -> Option<Expression
     }
 }
 
+fn nat_address_expression(address: &Address) -> Result<Expression<'static>, ApplyError> {
+    match address.address_type {
+        AddressType::Host { address } => Ok(Expression::String(address.to_string().into())),
+        _ => Err(ApplyError::ObjectReferenceError(format!(
+            "NAT address '{}' must be a Host address",
+            address.name
+        ))),
+    }
+}
+
+fn nat_port_expression(service: &Service) -> Result<Expression<'static>, ApplyError> {
+    match &service.service_type {
+        ServiceType::TCP { destination, .. } | ServiceType::UDP { destination, .. } => {
+            match destination {
+                PortDefinition::Single { port } => Ok(Expression::Number(*port)),
+                _ => Err(ApplyError::ObjectReferenceError(format!(
+                    "NAT service '{}' must have a single destination port",
+                    service.name
+                ))),
+            }
+        }
+        _ => Err(ApplyError::ObjectReferenceError(format!(
+            "NAT service '{}' must be TCP or UDP",
+            service.name
+        ))),
+    }
+}
+
 fn generate_service_matcher_statements(service: &Service) -> Vec<Statement<'static>> {
     let mut statements = Vec::new();
 
@@ -590,30 +618,11 @@ pub fn generate_nftables(
             let mut destination_port = None;
 
             if let Some(dnataddr) = rule.get_dnat_address(&pending_config) {
-                match dnataddr.address_type {
-                    AddressType::Host { address } => {
-                        addr = Some(Expression::String(address.to_string().into()));
-                    }
-                    _ => todo!("Unsupported address type"),
-                }
+                addr = Some(nat_address_expression(dnataddr)?);
             }
 
             if let Some(dnatservice) = rule.get_dnat_service(&pending_config) {
-                match &dnatservice.service_type {
-                    ServiceType::TCP { destination, .. } => match destination {
-                        PortDefinition::Single { port } => {
-                            destination_port = Some(Expression::Number(*port))
-                        }
-                        _ => todo!("Unsupported port definition"),
-                    },
-                    ServiceType::UDP { destination, .. } => match destination {
-                        PortDefinition::Single { port } => {
-                            destination_port = Some(Expression::Number(*port))
-                        }
-                        _ => todo!("Unsupported port definition"),
-                    },
-                    _ => todo!("Unsupported service type"),
-                }
+                destination_port = Some(nat_port_expression(dnatservice)?);
             }
 
             expression.push(Statement::DNAT(Some(stmt::NAT {
@@ -731,30 +740,11 @@ pub fn generate_nftables(
                     let mut source_port = None;
 
                     if let Some(address) = snat.get_address(&pending_config) {
-                        match address.address_type {
-                            AddressType::Host { address } => {
-                                source_addr = Some(Expression::String(address.to_string().into()));
-                            }
-                            _ => todo!("Unsupported address type"),
-                        }
+                        source_addr = Some(nat_address_expression(address)?);
                     }
 
                     if let Some(service) = snat.get_service(&pending_config) {
-                        match &service.service_type {
-                            ServiceType::TCP { destination, .. } => match destination {
-                                PortDefinition::Single { port } => {
-                                    source_port = Some(Expression::Number(*port))
-                                }
-                                _ => todo!("Unsupported port definition: {}", service.name),
-                            },
-                            ServiceType::UDP { destination, .. } => match destination {
-                                PortDefinition::Single { port } => {
-                                    source_port = Some(Expression::Number(*port))
-                                }
-                                _ => todo!("Unsupported port definition: {}", service.name),
-                            },
-                            _ => todo!("Unsupported service type: {}", service.name),
-                        }
+                        source_port = Some(nat_port_expression(service)?);
                     }
 
                     expression.push(Statement::SNAT(Some(stmt::NAT {
@@ -946,7 +936,6 @@ pub fn generate_nftables(
     }
 
     info!("Save new Ruleset to disk");
-    std::fs::remove_file(NFTABLES_CONFIG_PATH)?;
     let mut f = std::fs::File::create(NFTABLES_CONFIG_PATH)?;
     f.write_all(
         "#!/usr/sbin/nft -f\n\n\n# Nftables config for restore on reboot\nflush ruleset\n"
@@ -969,5 +958,60 @@ pub fn generate_nftables(
             }
         }
         Err(err) => Err(ApplyError::IOError(err)),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn service(service_type: ServiceType) -> Service {
+        Service {
+            name: "svc".to_string(),
+            service_type,
+            comment: String::new(),
+        }
+    }
+
+    #[test]
+    fn nat_port_single_port() {
+        let svc = service(ServiceType::TCP {
+            source: PortDefinition::Any,
+            destination: PortDefinition::Single { port: 8080 },
+        });
+        assert!(matches!(
+            nat_port_expression(&svc),
+            Ok(Expression::Number(8080))
+        ));
+    }
+
+    #[test]
+    fn nat_port_range_is_error() {
+        let svc = service(ServiceType::UDP {
+            source: PortDefinition::Any,
+            destination: PortDefinition::Range {
+                start_port: 1000,
+                end_port: 2000,
+            },
+        });
+        assert!(nat_port_expression(&svc).is_err());
+    }
+
+    #[test]
+    fn nat_port_icmp_is_error() {
+        let svc = service(ServiceType::ICMP { ptypes: vec![] });
+        assert!(nat_port_expression(&svc).is_err());
+    }
+
+    #[test]
+    fn nat_address_network_is_error() {
+        let addr = Address {
+            name: "net".to_string(),
+            address_type: AddressType::Network {
+                network: "10.0.0.0/8".parse().unwrap(),
+            },
+            comment: String::new(),
+        };
+        assert!(nat_address_expression(&addr).is_err());
     }
 }

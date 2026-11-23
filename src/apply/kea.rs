@@ -92,11 +92,7 @@ pub struct KeaOption {
     pub data: String,
 }
 
-pub fn generate_kea(
-    apply: bool,
-    pending_config: Config,
-    _current_config: Config,
-) -> Result<(), ApplyError> {
+pub fn generate_kea_config(pending_config: &Config) -> Result<KeaConfig, ApplyError> {
     let mut conf: KeaConfig = KeaConfig {
         dhcpv4: KeaDHCPv4 {
             valid_lifetime: 4000,
@@ -122,7 +118,21 @@ pub fn generate_kea(
     for dhcp_server in pending_config.service.dhcp_servers.clone() {
         //TODO find a stable way for the subnet id
         dhcpindex += 1;
-        let interface = dhcp_server.get_interface(&pending_config).unwrap();
+        let interface = dhcp_server.get_interface(pending_config).ok_or_else(|| {
+            ApplyError::ObjectReferenceError(format!(
+                "DHCP server '{}' references non-existent interface",
+                dhcp_server.name
+            ))
+        })?;
+        let interface_address = match interface.addressing_mode {
+            AddressingMode::Static { address } => address,
+            _ => {
+                return Err(ApplyError::ObjectReferenceError(format!(
+                    "DHCP server '{}' requires interface '{}' to use static addressing",
+                    dhcp_server.name, interface.name
+                )))
+            }
+        };
         // TODO specify main ip of interface https://kea.readthedocs.io/en/kea-2.2.0/arm/dhcp4-srv.html#interface-configuration
         match interface.interface_type.clone() {
             NetworkInterfaceType::Hardware { device } => {
@@ -137,10 +147,7 @@ pub fn generate_kea(
 
         let mut subnet = KeaSubnet4 {
             id: dhcpindex,
-            subnet: match interface.addressing_mode {
-                AddressingMode::Static { address } => address.clone(),
-                _ => panic!("Unsupported Addressing mode"),
-            },
+            subnet: interface_address,
             pools: vec![],
             valid_lifetime: dhcp_server.lease_time,
             option_data: vec![],
@@ -149,18 +156,25 @@ pub fn generate_kea(
         match dhcp_server.gateway_mode.clone() {
             GatewayMode::Interface => subnet.option_data.push(KeaOption {
                 code: 3,
-                data: match interface.addressing_mode {
-                    AddressingMode::Static { address } => address.addr().to_string(),
-                    _ => panic!("Unsupported Address Type"),
-                },
+                data: interface_address.addr().to_string(),
             }),
             GatewayMode::Specify(specify) => {
-                let gateway = specify.get_gateway(&pending_config).unwrap();
+                let gateway = specify.get_gateway(pending_config).ok_or_else(|| {
+                    ApplyError::ObjectReferenceError(format!(
+                        "DHCP server '{}' references non-existent gateway",
+                        dhcp_server.name
+                    ))
+                })?;
                 subnet.option_data.push(KeaOption {
                     code: 3,
                     data: match gateway.address_type {
                         AddressType::Host { address } => address.to_string(),
-                        _ => panic!("Unsupported Address Type"),
+                        _ => {
+                            return Err(ApplyError::ObjectReferenceError(format!(
+                                "DHCP server '{}' gateway must be a Host address",
+                                dhcp_server.name
+                            )))
+                        }
                     },
                 })
             }
@@ -170,14 +184,11 @@ pub fn generate_kea(
         match dhcp_server.dns_server_mode.clone() {
             DNSServerMode::Interface => subnet.option_data.push(KeaOption {
                 code: 6,
-                data: match interface.addressing_mode {
-                    AddressingMode::Static { address } => address.addr().to_string(),
-                    _ => panic!("Unsupported Address Type"),
-                },
+                data: interface_address.addr().to_string(),
             }),
             DNSServerMode::Specify(specify) => {
                 let mut servers = "".to_string();
-                let dns_servers: Vec<_> = specify.get_dns_servers(&pending_config).collect();
+                let dns_servers: Vec<_> = specify.get_dns_servers(pending_config).collect();
 
                 for (i, dns_server) in dns_servers.iter().enumerate() {
                     match dns_server.address_type {
@@ -187,7 +198,12 @@ pub fn generate_kea(
                             }
                             servers += &address.to_string();
                         }
-                        _ => panic!("Unsupported Address Type"),
+                        _ => {
+                            return Err(ApplyError::ObjectReferenceError(format!(
+                                "DHCP server '{}' DNS server '{}' must be a Host address",
+                                dhcp_server.name, dns_server.name
+                            )))
+                        }
                     }
                 }
 
@@ -202,14 +218,11 @@ pub fn generate_kea(
         match dhcp_server.ntp_server_mode.clone() {
             NTPServerMode::Interface => subnet.option_data.push(KeaOption {
                 code: 42,
-                data: match interface.addressing_mode {
-                    AddressingMode::Static { address } => address.addr().to_string(),
-                    _ => panic!("Unsupported Address Type"),
-                },
+                data: interface_address.addr().to_string(),
             }),
             NTPServerMode::Specify(specify) => {
                 let mut servers = "".to_string();
-                let ntp_servers: Vec<_> = specify.get_ntp_servers(&pending_config).collect();
+                let ntp_servers: Vec<_> = specify.get_ntp_servers(pending_config).collect();
 
                 for (i, ntp_server) in ntp_servers.iter().enumerate() {
                     match ntp_server.address_type {
@@ -219,7 +232,12 @@ pub fn generate_kea(
                             }
                             servers += &address.to_string();
                         }
-                        _ => panic!("Unsupported Address Type"),
+                        _ => {
+                            return Err(ApplyError::ObjectReferenceError(format!(
+                                "DHCP server '{}' NTP server '{}' must be a Host address",
+                                dhcp_server.name, ntp_server.name
+                            )))
+                        }
                     }
                 }
 
@@ -231,28 +249,40 @@ pub fn generate_kea(
             NTPServerMode::None => (),
         }
 
-        let pools: Vec<_> = dhcp_server.get_pool(&pending_config).collect();
+        let pools: Vec<_> = dhcp_server.get_pool(pending_config).collect();
         for pool in pools {
             match pool.address_type {
                 AddressType::Host { address } => subnet.pools.push(KeaPool {
                     pool: address.to_string() + "/32",
                 }),
-                AddressType::Range { .. } => panic!("TODO fix range type"),
                 AddressType::Network { network } => subnet.pools.push(KeaPool {
                     pool: network.to_string(),
                 }),
-                AddressType::Group(_) => panic!("TODO"),
+                // TODO implement the range type
+                AddressType::Range { .. } | AddressType::Group(_) => {
+                    return Err(ApplyError::ObjectReferenceError(format!(
+                        "DHCP server '{}' pool '{}' must be a Host or Network address",
+                        dhcp_server.name, pool.name
+                    )))
+                }
             }
         }
 
         conf.dhcpv4.subnet4.push(subnet);
     }
 
+    Ok(conf)
+}
+
+pub fn generate_kea(
+    apply: bool,
+    pending_config: Config,
+    _current_config: Config,
+) -> Result<(), ApplyError> {
+    let conf = generate_kea_config(&pending_config)?;
+
     info!("Serializeing Kea v4 Config");
     let config_data: String = serde_json::to_string_pretty(&conf)?;
-
-    info!("Deleting old Kea v4 Config");
-    std::fs::remove_file(KEA_V4_CONFIG_PATH)?;
 
     info!("Writing new Kea v4 Config");
     let mut f = std::fs::File::create(KEA_V4_CONFIG_PATH)?;
@@ -276,5 +306,87 @@ pub fn generate_kea(
         }
     } else {
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::definitions::network::NetworkInterface;
+    use crate::definitions::object::Address;
+    use crate::definitions::service::DHCPServer;
+
+    fn config_with_dhcp(addressing_mode: AddressingMode, pool: AddressType) -> Config {
+        let mut conf = Config::default();
+        conf.network.interfaces.push(NetworkInterface {
+            name: "lan".to_string(),
+            alias: String::new(),
+            comment: String::new(),
+            interface_type: NetworkInterfaceType::Hardware {
+                device: "eth0".to_string(),
+            },
+            addressing_mode,
+            virtual_router: None,
+        });
+        conf.object.addresses.push(Address {
+            name: "pool".to_string(),
+            address_type: pool,
+            comment: String::new(),
+        });
+        conf.service.dhcp_servers.push(DHCPServer {
+            name: "dhcp".to_string(),
+            interface: "lan".to_string(),
+            pool: vec!["pool".to_string()],
+            lease_time: 3600,
+            gateway_mode: GatewayMode::Interface,
+            dns_server_mode: DNSServerMode::Interface,
+            ntp_server_mode: NTPServerMode::None,
+            comment: String::new(),
+        });
+        conf
+    }
+
+    fn network_pool() -> AddressType {
+        AddressType::Network {
+            network: "192.168.1.0/24".parse().unwrap(),
+        }
+    }
+
+    #[test]
+    fn static_interface_generates_subnet() {
+        let conf = config_with_dhcp(
+            AddressingMode::Static {
+                address: "192.168.1.1/24".parse().unwrap(),
+            },
+            network_pool(),
+        );
+        let kea = generate_kea_config(&conf).unwrap();
+        assert_eq!(kea.dhcpv4.subnet4.len(), 1);
+        assert_eq!(kea.dhcpv4.subnet4[0].pools[0].pool, "192.168.1.0/24");
+    }
+
+    #[test]
+    fn non_static_interface_is_error() {
+        let conf = config_with_dhcp(AddressingMode::DHCP, network_pool());
+        assert!(matches!(
+            generate_kea_config(&conf),
+            Err(ApplyError::ObjectReferenceError(_))
+        ));
+    }
+
+    #[test]
+    fn range_pool_is_error() {
+        let conf = config_with_dhcp(
+            AddressingMode::Static {
+                address: "192.168.1.1/24".parse().unwrap(),
+            },
+            AddressType::Range {
+                range: "192.168.1.10".parse().unwrap(),
+            },
+        );
+        assert!(matches!(
+            generate_kea_config(&conf),
+            Err(ApplyError::ObjectReferenceError(_))
+        ));
     }
 }

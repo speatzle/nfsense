@@ -206,12 +206,20 @@ pub fn generate_networkd_config_files(
             // Resolve endpoint address + port to formatted string
             let endpoint = match &peer.endpoint {
                 WireguardEndpoint::Specify { address, port } => {
-                    let addr = pending_config
-                        .get::<Address>(address)
-                        .expect("validation ensures endpoint address exists");
+                    let addr = pending_config.get::<Address>(address).ok_or_else(|| {
+                        ApplyError::ObjectReferenceError(format!(
+                            "wireguard peer '{}' endpoint address '{}' not found",
+                            peer.name, address
+                        ))
+                    })?;
                     match &addr.address_type {
                         AddressType::Host { address } => Some(format!("{}:{}", address, port)),
-                        _ => unreachable!("validation enforces Host type for endpoint"),
+                        _ => {
+                            return Err(ApplyError::ObjectReferenceError(format!(
+                                "wireguard peer '{}' endpoint '{}' must be a Host address",
+                                peer.name, addr.name
+                            )));
+                        }
                     }
                 }
                 WireguardEndpoint::None => None,
@@ -320,5 +328,20 @@ fn generate_config_file(
             }
             return Err(ApplyError::TemplateError(e));
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn dangling_wireguard_endpoint_is_error() {
+        let mut v = serde_json::to_value(Config::default()).unwrap();
+        v["vpn"]["wireguard"]["interfaces"] = serde_json::json!([{"name":"wg0","public_key":"k","private_key":"k","listen_port":51820,"peers":["p1"],"comment":""}]);
+        v["vpn"]["wireguard"]["peers"] = serde_json::json!([{"name":"p1","public_key":"k","preshared_key":null,"allowed_ips":[],"endpoint":{"specify":{"address":"missing","port":51820}},"persistent_keepalive":null,"comment":""}]);
+        let conf: Config = serde_json::from_value(v).unwrap();
+        let res = generate_networkd_config_files(conf.clone(), conf);
+        assert!(matches!(res, Err(ApplyError::ObjectReferenceError(_))));
     }
 }

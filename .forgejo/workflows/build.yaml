@@ -1,6 +1,10 @@
-on: [push]
+on:
+  push:
+  # Fork PRs only; branches of this repository are already built on push.
+  pull_request:
 jobs:
   api-build:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: docker
     container:
       image: debian:trixie
@@ -24,7 +28,14 @@ jobs:
       - name: build api
         run: |
           cargo build --release
+      - name: test api
+        run: |
+          cargo test -p nfsense
+      - name: build e2e harness
+        run: |
+          cargo test -p nfsense-e2e --no-run
   client-build:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: docker
     steps:
       - name: setup node

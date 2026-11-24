@@ -1,20 +1,70 @@
+# One job on purpose: the image is several GB, and passing it between jobs
+# as an artifact would cost more time than it saves.
+#
+# The runner (`nfsense-build`) must be registered for this repository or
+# organisation only, never instance-wide: forks on the same instance could
+# otherwise schedule jobs on it and bypass the trigger rules below.
+# It needs KVM (nested virtualisation if it is itself a VM), must allow the
+# `--device /dev/kvm` container option, ~16 GB RAM and ~25 GB free disk.
 on:
+  # Pushes into this repository need write access, so they only come from
+  # contributors. Anyone with write access can also read the release keys
+  # through a workflow of their own; that trust is not enforced here.
   push:
-    tags:
-      - "v*"
+  # Only fork PRs get through the job's `if:` (branches of this repository
+  # are already built on push). Forgejo holds runs from untrusted fork
+  # authors until a maintainer approves them.
+  pull_request:
+  # Maintainer override, e.g. `refs/pull/<N>/head` after reviewing a fork PR.
   workflow_dispatch:
     inputs:
       gitref:
-        description: "Git Ref to build"
-        required: true
+        description: "Git ref to build and test (default: the selected branch)"
+        required: false
         type: string
+      release:
+        description: "Sign with the release keys and upload the image"
+        required: false
+        type: boolean
+        default: false
+
+# Release runs get their own group and are never cancelled; dispatches
+# otherwise share the selected branch's group.
+concurrency:
+  group: image-${{ github.event.pull_request.number || inputs.gitref || github.ref }}${{ inputs.release && '-release' || '' }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/v') && !inputs.release }}
+
+defaults:
+  run:
+    shell: bash
+
 jobs:
-  image-build:
+  image:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: nfsense-build
+    timeout-minutes: 120
     container:
       image: debian:trixie
-      options: --tmpfs /tmpfs:exec
+      # /keys on a tmpfs: the signing keys never reach the runner's disk.
+      options: --tmpfs /tmpfs:exec --tmpfs /keys --device /dev/kvm
+    env:
+      MKOSI_PKG_CACHE: /var/cache/mkosi-pkgs
+      # Short path: the harness puts unix sockets in its cache dir, and
+      # those are limited to 108 bytes.
+      E2E_CACHE_DIR: /tmp/e2ec
+      # Real keys only for a pushed v* tag or a release dispatch. A dispatch
+      # started on a tag must not count: its gitref may be a fork PR.
+      RELEASE: ${{ (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && inputs.release) }}
     steps:
+      - name: refuse release builds of other refs
+        if: env.RELEASE == 'true' && inputs.gitref != ''
+        env:
+          GITREF: ${{ inputs.gitref }}
+        run: |
+          case "$GITREF" in
+            refs/tags/v*) ;;
+            *) echo "::error::release builds only sign v* tags, not $GITREF"; exit 1 ;;
+          esac
       - name: setup non-free-firmware
         run: |
           echo 'deb http://deb.debian.org/debian/ trixie main non-free-firmware
@@ -32,39 +82,151 @@ jobs:
             curl \
             git \
             zstd \
+            openssl \
+            procps \
+            gcc \
+            pkg-config \
+            libssl-dev \
             qemu-utils \
+            qemu-system-x86 \
+            ovmf \
+            swtpm \
+            swtpm-tools \
             amd64-microcode \
             intel-microcode
+      # Before the long image build: without KVM the harness would only
+      # print `e2e SKIP` and pass.
+      - name: check KVM and e2e host prerequisites
+        run: |
+          fail() { echo "::error::$*"; exit 1; }
+          [ -c /dev/kvm ] || fail "/dev/kvm is missing in the job container. The runner host needs KVM and the container must be started with --device /dev/kvm."
+          { exec 3<>/dev/kvm; } 2>/dev/null || fail "/dev/kvm exists but cannot be opened read-write by $(id -un)."
+          exec 3>&-
+          command -v qemu-system-x86_64 >/dev/null || fail "qemu-system-x86_64 not installed"
+          command -v swtpm >/dev/null || fail "swtpm not installed"
+          for f in /usr/share/OVMF/OVMF_CODE_4M.fd /usr/share/OVMF/OVMF_VARS_4M.fd; do
+            [ -f "$f" ] || fail "OVMF firmware $f missing"
+          done
+          echo "KVM and e2e prerequisites OK"
       - name: checkout code
         uses: https://data.forgejo.org/actions/checkout@v4
         with:
           ref: ${{ inputs.gitref }}
+      - name: setup rust
+        uses: https://codeberg.org/wackbyte/rust-toolchain@4da5f751804b19f1d50061e0e44cb8b6d449c9af
+        with:
+          toolchain: stable
       - name: setup mkosi
         run: |
           pipx install git+https://github.com/systemd/mkosi.git@v26
-      - name: setup cert
+      - name: build e2e harness
         run: |
-          echo "${{ secrets.SB_CRT }}" > mkosi/mkosi.crt
-          echo "${{ secrets.SB_KEY }}" > mkosi/mkosi.key
-          chmod 600 mkosi/mkosi.key
+          cargo test -p nfsense-e2e --no-run
+      # Stale cache entries are harmless: apt only fetches what changed.
+      # Not for releases: an approved fork PR can write cache entries too.
+      - name: restore mkosi package cache
+        if: env.RELEASE != 'true'
+        uses: https://data.forgejo.org/actions/cache@v4
+        with:
+          path: ${{ env.MKOSI_PKG_CACHE }}
+          key: mkosi-pkgs-${{ hashFiles('mkosi/mkosi.conf', 'mkosi/mkosi.conf.d/**', 'mkosi/mkosi.images/**/*.conf', 'mkosi/mkosi.profiles/prod/**') }}
+          restore-keys: |
+            mkosi-pkgs-
+      - name: setup signing keys
+        env:
+          SB_KEY: ${{ env.RELEASE == 'true' && secrets.SB_KEY || '' }}
+          SB_CRT: ${{ env.RELEASE == 'true' && secrets.SB_CRT || '' }}
+        run: |
+          KEY_DIR="$(mktemp -d /keys/sb.XXXXXX)"
+          if [ "$RELEASE" = "true" ]; then
+            [ -n "$SB_KEY" ] && [ -n "$SB_CRT" ] || { echo "::error::release keys missing"; exit 1; }
+            printf '%s\n' "$SB_KEY" > "$KEY_DIR/sb.key"
+            printf '%s\n' "$SB_CRT" > "$KEY_DIR/sb.crt"
+          else
+            openssl req -new -x509 -newkey rsa:2048 -nodes -days 7 \
+              -subj "/CN=nfsense throwaway ${GITHUB_SHA:0:10}" \
+              -keyout "$KEY_DIR/sb.key" -out "$KEY_DIR/sb.crt" 2>/dev/null
+          fi
+          chmod 600 "$KEY_DIR/sb.key"
+          echo "KEY_DIR=$KEY_DIR" >> "$GITHUB_ENV"
       - name: build image
         run: |
           export PATH="${PATH}:/root/.local/bin"
+          IMAGE_VERSION="g$(git rev-parse --short=10 HEAD)"
+          mkdir -p "$MKOSI_PKG_CACHE"
           mkosi --directory mkosi \
-          --workspace-directory=/tmpfs \
-          --profile=prod  \
-          --image-version="g$(git rev-parse --short=10 HEAD)" \
-          --output-directory mkosi.output
-          echo "build done"
+            --workspace-directory=/tmpfs \
+            --package-cache-directory="$MKOSI_PKG_CACHE" \
+            --profile=prod \
+            --image-version="$IMAGE_VERSION" \
+            --output-directory mkosi.output \
+            --secure-boot-key="$KEY_DIR/sb.key" \
+            --secure-boot-certificate="$KEY_DIR/sb.crt" \
+            --verity-key="$KEY_DIR/sb.key" \
+            --verity-certificate="$KEY_DIR/sb.crt" \
+            --sign-expected-pcr-key="$KEY_DIR/sb.key" \
+            --sign-expected-pcr-certificate="$KEY_DIR/sb.crt" \
+            build
+      # Before any further code runs in this job.
+      - name: remove signing keys
+        if: always()
+        run: |
+          [ -n "${KEY_DIR:-}" ] && rm -rf "$KEY_DIR" || true
       - name: convert to qcow2
         run: |
-          COMPRESSED_FILE=$(find mkosi/mkosi.output -name "nfsense_g$(git rev-parse --short=10 HEAD).raw.zst" -print -quit)
+          IMAGE_VERSION="g$(git rev-parse --short=10 HEAD)"
+          OUT=mkosi/mkosi.output
+          COMPRESSED_FILE=$(find "$OUT" -maxdepth 1 -name "nfsense_${IMAGE_VERSION}.raw.zst" -print -quit)
+          if [ -z "$COMPRESSED_FILE" ]; then
+            echo "::error::no nfsense_${IMAGE_VERSION}.raw.zst in $OUT"
+            ls -la "$OUT" || true
+            exit 1
+          fi
           RAW_FILE="${COMPRESSED_FILE%.zst}"
+          QCOW2_FILE="$PWD/${RAW_FILE%.raw}.qcow2"
           zstd -d -f "$COMPRESSED_FILE" -o "$RAW_FILE"
-          QCOW2_FILE="${RAW_FILE%.raw}.qcow2"
           qemu-img convert -p -f raw -O qcow2 -c "$RAW_FILE" "$QCOW2_FILE"
+          rm -f "$RAW_FILE"
+          # The guest's repart grows /var into the free space.
           qemu-img resize "$QCOW2_FILE" 32G
+          echo "E2E_IMAGE_DIR=$QCOW2_FILE" >> "$GITHUB_ENV"
+      - name: run e2e tests
+        run: |
+          # --nocapture: libtest swallows the stderr of passing tests, and
+          # that is where the harness prints `e2e SKIP`.
+          set +e
+          cargo test -p nfsense-e2e --no-fail-fast -- --nocapture 2>&1 | tee e2e-test.log
+          rc=${PIPESTATUS[0]}
+          set -e
+          if grep -q 'e2e SKIP' e2e-test.log; then
+            echo "::error::e2e tests were skipped on CI (see 'e2e SKIP' lines above); the runner must provide KVM, QEMU, OVMF, swtpm and the image"
+            grep 'e2e SKIP' e2e-test.log | sort -u
+            exit 1
+          fi
+          if ! grep -qE '^running [1-9][0-9]* tests?$' e2e-test.log; then
+            echo "::error::no e2e tests ran"
+            exit 1
+          fi
+          exit "$rc"
+      - name: collect e2e logs
+        if: failure()
+        run: |
+          mkdir -p e2e-logs
+          cp e2e-test.log e2e-logs/ 2>/dev/null || true
+          for f in "$E2E_CACHE_DIR"/*/{serial,qemu,swtpm}.log; do
+            [ -f "$f" ] && cp "$f" "e2e-logs/$(basename "$(dirname "$f")")-$(basename "$f")"
+          done
+          true
+      - name: upload e2e logs
+        if: failure()
+        uses: https://data.forgejo.org/forgejo/upload-artifact@v4
+        with:
+          name: e2e-logs
+          if-no-files-found: ignore
+          path: e2e-logs/
+      # Only an image that passed the e2e suite is published.
       - name: upload image
+        if: env.RELEASE == 'true'
         uses: https://data.forgejo.org/forgejo/upload-artifact@v4
         with:
           name: disk

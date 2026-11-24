@@ -1,5 +1,9 @@
 [Match]
 Name={{ name }}
 
+{# Only the bridge itself counts for network-online, not its members. -#}
+[Link]
+RequiredForOnline=no
+
 [Network]
 Bridge={{ bridge_name }}

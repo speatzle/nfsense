@@ -5,3 +5,5 @@ disable unbound-resolvconf.service
 disable kea-dhcp-ddns-server.service
 disable kea-dhcp6-server.service
 disable chronyd-restricted.service
+# Holds boot up to 3 min for an NTP sync that nothing here depends on.
+disable chrony-wait.service

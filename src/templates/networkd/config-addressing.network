@@ -1,9 +1,19 @@
 [Match]
 Name={{ name }}
 
+{% if not dhcp -%}
+{# An unplugged port must not hold up boot, and its services still need
+   their address. -#}
+[Link]
+RequiredForOnline=no-carrier
+
+{% endif -%}
 [Network]
 LLMNR=no
-{% if interface.addressing_mode is containing("static") -%}
+{% if not dhcp -%}
+ConfigureWithoutCarrier=yes
+{% endif -%}
+{% if interface.addressing_mode is containing("static") and not static_ipv6 -%}
 Address={{ interface.addressing_mode.static.address }}
 {% elif interface.addressing_mode is containing("dhcp") -%}
 DHCP=yes
@@ -13,6 +23,13 @@ VLAN={{ vlan }}
 {% endfor -%}
 {% if interface.virtual_router -%}
 VRF={{ interface.virtual_router }}
+{% endif -%}
+{% if static_ipv6 %}
+{# DAD needs carrier; until then the address stays tentative and the link
+   "configuring", which holds up boot. -#}
+[Address]
+Address={{ interface.addressing_mode.static.address }}
+DuplicateAddressDetection=none
 {% endif -%}
 
 {% for static_route in static_routes %}

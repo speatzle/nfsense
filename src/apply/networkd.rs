@@ -2,7 +2,10 @@ use super::util;
 use super::ApplyError;
 use crate::{
     definitions::{
-        config::Config, network::NetworkInterfaceType, object::Address, object::AddressType,
+        config::Config,
+        network::{AddressingMode, NetworkInterfaceType},
+        object::Address,
+        object::AddressType,
         vpn::WireguardEndpoint,
     },
     templates,
@@ -260,6 +263,14 @@ pub fn generate_networkd_config_files(
         };
 
         context.insert("interface", &interface);
+        context.insert(
+            "dhcp",
+            &matches!(interface.addressing_mode, AddressingMode::DHCP),
+        );
+        context.insert(
+            "static_ipv6",
+            &matches!(&interface.addressing_mode, AddressingMode::Static { address } if address.addr().is_ipv6()),
+        );
 
         // List of all vlans that have this interface as a parent
         let mut vlans = Vec::new();
@@ -369,5 +380,78 @@ mod tests {
             .find(|f| f.name == "40-create-wireguard-wg0.netdev")
             .unwrap();
         assert!(netdev.content.contains("Endpoint=[2001:db8::1]:51820"));
+    }
+
+    use crate::definitions::network::NetworkInterface;
+
+    fn hw(name: &str, device: &str, addressing_mode: AddressingMode) -> NetworkInterface {
+        NetworkInterface {
+            name: name.to_string(),
+            alias: String::new(),
+            comment: String::new(),
+            interface_type: NetworkInterfaceType::Hardware {
+                device: device.to_string(),
+            },
+            addressing_mode,
+            virtual_router: None,
+        }
+    }
+
+    fn render(interface: NetworkInterface) -> String {
+        let name = format!("70-config-addressing-{}.network", interface.name);
+        let mut config = Config::default();
+        config.network.interfaces.push(interface);
+        generate_networkd_config_files(config.clone(), config)
+            .unwrap()
+            .into_iter()
+            .find(|f| f.name == name)
+            .unwrap()
+            .content
+    }
+
+    #[test]
+    fn static_port_is_ready_without_carrier() {
+        let c = render(hw(
+            "lan",
+            "enp1s0",
+            AddressingMode::Static {
+                address: "192.168.1.1/24".parse().unwrap(),
+            },
+        ));
+        assert!(c.contains("[Link]\nRequiredForOnline=no-carrier\n"), "{c}");
+        assert!(c.contains("ConfigureWithoutCarrier=yes\n"), "{c}");
+        assert!(c.contains("Address=192.168.1.1/24\n"), "{c}");
+    }
+
+    #[test]
+    fn unaddressed_port_is_ready_without_carrier() {
+        let c = render(hw("trunk", "enp2s0", AddressingMode::None));
+        assert!(c.contains("RequiredForOnline=no-carrier\n"), "{c}");
+        assert!(c.contains("ConfigureWithoutCarrier=yes\n"), "{c}");
+    }
+
+    #[test]
+    fn static_ipv6_port_skips_dad() {
+        let c = render(hw(
+            "lan6",
+            "enp4s0",
+            AddressingMode::Static {
+                address: "2001:db8::1/64".parse().unwrap(),
+            },
+        ));
+        assert!(
+            c.contains("[Address]\nAddress=2001:db8::1/64\nDuplicateAddressDetection=none\n"),
+            "{c}"
+        );
+        assert_eq!(c.matches("Address=2001:db8::1/64").count(), 1, "{c}");
+        assert!(c.contains("ConfigureWithoutCarrier=yes\n"), "{c}");
+    }
+
+    #[test]
+    fn dhcp_port_keeps_waiting_for_a_lease() {
+        let c = render(hw("wan", "enp3s0", AddressingMode::DHCP));
+        assert!(!c.contains("RequiredForOnline"), "{c}");
+        assert!(!c.contains("ConfigureWithoutCarrier"), "{c}");
+        assert!(c.contains("DHCP=yes\n"), "{c}");
     }
 }

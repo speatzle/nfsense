@@ -1,11 +1,3 @@
-//! Apply group: set -> validate -> diff -> nftables, plus reboot and
-//! power-loss persistence checks.
-//!
-//! Every persistence test in this file follows the three-step fixture
-//! pattern defined in `checks.rs` (pre-state baseline → rule_on_disk →
-//! post-state). New persistence checks must keep all three steps: a
-//! test that cannot fail proves nothing.
-
 mod common;
 
 use std::time::Duration;
@@ -25,17 +17,6 @@ fn apply_rule() {
     });
 }
 
-/// Apply a rule, reboot the guest for real, and verify the rule
-/// *survives*.
-///
-/// The reboot goes through the production path: an in-guest
-/// `systemctl reboot` (`Ctx::reboot`) — PID1's full shutdown (clean
-/// unmount of the persistent `/var`, service stops) and a full
-/// OVMF + systemd boot. The guest has a TPM 2.0 (host swtpm via
-/// QEMU's `emulator` TPM backend), so in-guest repart completes and
-/// the config in `/var/lib/nfsense` survives: the service re-derives
-/// nftables from it at boot. Before the reboot, `rule_on_disk`
-/// confirms the rule actually reached `/var` (fixture pattern step 2).
 #[test]
 fn reboot_after_apply() {
     with_ctx(|ctx| {
@@ -52,14 +33,8 @@ fn reboot_after_apply() {
     });
 }
 
-/// Apply a rule, simulate a power loss (QMP `system_reset` — a sudden
-/// cold reset with no unmount; `Ctx::hard_reset` syncs first so the
-/// applied config reaches disk), and verify the rule still *survives*.
-/// `rule_on_disk` confirms the rule was in `/var/lib/nfsense/config.json`
-/// before the power cut (fixture pattern step 2).
-///
-/// Crash-resilience complement to `reboot_after_apply`: if `/var`
-/// survives a power cut, it survives every reboot variant.
+// Complements `reboot_after_apply` with a reset that skips the unmount: if
+// `/var` survives a power cut, it survives every reboot variant.
 #[test]
 fn power_loss_after_apply() {
     with_ctx(|ctx| {
@@ -76,16 +51,6 @@ fn power_loss_after_apply() {
     });
 }
 
-/// After a reboot the applied E2E rule must be *present*: `/var` is the
-/// repart-created ext4 partition that persists across boots (the guest
-/// has a TPM 2.0 from host swtpm, so in-guest repart completes), so
-/// `nfsense-init.service` takes the not-first-boot path and the service
-/// re-derives nftables from the persisted config in
-/// `/var/lib/nfsense`.
-///
-/// Used by both reboot variants: `reboot_after_apply` (graceful,
-/// in-guest `systemctl reboot`) and `power_loss_after_apply` (hard
-/// QMP `system_reset`).
 fn rule_persists(qga: &mut Qga) -> Result<(), String> {
     let cfg = ApiClient::call(qga, "config.pending.get", json!({}))?;
     let inbound = cfg
@@ -112,9 +77,6 @@ fn rule_persists(qga: &mut Qga) -> Result<(), String> {
         ));
     }
 
-    // The documented mechanism, asserted directly: `/var` must be the
-    // repart-created ext4 partition (not the root-tmpfs fallback) and
-    // the product config must live on it.
     let fs = qga.exec_ok("df", &["-T", "/var"], Duration::from_secs(15))?;
     if !fs.lines().any(|l| l.contains("ext4")) {
         return Err(format!(

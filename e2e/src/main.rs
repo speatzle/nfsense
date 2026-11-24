@@ -1,18 +1,3 @@
-//! E2E scenario driver: boots (or checkpoint-restores) the guest and
-//! runs the checks sequentially, each from the `healthy` checkpoint.
-//!
-//! ```sh
-//! cargo run -p nfsense-e2e                   # default image dir
-//! cargo run -p nfsense-e2e -- /path/to/img    # explicit dir or .qcow2
-//! E2E_IMAGE_DIR=/path/to/img cargo run -p nfsense-e2e
-//! ```
-//!
-//! Exits 0 when all checks pass or when the environment cannot run e2e
-//! at all (missing KVM / image / QEMU / OVMF / swtpm — printed as
-//! `e2e SKIP`). Exits 1 on a failed check or on a harness/guest failure
-//! during init (printed as `e2e FAIL`); on failure the cache dir keeps
-//! the serial log, QEMU log and overlay for inspection.
-
 use std::path::PathBuf;
 use std::process::ExitCode;
 use std::time::{Duration, Instant};
@@ -20,8 +5,6 @@ use std::time::{Duration, Instant};
 use nfsense_e2e::checks;
 use nfsense_e2e::ctx::{Ctx, InitError};
 
-/// One scenario check: a name + a step that starts from the healthy
-/// checkpoint.
 type Check = (&'static str, Box<dyn FnMut(&mut Ctx) -> Result<(), String>>);
 
 struct TestResults {
@@ -61,7 +44,6 @@ impl TestResults {
 }
 
 fn main() -> ExitCode {
-    // Image dir: CLI arg wins, then $E2E_IMAGE_DIR, then the default.
     let dir = std::env::args()
         .nth(1)
         .map(PathBuf::from)
@@ -134,15 +116,12 @@ fn main() -> ExitCode {
                 checks::apply_rule(qga)
             }),
         ),
-        // Final, destructive step: kills the shared VM. The real
-        // reboot-path check is the `reboot_after_apply` test
-        // (apply + `Ctx::reboot` + the persistence assertion in
-        // `tests/apply.rs`).
+        // Last: it kills the shared VM. The reboot path is covered by the
+        // `reboot_after_apply` test.
         ("Reboot/power-off", Box::new(power_off)),
     ];
 
     for (name, mut check) in checks {
-        // Every check starts from the healthy checkpoint.
         let res = ctx.restore().and_then(|()| check(&mut ctx));
         results.record(name, res);
     }
@@ -164,17 +143,11 @@ fn main() -> ExitCode {
         failed.join(", ")
     );
     eprintln!("e2e: artifacts kept in {}", ctx.cache.display());
-    // Returning (instead of process::exit) lets the Ctx drop and
-    // kills any QEMU that is still alive.
+    // Returning instead of `process::exit` lets the Ctx drop and kill any
+    // QEMU that is still alive.
     ExitCode::FAILURE
 }
 
-/// Power off the guest via its ACPI/shutdown path and verify QEMU exits
-/// with a power-down marker in the serial log.
-///
-/// This is deliberately a *scenario* step (final step of this binary
-/// driver), not a `#[test]`: it kills the shared VM, and the real
-/// reboot-path check is the `reboot_after_apply` test.
 fn power_off(ctx: &mut Ctx) -> Result<(), String> {
     match ctx.agent().and_then(|q| q.power_off()) {
         Ok(()) => eprintln!("e2e: guest-shutdown accepted"),

@@ -1,6 +1,3 @@
-//! Smoke group: the guest has the binary, the service, and a reachable
-//! API.
-
 mod common;
 
 use common::with_ctx;

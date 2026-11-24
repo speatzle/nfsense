@@ -1,12 +1,3 @@
-//! JSON-RPC client for the nfsense web API, called *from inside the
-//! guest* over loopback.
-//!
-//! Every call is a `curl` to `127.0.0.1:4444` executed through QGA. The
-//! JSON body is passed as a positional shell parameter (`$1`) so it is
-//! never shell-quoted. The response is written to a guest-side file;
-//! stdout is "HTTP code\n<body>". The session cookie lives in a
-//! guest-side cookie jar.
-
 use std::time::{Duration, Instant};
 
 use serde_json::{json, Value};
@@ -18,6 +9,7 @@ const LOGIN_SCRIPT: &str = r#"code=$(curl -sk -o /tmp/e2e-resp -w '%{http_code}'
 echo "$code"
 cat /tmp/e2e-resp"#;
 
+// The JSON body is passed as `$1` so it never needs shell quoting.
 const RPC_SCRIPT: &str = r#"code=$(curl -sk -o /tmp/e2e-resp -w '%{http_code}' -X POST -H 'Content-Type: application/json' -d "$1" -b /tmp/e2e-cookies https://127.0.0.1:4444/api)
 echo "$code"
 cat /tmp/e2e-resp"#;
@@ -25,8 +17,7 @@ cat /tmp/e2e-resp"#;
 pub struct ApiClient;
 
 impl ApiClient {
-    /// Split curl's stdout into (http_code, body).
-    /// A code of 0 means the connection itself failed (API not up yet).
+    // curl reports code 0 when the connection itself failed (API not up yet).
     fn parse_response(
         what: &str,
         exit: i64,
@@ -46,8 +37,6 @@ impl ApiClient {
         Ok((code, body.to_string()))
     }
 
-    /// POST /login with the default admin user; stores the session cookie
-    /// in the guest-side cookie jar.
     pub fn login(qga: &mut Qga) -> Result<(), String> {
         let (exit, out, err) =
             qga.exec("/bin/sh", &["-c", LOGIN_SCRIPT], Duration::from_secs(30))?;
@@ -61,7 +50,6 @@ impl ApiClient {
         Ok(())
     }
 
-    /// Wait until the API is up and the session cookie works.
     pub fn wait_ready(
         qga: &mut Qga,
         deadline: Instant,
@@ -74,12 +62,55 @@ impl ApiClient {
             }
             match Self::login(qga) {
                 Ok(()) => return Ok(()),
+                Err(e) if qga.is_broken() => return Err(e),
                 Err(e) => last_err = e,
             }
             eprintln!("e2e: waiting for API... ({last_err})");
             std::thread::sleep(Duration::from_secs(2));
         }
         Err(format!("API login never succeeded by deadline: {last_err}"))
+    }
+
+    /// `Err` only for transport failures (daemon dead, connection dropped),
+    /// so a test expecting a rejection cannot mistake a dropped connection
+    /// for one.
+    pub fn call_rpc(
+        qga: &mut Qga,
+        method: &str,
+        params: Value,
+    ) -> Result<Result<Value, Value>, String> {
+        let mut v = Self::post_rpc(qga, method, &params)?;
+        if v.is_none() {
+            Self::login(qga)?;
+            v = Self::post_rpc(qga, method, &params)?;
+        }
+        let v = v.ok_or("unauthorized (401) after re-login")?;
+        match v.get("error") {
+            Some(err) => Ok(Err(err.clone())),
+            None => Ok(Ok(v.get("result").cloned().unwrap_or(Value::Null))),
+        }
+    }
+
+    fn post_rpc(qga: &mut Qga, method: &str, params: &Value) -> Result<Option<Value>, String> {
+        let body = serde_json::to_string(&json!({
+            "jsonrpc": "2.0",
+            "method": method,
+            "params": params,
+            "id": 1,
+        }))
+        .map_err(|e| e.to_string())?;
+        let args = vec!["-c", RPC_SCRIPT, "sh", &body];
+        let (exit, out, err) = qga.exec("/bin/sh", &args, API_CALL)?;
+        let (code, text) = Self::parse_response(method, exit, &out, &err)?;
+        if code == 401 {
+            return Ok(None);
+        }
+        if !(200..300).contains(&code) {
+            return Err(format!("{method}: HTTP {code}: {text}"));
+        }
+        serde_json::from_str(&text)
+            .map(Some)
+            .map_err(|e| format!("{method}: bad json: {e}: {text:?}"))
     }
 
     fn call_once(qga: &mut Qga, method: &str, params: &Value) -> Result<Value, String> {
@@ -107,9 +138,7 @@ impl ApiClient {
         Ok(v.get("result").cloned().unwrap_or(Value::Null))
     }
 
-    /// Call a JSON-RPC method; returns `result`, errors on HTTP/RPC
-    /// errors. A 401 (stale session, e.g. the server restarted) triggers
-    /// one re-login and retry.
+    // A 401 means a stale session (e.g. the server restarted).
     pub fn call(qga: &mut Qga, method: &str, params: Value) -> Result<Value, String> {
         match Self::call_once(qga, method, &params) {
             Err(e) if e.starts_with("unauthorized") => {

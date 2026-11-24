@@ -1,5 +1,3 @@
-//! Config group: the pristine image ships a sane default config.
-
 mod common;
 
 use common::with_ctx;

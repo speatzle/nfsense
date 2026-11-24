@@ -1,6 +1,3 @@
-//! NFTables group: the generated firewall table and ruleset exist in the
-//! freshly booted guest.
-
 mod common;
 
 use common::with_ctx;

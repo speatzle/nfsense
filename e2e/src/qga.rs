@@ -1,14 +1,7 @@
-//! QGA (QEMU Guest Agent) wire-protocol client over the host side of the
-//! virtio-serial chardev unix socket.
-//!
-//! One JSON object per line each direction, `guest-`-prefixed commands.
-//! The chardev socket accepts one host connection at a time; QEMU pairs
-//! it with qemu-ga inside the guest as soon as the agent connects (or
-//! re-connects after a VM-state restore / reboot).
-
 use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::os::unix::net::UnixStream;
 use std::path::Path;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{Duration, Instant};
 
 use base64::prelude::*;
@@ -17,36 +10,106 @@ use serde_json::{json, Value};
 pub struct Qga {
     reader: BufReader<UnixStream>,
     writer: BufWriter<UnixStream>,
+    // Set after any I/O or protocol error: a reply arriving after a read
+    // timeout would otherwise be taken as the answer to the next command,
+    // shifting every later reply by one. Reconnecting re-syncs instead.
+    broken: bool,
 }
 
 impl Qga {
-    /// Open the host side of the chardev socket. The connection may be
-    /// accepted by QEMU before qemu-ga inside the guest has attached;
-    /// until then reads time out (10 s) — that is the retry signal.
+    // QEMU may accept the connection before qemu-ga in the guest has
+    // attached; until then reads time out, which is the retry signal.
     pub fn connect(sock: &Path) -> Result<Self, String> {
         let stream =
             UnixStream::connect(sock).map_err(|e| format!("connect {}: {e}", sock.display()))?;
         stream.set_read_timeout(Some(Duration::from_secs(10))).ok();
         let reader = BufReader::new(stream.try_clone().map_err(|e| e.to_string())?);
         let writer = BufWriter::new(stream);
-        Ok(Self { reader, writer })
+        let mut q = Self {
+            reader,
+            writer,
+            broken: false,
+        };
+        q.sync()?;
+        Ok(q)
     }
 
-    /// Send one command, read one JSON response line, return `return`.
+    // `guest-sync-delimited`: qemu-ga answers with a 0xFF byte before the
+    // reply, so everything before it (stale replies, a half-read line from a
+    // previous host connection) can be discarded to realign the stream.
+    fn sync(&mut self) -> Result<(), String> {
+        static SEQ: AtomicU64 = AtomicU64::new(1);
+        let id = (std::process::id() as u64) << 32 | SEQ.fetch_add(1, Ordering::Relaxed);
+        // A leading 0xFF resets qemu-ga's JSON parser on the guest side.
+        let mut w = vec![0xffu8];
+        w.extend_from_slice(
+            json!({ "execute": "guest-sync-delimited", "arguments": { "id": id } })
+                .to_string()
+                .as_bytes(),
+        );
+        w.push(b'\n');
+        self.writer
+            .write_all(&w)
+            .map_err(|e| self.fail(format!("sync: {e}")))?;
+        self.writer
+            .flush()
+            .map_err(|e| self.fail(format!("sync: {e}")))?;
+        loop {
+            let mut junk = Vec::new();
+            self.reader
+                .read_until(0xff, &mut junk)
+                .map_err(|e| self.fail(format!("sync: {e}")))?;
+            if junk.last() != Some(&0xff) {
+                return Err(self.fail("sync: connection closed".into()));
+            }
+            let mut line = String::new();
+            self.reader
+                .read_line(&mut line)
+                .map_err(|e| self.fail(format!("sync: {e}")))?;
+            let v: Value = match serde_json::from_str(line.trim()) {
+                Ok(v) => v,
+                Err(_) => continue,
+            };
+            if v.get("return").and_then(Value::as_u64) == Some(id) {
+                return Ok(());
+            }
+        }
+    }
+
+    pub fn is_broken(&self) -> bool {
+        self.broken
+    }
+
+    fn fail(&mut self, msg: String) -> String {
+        self.broken = true;
+        msg
+    }
+
     pub fn cmd(&mut self, name: &str, args: &Value) -> Result<Value, String> {
+        if self.broken {
+            return Err(format!(
+                "{name}: guest agent connection is broken, reconnect"
+            ));
+        }
         let req = json!({ "execute": name, "arguments": args });
         let line = serde_json::to_string(&req).map_err(|e| e.to_string())? + "\n";
         self.writer
             .write_all(line.as_bytes())
-            .map_err(|e| e.to_string())?;
-        self.writer.flush().map_err(|e| e.to_string())?;
+            .map_err(|e| self.fail(format!("{name}: {e}")))?;
+        self.writer
+            .flush()
+            .map_err(|e| self.fail(format!("{name}: {e}")))?;
 
         let mut resp = String::new();
-        self.reader
-            .read_line(&mut resp)
-            .map_err(|e| format!("{name}: {e}"))?;
-        let v: Value = serde_json::from_str(resp.trim())
-            .map_err(|e| format!("{name}: bad response {resp:?}: {e}"))?;
+        match self.reader.read_line(&mut resp) {
+            Ok(0) => return Err(self.fail(format!("{name}: connection closed"))),
+            Ok(_) => {}
+            Err(e) => return Err(self.fail(format!("{name}: {e}"))),
+        }
+        let v: Value = match serde_json::from_str(resp.trim()) {
+            Ok(v) => v,
+            Err(e) => return Err(self.fail(format!("{name}: bad response {resp:?}: {e}"))),
+        };
         if let Some(err) = v.get("error") {
             return Err(format!("{name}: {err}"));
         }
@@ -57,9 +120,6 @@ impl Qga {
         self.cmd("guest-ping", &json!({})).map(|_| ())
     }
 
-    /// Connect + ping until the guest agent is up (or deadline).
-    /// Each attempt uses a fresh connection; QEMU re-pairs the channel as
-    /// soon as qemu-ga inside the guest connects.
     pub fn wait_ready(
         sock: &Path,
         deadline: Instant,
@@ -80,8 +140,7 @@ impl Qga {
         Err(format!("guest agent not ready by deadline: {last_err}"))
     }
 
-    /// Issue `guest-exec` and return the guest pid. Shared by `exec`
-    /// (poll to completion) and `exec_fire` (no status collection).
+    // qemu-ga takes the argv under `arg`, not `arguments`.
     fn start(&mut self, path: &str, args: &[&str]) -> Result<i64, String> {
         let argv: Vec<Value> = args.iter().map(|a| json!(a)).collect();
         self.cmd(
@@ -93,7 +152,6 @@ impl Qga {
         .ok_or_else(|| "guest-exec returned no pid".to_string())
     }
 
-    /// Run a command in the guest and wait for it to finish.
     /// Returns (exitcode, stdout, stderr).
     pub fn exec(
         &mut self,
@@ -127,16 +185,12 @@ impl Qga {
         }
     }
 
-    /// Start a command in the guest without waiting for it to finish;
-    /// returns the guest pid. For commands that take the system down
-    /// (e.g. `systemctl reboot`): the QGA channel dies with the
-    /// shutdown, so no status can be collected — drop the connection
-    /// and wait for the agent to re-pair instead.
+    // No status collection: for commands that take the system down (e.g.
+    // `systemctl reboot`) the QGA channel dies with the shutdown.
     pub fn exec_fire(&mut self, path: &str, args: &[&str]) -> Result<i64, String> {
         self.start(path, args)
     }
 
-    /// Like `exec` but fails when the exit code is not 0.
     pub fn exec_ok(
         &mut self,
         path: &str,
@@ -150,8 +204,7 @@ impl Qga {
         Ok(out)
     }
 
-    /// Power the guest off via its ACPI/shutdown path. The agent socket
-    /// closing (an error here) is expected and not a failure.
+    /// The agent socket closing (an error here) is expected, not a failure.
     pub fn power_off(&mut self) -> Result<(), String> {
         self.cmd("guest-shutdown", &json!({ "mode": "powerdown" }))
             .map(|_| ())

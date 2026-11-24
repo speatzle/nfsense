@@ -1,19 +1,3 @@
-//! Ad-hoc in-guest probe: boot (or restore the checkpoint of) the VM and
-//! run a command in the guest via QGA, printing its output.
-//!
-//! ```sh
-//! cargo run -p nfsense-e2e --bin nfsense-e2e-probe -- "cmd" [args...]
-//! cargo run -p nfsense-e2e --bin nfsense-e2e-probe -- reboot "cmd" [args...]
-//! ```
-//!
-//! The VM is restored from the `healthy` checkpoint first, so probes
-//! start from the settled post-boot state and leave it clean again.
-//! With `reboot`, the command is run *before and after* a graceful
-//! in-guest reboot (`systemctl reboot`, see `Ctx::reboot`) — pre/post
-//! lines on stdout, e.g. to check machine-id stability across a
-//! reboot. The image dir honours `$E2E_IMAGE_DIR` like the rest of
-//! the harness.
-
 use std::time::{Duration, Instant};
 
 use nfsense_e2e::ctx::{Ctx, InitError};
@@ -35,7 +19,7 @@ fn main() {
         Err(e) => {
             eprintln!("{e}");
             match e {
-                InitError::Skip(_) => return, // nothing to run: exit 0
+                InitError::Skip(_) => return,
                 InitError::Fail(_) => std::process::exit(1),
             }
         }
@@ -50,9 +34,11 @@ fn main() {
     let args: Vec<&str> = rest.iter().map(|s| s.as_str()).collect();
 
     let mut fail = false;
+    let mut code = 0;
     if let Some(tag) = reboot.then_some("pre") {
         match run(&mut ctx, path, &args) {
-            Ok((out, err)) => {
+            Ok((exit, out, err)) => {
+                code = exit;
                 print!("{tag}:\n{out}");
                 if !err.is_empty() {
                     eprintln!("--- stderr ---\n{err}");
@@ -72,7 +58,8 @@ fn main() {
             std::process::exit(1);
         }
         match run(&mut ctx, path, &args) {
-            Ok((out, err)) => {
+            Ok((exit, out, err)) => {
+                code = exit;
                 println!("post:\n{out}");
                 if !err.is_empty() {
                     eprintln!("--- stderr ---\n{err}");
@@ -85,7 +72,8 @@ fn main() {
         }
     } else {
         match run(&mut ctx, path, &args) {
-            Ok((out, err)) => {
+            Ok((exit, out, err)) => {
+                code = exit;
                 if !out.is_empty() {
                     println!("{out}");
                 }
@@ -104,14 +92,16 @@ fn main() {
     if fail {
         std::process::exit(1);
     }
+    // -1: killed by a signal, no exit code.
+    std::process::exit(if code < 0 { 1 } else { code.min(255) as i32 });
 }
 
-fn run(ctx: &mut Ctx, path: &str, args: &[&str]) -> Result<(String, String), String> {
+fn run(ctx: &mut Ctx, path: &str, args: &[&str]) -> Result<(i64, String, String), String> {
     let started = Instant::now();
     let (exit, out, err) = ctx
         .agent()
         .and_then(|q| q.exec(path, args, Duration::from_secs(180)))
-        .map_err(|e| format!("probe failed after {started:?}: {e}"))?;
+        .map_err(|e| format!("probe failed after {:?}: {e}", started.elapsed()))?;
     eprintln!("probe {path} exited with {exit} ({:?})", started.elapsed());
-    Ok((out, err))
+    Ok((exit, out, err))
 }

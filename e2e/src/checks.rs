@@ -1,31 +1,3 @@
-//! Guest check functions shared between the scenario binary (`main.rs`)
-//! and the integration tests (`tests/`) — code that both sides need
-//! must live in the lib, so it lands here. What only one side needs
-//! lives next to that caller instead: the power-off step is in
-//! `main.rs`, the post-reboot persistence assertion is in
-//! `tests/apply.rs`.
-//!
-//! Every check assumes it starts from the `healthy` checkpoint
-//! (`Ctx::restore`), so checks are order-independent: each one sees the
-//! pristine, fully booted image.
-//!
-//! **Fixture pattern for checks that mutate the guest** (the
-//! apply/reboot/power-loss family). Three steps, all of them:
-//!
-//! 1. *Pre-state baseline* — assert the fixture is **absent** before it
-//!    is created, or the post-state assertion can pass vacuously
-//!    (`apply_rule` does this for the E2E rule: absent from the config
-//!    and from nftables before the apply);
-//! 2. *Persistence confirmation* — assert the fixture reached the
-//!    persistence medium **before** the disruptive event (`rule_on_disk`
-//!    confirms the applied rule is in `/var/lib/nfsense/config.json`
-//!    before the reboot/reset);
-//! 3. *Post-state* — assert the fixture is back after the event
-//!    (`rule_persists` in `tests/apply.rs`).
-//!
-//! New persistence-flavoured checks must keep all three: a test that
-//! cannot fail proves nothing.
-
 use std::time::{Duration, Instant};
 
 use serde_json::{json, Value};
@@ -49,9 +21,8 @@ pub fn nfsense_installed(qga: &mut Qga) -> Result<(), String> {
     }
 }
 
-/// Poll `systemctl is-active {unit}` until the unit is active.
-/// Fresh boots race: the guest agent can come up while nfsense.service is
-/// still activating, so a single check is unreliable.
+// Fresh boots race: the guest agent can come up while the unit is still
+// activating, so a single check is unreliable.
 pub fn wait_unit_active(qga: &mut Qga, unit: &str) -> Result<(), String> {
     let deadline = Instant::now() + UNIT;
     let mut last: String;
@@ -63,6 +34,7 @@ pub fn wait_unit_active(qga: &mut Qga, unit: &str) -> Result<(), String> {
         ) {
             Ok((_, out, _)) if out.trim() == "active" => return Ok(()),
             Ok((exit, out, err)) => last = format!("is-active exit {exit}: {out}{err}"),
+            Err(e) if qga.is_broken() => return Err(e),
             Err(e) => last = e,
         }
         if Instant::now() > deadline {
@@ -130,10 +102,9 @@ pub fn nftables_table(qga: &mut Qga) -> Result<(), String> {
 }
 
 pub fn nftables_rules(qga: &mut Qga) -> Result<(), String> {
-    // Assert *rule content*, not just a non-empty dump: the product
-    // renders every rule with a `comment` and named counters, while a
-    // skeleton table (chains + policies, zero rules) would still
-    // satisfy a mere "non-empty" check.
+    // Assert rule content, not just a non-empty dump: a skeleton table
+    // (chains + policies, zero rules) would pass a "non-empty" check, while
+    // the product renders every rule with a `comment` and named counters.
     let out = qga.exec_ok(
         "/usr/sbin/nft",
         &["list", "table", "inet", "nfsense_inet"],
@@ -155,8 +126,6 @@ pub fn nftables_rules(qga: &mut Qga) -> Result<(), String> {
     Ok(())
 }
 
-/// The distinctive rule the apply checks push through the product's
-/// set (server-side validate + diff) -> apply -> nftables pipeline.
 pub fn e2e_rule() -> Value {
     json!({
         "name": "E2E Test Rule",
@@ -173,26 +142,17 @@ pub fn e2e_rule() -> Value {
     })
 }
 
-/// Shared with `tests/apply.rs`: the post-reboot persistence assertion
-/// matches the rule on this uuid.
 pub const E2E_RULE_UUID: &str = "e2e00000-0000-4000-8000-000000000001";
 
-/// Add the E2E rule to the pending config, apply it, and verify it
-/// landed: in the applied config (after `apply`, the pending config
-/// mirrors the current one — the API exposes no `config.current.get`)
-/// and in nftables.
-///
-/// Fixture pattern, step 1 (pre-state baseline): before touching
-/// anything this asserts the E2E rule is *absent* from both the config
-/// and nftables. The checkpoint is factory state, so absence is
-/// expected; if the rule ever leaked in (a checkpoint saved dirty, or
-/// stale nftables content), the post-apply assertions would pass
-/// vacuously and the persistence tests would prove nothing. Every
-/// apply-family test gets this check for free through this function.
+// After apply the pending config mirrors the current one (the API has no
+// `config.current.get`).
+//
+// The rule must be absent before the apply, from the config and from
+// nftables: if it ever leaked into the checkpoint, the post-apply and
+// persistence assertions would pass vacuously.
 pub fn apply_rule(qga: &mut Qga) -> Result<(), String> {
-    // Apply restarts kea and friends; their jobs are ordered behind the
-    // boot transaction, so wait for the boot job queue to drain first
-    // (observe-only — the guest is not modified).
+    // Apply restarts kea and friends, whose jobs are ordered behind the boot
+    // transaction.
     wait_boot_jobs_drained(qga)?;
 
     let mut cfg = ApiClient::call(qga, "config.pending.get", json!({}))?;
@@ -227,7 +187,6 @@ pub fn apply_rule(qga: &mut Qga) -> Result<(), String> {
     ApiClient::call(qga, "config.pending.set", json!({ "config": cfg }))?;
     ApiClient::call(qga, "config.pending.apply", json!({}))?;
 
-    // The applied config must carry the rule by uuid.
     let applied = ApiClient::call(qga, "config.pending.get", json!({}))?;
     let rules = applied["firewall"]["inbound_rules"]
         .as_array()
@@ -251,14 +210,8 @@ pub fn apply_rule(qga: &mut Qga) -> Result<(), String> {
     }
 }
 
-/// Assert the applied E2E rule is *on disk* in the /var config file.
-///
-/// Fixture pattern, step 2: call this **before** the reboot/reset (see
-/// `tests/apply.rs`). The post-reset assertions ("the rule survived")
-/// only mean something if the rule was in
-/// `/var/lib/nfsense/config.json` at the moment of the power event —
-/// this is that confirmation. `grep -F` on the fixed uuid string:
-/// exit 0 (a match) is success, any other outcome is an error.
+// Call before the reboot/reset: the post-reset "rule survived" assertions
+// only mean something if the rule was on disk at the power event.
 pub fn rule_on_disk(qga: &mut Qga) -> Result<(), String> {
     qga.exec_ok(
         "grep",
@@ -270,23 +223,11 @@ pub fn rule_on_disk(qga: &mut Qga) -> Result<(), String> {
     Ok(())
 }
 
-/// Wait until the boot transaction has drained: no jobs are left running.
-///
-/// This is the image-agnostic form of "the boot is no longer holding
-/// anything down": in an unpatched image without an uplink the queue
-/// drains when `systemd-networkd-wait-online` (~120 s) and
-/// `chrony-wait.service` (~180 s) time out; with the boot-time fixes from
-/// `docs/image-service-recommendations.md` it drains at boot. (Gating on
-/// `is-active time-sync.target` / `network-online.target` would not work
-/// once those targets are no longer pulled into the boot closure: a
-/// passive target that is never started stays `inactive` forever, even
-/// with nothing pending.)
-///
-/// These are real properties of the image under test, so the harness does
-/// not modify the guest to speed them up (that would falsify the
-/// result); it budgets for them instead. kea's restart job (queued by
-/// apply) is ordered behind the same boot work, so a drained queue means
-/// apply will not stall in the job queue.
+// Gating on `is-active time-sync.target` / `network-online.target` would not
+// work: a passive target that is never pulled into the boot stays `inactive`
+// forever. The slow boot units (wait-online, chrony-wait) are real properties
+// of the image under test, so the harness budgets for them instead of
+// modifying the guest, which would falsify the result.
 pub fn wait_boot_jobs_drained(qga: &mut Qga) -> Result<(), String> {
     const NO_JOBS: &str = "No jobs running.";
     let deadline = Instant::now() + BOOT_DRAIN;
@@ -329,7 +270,6 @@ pub fn wait_boot_jobs_drained(qga: &mut Qga) -> Result<(), String> {
     }
 }
 
-/// Wait for the API (in-guest loopback) to accept a session login.
 pub fn api_ready(qga: &mut Qga, mut alive: impl FnMut() -> bool) -> Result<(), String> {
     ApiClient::wait_ready(qga, Instant::now() + API, &mut alive)
 }

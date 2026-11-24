@@ -1,53 +1,30 @@
-//! Base-image discovery and the persistent cache (overlay + checkpoint).
-//!
-//! Layout, under `e2e/.cache/<image-id>/`:
-//!
-//! | file            | purpose                                                    |
-//! |-----------------|------------------------------------------------------------|
-//! | `state.qcow2`   | persistent overlay; backs the guest disk; holds the `healthy` internal snapshot |
-//! | `base.id`       | marker: id of the base image the overlay was built from   |
-//! | `serial.log`    | guest console output (kept on failure)                     |
-//! | `qemu.log`      | QEMU stderr (kept on failure)                              |
-//! | `qemu.pid`      | pidfile                                                    |
-//! | `vm.lock`       | flock serialising all harness processes on this cache      |
-//! | `ovf-vars.fd`   | fresh OVMF_VARS copy per spawn                             |
-//! | `tpm/`          | swtpm state dir — the guest's TPM 2.0 (persists across runs, like a real TPM) |
-//! | `swtpm.pid`     | swtpm pidfile                                              |
-//! | `swtpm.log`     | swtpm output                                               |
-//!
-//! `image-id` is `{stem}-{mtime_ms}-{size}` of the base image, so a new
-//! image build moves to a fresh cache (old ones can be pruned by hand)
-//! and an unchanged image reuses its checkpoint.
-
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use crate::host;
 
-/// A discovered base (pristine, never written to) image.
 #[derive(Debug, Clone)]
 pub struct BaseImage {
     pub path: PathBuf,
-    /// `{stem}-{mtime_ms}-{size}`; the cache directory key.
     pub id: String,
 }
 
-/// Default image location: `<project root>/mkosi/mkosi.output` (the
-/// `build-image.sh` output dir). Overridable per invocation.
 pub fn default_image_dir() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../mkosi/mkosi.output")
 }
 
-/// Find the base image: `dir` may be an explicit .qcow2 file or a
-/// directory (then the last .qcow2 in it, sort order); `None` falls back
-/// to [`default_image_dir`].
 pub fn find_base_image(dir: Option<&Path>) -> Result<BaseImage, String> {
     let path = match dir {
         Some(p) if p.is_file() => p.to_path_buf(),
         Some(d) => host::find_qcow2(d)?,
         None => host::find_qcow2(&default_image_dir())?,
     };
+    // qemu-img resolves a relative backing path against the overlay's
+    // directory, not the cwd.
+    let path = path
+        .canonicalize()
+        .map_err(|e| format!("{}: {e}", path.display()))?;
     let meta = fs::metadata(&path).map_err(|e| format!("stat {path:?}: {e}"))?;
     let mtime_ms = meta
         .modified()
@@ -60,24 +37,44 @@ pub fn find_base_image(dir: Option<&Path>) -> Result<BaseImage, String> {
         .map(|s| s.to_string_lossy().into_owned())
         .unwrap_or_else(|| "image".into());
     Ok(BaseImage {
-        id: format!("{stem}-{mtime_ms}-{}", meta.len()),
+        id: format!(
+            "{stem}-{mtime_ms}-{}-{}",
+            meta.len(),
+            crate::vm::DEVICE_LAYOUT
+        ),
         path,
     })
 }
 
+// The cache holds unix sockets, whose paths must stay below 108 bytes: set
+// `E2E_CACHE_DIR` to a short path when the checkout is deep.
 pub fn cache_dir(base: &BaseImage) -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join(".cache")
-        .join(&base.id)
+    let root = std::env::var_os("E2E_CACHE_DIR")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| Path::new(env!("CARGO_MANIFEST_DIR")).join(".cache"));
+    root.join(&base.id)
+}
+
+pub const LONGEST_SOCKET: &str = "tpm/swtpm-sock";
+
+// Fail early instead of with a socket that never appears: `sun_path` is 108
+// bytes including the NUL.
+pub fn check_socket_path_len(cache: &Path) -> Result<(), String> {
+    let len = cache.join(LONGEST_SOCKET).as_os_str().len();
+    if len > 107 {
+        return Err(format!(
+            "cache dir {} is too deep: socket paths would be {len} bytes (limit 107); set E2E_CACHE_DIR to a shorter path",
+            cache.display()
+        ));
+    }
+    Ok(())
 }
 
 pub fn overlay_path(cache: &Path) -> PathBuf {
     cache.join("state.qcow2")
 }
 
-/// Ensure the persistent overlay exists and matches `base`. Rebuilds it
-/// (and only it) when the base image changed or the overlay vanished.
-/// Must run while no QEMU is up on it.
+/// Must run while no QEMU is up on the overlay.
 pub fn ensure_overlay(base: &BaseImage, cache: &Path) -> Result<PathBuf, String> {
     fs::create_dir_all(cache).map_err(|e| format!("create {}: {e}", cache.display()))?;
     let overlay = overlay_path(cache);
@@ -87,7 +84,6 @@ pub fn ensure_overlay(base: &BaseImage, cache: &Path) -> Result<PathBuf, String>
     if overlay.exists() && current.as_deref() == Some(base.id.as_str()) {
         return Ok(overlay);
     }
-    // New base (or missing marker): the overlay is stale, rebuild it.
     if overlay.exists() {
         eprintln!(
             "e2e: rebuilding stale overlay {} (base image changed)",
@@ -111,32 +107,24 @@ pub fn ensure_overlay(base: &BaseImage, cache: &Path) -> Result<PathBuf, String>
     Ok(overlay)
 }
 
-/// Does the overlay contain an internal snapshot named `tag`?
-/// `qemu-img info` lists them under "Snapshot list:" with the tag in the
-/// second column. Must run while no QEMU holds the image open (it does —
-/// the harness checks this *before* spawning QEMU).
-pub fn overlay_has_snapshot(overlay: &Path, tag: &str) -> bool {
-    let Ok(out) = Command::new("qemu-img")
-        .args(["info"])
+// Host-side via `qemu-img info`: QEMU 10 has no `query-snapshots` and
+// `query-block` does not list internal snapshots.
+pub fn overlay_has_snapshot(overlay: &Path, tag: &str) -> Result<bool, String> {
+    let out = Command::new("qemu-img")
+        .args(["info", "-U", "--output=json"])
         .arg(overlay)
         .output()
-    else {
-        return false;
-    };
+        .map_err(|e| format!("qemu-img info: {e}"))?;
     if !out.status.success() {
-        return false;
+        return Err(format!(
+            "qemu-img info {} failed: {}",
+            overlay.display(),
+            String::from_utf8_lossy(&out.stderr)
+        ));
     }
-    let text = String::from_utf8_lossy(&out.stdout);
-    let Some(start) = text.find("Snapshot list:") else {
-        return false;
-    };
-    text[start..]
-        .lines()
-        .skip(1) // header: ID TAG ...
-        .any(|line| {
-            let mut cols = line.split_whitespace();
-            cols.next()
-                .is_some_and(|id| id.chars().all(|c| c.is_ascii_digit()))
-                && cols.next().is_some_and(|t| t == tag)
-        })
+    let info: serde_json::Value = serde_json::from_slice(&out.stdout)
+        .map_err(|e| format!("qemu-img info output: {e}"))?;
+    Ok(info["snapshots"]
+        .as_array()
+        .is_some_and(|s| s.iter().any(|s| s["name"] == tag)))
 }

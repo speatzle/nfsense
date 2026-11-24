@@ -1,12 +1,8 @@
-//! Host-side prerequisites and cleanup.
-
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::time::Duration;
 
-/// Everything the harness needs on the host, resolved once. `Err` is the
-/// *skip reason* (missing KVM / QEMU / OVMF) — not a failure.
 pub struct Prereqs {
     pub uefi_code: PathBuf,
     pub uefi_vars: PathBuf,
@@ -40,16 +36,22 @@ pub fn check_prereqs() -> Result<Prereqs, String> {
     })
 }
 
-/// Find a .qcow2 image in `dir` (last in sort order).
+// By mtime: the versioned mkosi file names don't sort chronologically.
 pub fn find_qcow2(dir: &Path) -> Result<PathBuf, String> {
-    let mut found: Vec<PathBuf> = fs::read_dir(dir)
+    let mut found: Vec<(std::time::SystemTime, PathBuf)> = fs::read_dir(dir)
         .map_err(|e| format!("cannot read {}: {e}", dir.display()))?
         .filter_map(|e| e.ok())
         .filter(|e| e.path().extension().is_some_and(|ext| ext == "qcow2"))
-        .map(|e| e.path())
+        .map(|e| {
+            let mtime = e
+                .metadata()
+                .and_then(|m| m.modified())
+                .unwrap_or(std::time::UNIX_EPOCH);
+            (mtime, e.path())
+        })
         .collect();
     found.sort();
-    found.pop().ok_or_else(|| {
+    found.pop().map(|(_, p)| p).ok_or_else(|| {
         format!(
             "no .qcow2 found in {} (build with build-image.sh first?)",
             dir.display()
@@ -78,11 +80,8 @@ fn detect_uefi() -> Result<(PathBuf, PathBuf), String> {
     Err("no UEFI firmware found — install edk2-ovmf (Debian) or OVMF (Fedora/Arch)".into())
 }
 
-/// Kill a leftover process from a crashed previous run that wrote this
-/// pidfile. (Matching by pidfile rather than process name: a
-/// `pkill -f` pattern can match the invoking shell's own command line.)
-/// `comm` is the expected `/proc/<pid>/comm` (e.g. `qemu-system-x86_64`,
-/// `swtpm`) so we never kill an unrelated recycled pid.
+// By pidfile rather than process name: a `pkill -f` pattern can match the
+// invoking shell's own command line. `comm` guards against a recycled pid.
 pub fn kill_stale_process(pidfile: &Path, comm: &str) {
     let Ok(s) = fs::read_to_string(pidfile) else {
         return;
@@ -93,8 +92,9 @@ pub fn kill_stale_process(pidfile: &Path, comm: &str) {
     if pid <= 1 || !Path::new(&format!("/proc/{pid}")).exists() {
         return;
     }
+    // The kernel truncates comm to 15 bytes (`qemu-system-x86`).
     let got = fs::read_to_string(format!("/proc/{pid}/comm")).unwrap_or_default();
-    if got.trim() != comm {
+    if got.trim_end_matches('\n') != &comm[..comm.len().min(15)] {
         return;
     }
     eprintln!("e2e: killing stale {comm} (pid {pid}) left behind by a previous run...");
@@ -102,7 +102,6 @@ pub fn kill_stale_process(pidfile: &Path, comm: &str) {
     std::thread::sleep(Duration::from_millis(500));
 }
 
-/// Kill a leftover QEMU (see [`kill_stale_process`]).
 pub fn kill_stale_qemu(pidfile: &Path) {
     kill_stale_process(pidfile, "qemu-system-x86_64");
 }

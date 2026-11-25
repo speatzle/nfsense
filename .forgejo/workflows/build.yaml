@@ -37,11 +37,11 @@ jobs:
   client-build:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: docker
+    # The JavaScript actions run on the container's node; the runner's
+    # default image is too old for them.
+    container:
+      image: node:24-trixie
     steps:
-      - name: setup node
-        uses: https://code.forgejo.org/actions/setup-node@v6
-        with:
-          node-version: 24
       - name: checkout code
         uses: https://data.forgejo.org/actions/checkout@v4
       - name: setup pnpm

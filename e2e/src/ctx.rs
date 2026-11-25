@@ -342,8 +342,10 @@ impl Ctx {
             .unwrap_or(false)
         {
             eprintln!("e2e: QMP quit did not stop QEMU in 30s — killing");
-            self.vm.reap();
         }
+        // swtpm outlives QEMU, and the test binaries keep their Ctx in a
+        // static that is never dropped.
+        self.vm.reap();
         self.qga = None;
     }
 }

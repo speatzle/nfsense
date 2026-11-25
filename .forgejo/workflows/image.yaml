@@ -44,7 +44,9 @@ jobs:
     runs-on: nfsense-test
     timeout-minutes: 120
     container:
-      image: debian:trixie
+      # Built from the nfsense-builder repository; has the build and e2e
+      # dependencies, Rust and mkosi.
+      image: git.soontm.de/nfsense/nfsense-builder:trixie
       # /keys on a tmpfs: the signing keys never reach the runner's disk.
       options: --tmpfs /tmpfs:exec --tmpfs /keys --device /dev/kvm
     env:
@@ -65,35 +67,6 @@ jobs:
             refs/tags/v*) ;;
             *) echo "::error::release builds only sign v* tags, not $GITREF"; exit 1 ;;
           esac
-      - name: setup non-free-firmware
-        run: |
-          echo 'deb http://deb.debian.org/debian/ trixie main non-free-firmware
-          deb-src http://deb.debian.org/debian/ trixie main non-free-firmware
-          deb http://security.debian.org/debian-security trixie-security main non-free-firmware
-          deb-src http://security.debian.org/debian-security trixie-security main non-free-firmware
-          deb http://deb.debian.org/debian/ trixie-updates main non-free-firmware
-          deb-src http://deb.debian.org/debian/ trixie-updates main non-free-firmware' > /etc/apt/sources.list
-      - name: install dependencies
-        run: |
-          apt update
-          apt install --yes \
-            nodejs \
-            pipx \
-            curl \
-            git \
-            zstd \
-            openssl \
-            procps \
-            gcc \
-            pkg-config \
-            libssl-dev \
-            qemu-utils \
-            qemu-system-x86 \
-            ovmf \
-            swtpm \
-            swtpm-tools \
-            amd64-microcode \
-            intel-microcode
       # Before the long image build: without KVM the harness would only
       # print `e2e SKIP` and pass.
       - name: check KVM and e2e host prerequisites
@@ -112,13 +85,6 @@ jobs:
         uses: https://data.forgejo.org/actions/checkout@v4
         with:
           ref: ${{ inputs.gitref }}
-      - name: setup rust
-        uses: https://codeberg.org/wackbyte/rust-toolchain@4da5f751804b19f1d50061e0e44cb8b6d449c9af
-        with:
-          toolchain: stable
-      - name: setup mkosi
-        run: |
-          pipx install git+https://github.com/systemd/mkosi.git@v26
       - name: build e2e harness
         run: |
           cargo test -p nfsense-e2e --no-run
@@ -151,7 +117,6 @@ jobs:
           echo "KEY_DIR=$KEY_DIR" >> "$GITHUB_ENV"
       - name: build image
         run: |
-          export PATH="${PATH}:/root/.local/bin"
           IMAGE_VERSION="g$(git rev-parse --short=10 HEAD)"
           mkdir -p "$MKOSI_PKG_CACHE"
           mkosi --directory mkosi \

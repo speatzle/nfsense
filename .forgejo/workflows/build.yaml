@@ -7,24 +7,10 @@ jobs:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: docker
     container:
-      image: debian:trixie
+      image: git.soontm.de/nfsense/nfsense-builder:trixie
     steps:
-      - name: install dependencies
-        run: |
-          apt update
-          apt install --yes \
-            nodejs \
-            gcc \
-            pkg-config \
-            libssl-dev \
-            curl \
-            git \
       - name: checkout code
         uses: https://data.forgejo.org/actions/checkout@v4
-      - name: setup rust
-        uses: https://codeberg.org/wackbyte/rust-toolchain@4da5f751804b19f1d50061e0e44cb8b6d449c9af
-        with:
-          toolchain: stable
       - name: build api
         run: |
           cargo build --release
